@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Ads CMS</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <header class="admin-header">
+            <h1>Ads CMS Dashboard</h1>
+            <div class="header-actions">
+                <span id="userName" class="user-name"></span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="ads">Ads Management</button>
+                <button class="tab-btn" data-tab="users">User Management</button>
+            </div>
+
+            <!-- Ads Tab Content -->
+            <div id="adsTab" class="tab-content active">
+                <div class="admin-controls">
+                    <button id="addNewBtn" class="btn btn-primary">+ Add New Ad</button>
+                    <div class="stats">
+                        <span>Total Ads: <strong id="totalAds">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Ads Table -->
+                <div class="table-container">
+                    <table class="ads-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Image</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adsTableBody">
+                            <!-- Ads will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Users Tab Content -->
+            <div id="usersTab" class="tab-content">
+                <div class="admin-controls">
+                    <div class="stats">
+                        <span>Total Users: <strong id="totalUsers">0</strong></span>
+                        <span style="margin-left: 2rem;">Pending Approvals: <strong id="pendingUsers">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="filter-buttons" style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-secondary active" data-filter="all">All Users</button>
+                    <button class="btn btn-secondary" data-filter="pending">Pending</button>
+                    <button class="btn btn-secondary" data-filter="approved">Approved</button>
+                    <button class="btn btn-secondary" data-filter="rejected">Rejected</button>
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-container">
+                    <table class="ads-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Company</th>
+                                <th>Contact Person</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Add/Edit Ad -->
+    <div id="adModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Ad</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="adForm">
+                <input type="hidden" id="adId">
+
+                <div class="form-group">
+                    <label for="adTitle">Title *</label>
+                    <input type="text" id="adTitle" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="adDescription">Description *</label>
+                    <textarea id="adDescription" name="description" rows="4" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adPrice">Price</label>
+                        <input type="number" id="adPrice" name="price" step="0.01" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adCategory">Category</label>
+                        <select id="adCategory" name="category">
+                            <option value="General">General</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Home">Home</option>
+                            <option value="Automotive">Automotive</option>
+                            <option value="Sports">Sports</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adImage">Image URL</label>
+                        <input type="url" id="adImage" name="image" placeholder="https://example.com/image.jpg">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adStatus">Status</label>
+                        <select id="adStatus" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Ad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>
