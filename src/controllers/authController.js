@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
-const userData = require('../models/userData');
+const User = require('../models/User');
 
 // Register new user (B2B registration - requires approval)
 const register = async (req, res) => {
@@ -16,7 +16,7 @@ const register = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = userData.getByEmail(email);
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -24,7 +24,7 @@ const register = async (req, res) => {
       });
     }
 
-    const existingUsername = userData.getByUsername(username);
+    const existingUsername = await User.findByUsername(username);
     if (existingUsername) {
       return res.status(400).json({
         success: false,
@@ -33,7 +33,7 @@ const register = async (req, res) => {
     }
 
     // Create user with pending status
-    const newUser = userData.create({
+    const newUser = await User.create({
       username,
       email,
       password,
@@ -73,10 +73,10 @@ const login = async (req, res) => {
       });
     }
 
-    // Find user by username or email
-    let user = userData.getByUsername(loginIdentifier);
+    // Find user by username or email (with password hash for verification)
+    let user = await User.findByUsernameWithPassword(loginIdentifier);
     if (!user) {
-      user = userData.getByEmail(loginIdentifier);
+      user = await User.findByEmailWithPassword(loginIdentifier);
     }
 
     if (!user) {
@@ -102,13 +102,16 @@ const login = async (req, res) => {
     }
 
     // Check password
-    const isMatch = await userData.verifyPassword(user, password);
+    const isMatch = await User.verifyPassword(user, password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials',
       });
     }
+
+    // Update last login timestamp
+    await User.updateLastLogin(user.id);
 
     // Create token
     const token = jwt.sign(
@@ -133,7 +136,7 @@ const login = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        companyName: user.companyName,
+        companyName: user.company_name,
       },
     });
   } catch (error) {
@@ -155,26 +158,34 @@ const logout = (req, res) => {
 };
 
 // Get current user
-const getMe = (req, res) => {
-  const user = userData.getById(req.user.id);
-  if (!user) {
-    return res.status(404).json({
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        companyName: user.company_name,
+        status: user.status,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      message: 'User not found',
+      message: 'Server error',
+      error: error.message,
     });
   }
-
-  res.json({
-    success: true,
-    user: {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      companyName: user.companyName,
-      status: user.status,
-    },
-  });
 };
 
 module.exports = {

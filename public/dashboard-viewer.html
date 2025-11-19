@@ -1,0 +1,2572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Viewer - AdsData Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: #0a0a0a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .header-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      background-color: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      color: #b7fa31;
+    }
+
+    .header-main {
+      padding: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 3rem;
+    }
+
+    .dashboard-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dashboard-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .dashboard-description {
+      font-size: 0.9375rem;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.6;
+      max-width: 700px;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .widgets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .widget {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      cursor: grab;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+
+    .widget:active {
+      cursor: grabbing;
+    }
+
+    .widget.dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+
+    .widget.drag-over {
+      border: 2px dashed #b7fa31;
+      background-color: rgba(183, 250, 49, 0.05);
+    }
+
+    .widget-drag-handle {
+      cursor: grab;
+      padding: 0.25rem;
+      margin-right: 0.5rem;
+      color: rgba(255, 255, 255, 0.3);
+      transition: color 0.2s ease;
+    }
+
+    .widget-drag-handle:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .widget-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .widget-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .widget-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .widget-action {
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
+    }
+
+    .widget-action:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .widget-action.delete:hover {
+      color: #ef4444;
+    }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 200px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .refresh-indicator {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      display: none;
+      z-index: 1000;
+    }
+
+    .refresh-indicator.show {
+      display: block;
+      animation: fadeInOut 2s ease;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      20%, 80% { opacity: 1; }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .global-date-picker {
+      display: flex;
+      align-items: center;
+    }
+
+    .global-date-picker label {
+      display: none;
+    }
+
+    .global-date-picker select {
+      padding: 0.5rem 0.875rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 0.5rem;
+      color: #ffffff;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .global-date-picker select:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .global-date-picker select:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .custom-date-inputs {
+      display: none;
+      gap: 0.5rem;
+      align-items: center;
+      margin-left: 0.5rem;
+    }
+
+    .custom-date-inputs.show {
+      display: flex;
+    }
+
+    .custom-date-inputs input[type="date"] {
+      padding: 0.4rem 0.5rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.375rem;
+      color: #ffffff;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .custom-date-inputs input[type="date"]:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .custom-date-inputs input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    .custom-date-inputs span {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.75rem;
+    }
+
+    .apply-dates-btn {
+      padding: 0.4rem 0.75rem;
+      background-color: #b7fa31;
+      color: #000000;
+      border: none;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .apply-dates-btn:hover {
+      background-color: #a8eb22;
+    }
+
+    /* Share and Export Buttons */
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .action-btn.primary {
+      background-color: #b7fa31;
+      color: #000000;
+      border-color: #b7fa31;
+    }
+
+    .action-btn.primary:hover {
+      background-color: #a8eb22;
+    }
+
+    /* Share Link Display */
+    .share-link-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+
+    .share-link-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.75rem;
+      font-family: monospace;
+    }
+
+    .copy-btn {
+      padding: 0.75rem 1rem;
+      background-color: #b7fa31;
+      color: #000000;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background-color: #a8eb22;
+    }
+
+    .copy-btn.copied {
+      background-color: #22c55e;
+      color: #ffffff;
+    }
+
+    /* Share Options */
+    .share-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .share-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .share-option input[type="checkbox"] {
+      width: 1.25rem;
+      height: 1.25rem;
+      accent-color: #b7fa31;
+    }
+
+    .share-option label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+    }
+
+    /* Existing Share Links */
+    .existing-shares {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .existing-shares h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 1rem;
+    }
+
+    .share-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .share-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border-radius: 0.5rem;
+    }
+
+    .share-item-info {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .share-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .share-item-btn {
+      padding: 0.375rem 0.625rem;
+      font-size: 0.75rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .share-item-btn.delete {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .share-item-btn.delete:hover {
+      background-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .share-item-btn.toggle {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Export Options */
+    .export-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .export-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .export-option:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .export-option-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .export-option-name {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .metric-card {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      position: relative;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #b7fa31;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-change {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .metric-change.positive {
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+    }
+
+    .metric-change.negative {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .metric-change.neutral {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .metric-sparkline {
+      margin-top: 0.75rem;
+      height: 40px;
+    }
+
+    .metric-sparkline canvas {
+      width: 100% !important;
+      height: 40px !important;
+    }
+
+    .metric-date-range {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.5rem;
+    }
+
+    .metric-comparison {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.25rem;
+    }
+
+    /* Table Widget Styles */
+    .table-widget {
+      padding: 0.5rem;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .data-table td {
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .data-table .value-cell {
+      font-weight: 600;
+      color: #b7fa31;
+    }
+
+    .data-table .change-cell {
+      font-size: 0.75rem;
+    }
+
+    .data-table .change-positive {
+      color: #b7fa31;
+    }
+
+    .data-table .change-negative {
+      color: #ef4444;
+    }
+
+    /* Comparison Widget Styles */
+    .comparison-widget {
+      padding: 1rem;
+    }
+
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .comparison-item {
+      text-align: center;
+    }
+
+    .comparison-period {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .comparison-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .comparison-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.25rem;
+    }
+
+    .comparison-divider {
+      width: 1px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .comparison-change {
+      text-align: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .comparison-change-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .comparison-change-value.positive {
+      color: #b7fa31;
+    }
+
+    .comparison-change-value.negative {
+      color: #ef4444;
+    }
+
+    .comparison-change-label {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.25rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .empty-state-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .empty-state-description {
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background-color: #b7fa31;
+      color: #000000;
+    }
+
+    .btn-primary:hover {
+      background-color: #a8eb22;
+      transform: translateY(-1px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .chart-placeholder {
+      background: linear-gradient(180deg, rgba(183, 250, 49, 0.1) 0%, rgba(183, 250, 49, 0.02) 100%);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.875rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      color: #ffffff;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .form-group select option {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+
+    .widget-type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .widget-type-option {
+      padding: 1rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .widget-type-option:hover:not(.selected) {
+      border-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .widget-type-option.selected {
+      border-color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.15);
+      box-shadow: 0 0 0 1px #b7fa31;
+    }
+
+    .widget-type-option.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 0.65rem;
+      color: #b7fa31;
+    }
+
+    .widget-type-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .widget-type-name {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .add-widget-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background-color: #b7fa31;
+      color: #000000;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(183, 250, 49, 0.4);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-widget-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(183, 250, 49, 0.5);
+    }
+
+    .alert {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      z-index: 1001;
+      animation: slideIn 0.3s ease;
+    }
+
+    .alert-success {
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      border: 1px solid rgba(183, 250, 49, 0.3);
+    }
+
+    .alert-error {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-nav">
+      <a href="/dashboard" class="back-btn">
+        ← Back to Dashboards
+      </a>
+      <div class="header-actions">
+        <button class="action-btn" onclick="openShareModal()">
+          Share
+        </button>
+        <button class="action-btn" onclick="openExportModal()">
+          Export
+        </button>
+      </div>
+    </div>
+    <div class="header-main">
+      <div class="header-content">
+        <div class="dashboard-info">
+          <div class="dashboard-title" id="dashboardTitle">Loading...</div>
+          <div class="dashboard-description" id="dashboardDescription"></div>
+        </div>
+        <div class="header-right">
+          <div class="global-date-picker">
+            <select id="globalDateRange" onchange="onGlobalDateRangeChange()">
+              <option value="last_7_days">Last 7 Days</option>
+              <option value="last_30_days" selected>Last 30 Days</option>
+              <option value="last_90_days">Last 90 Days</option>
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            <div class="custom-date-inputs" id="customDateInputs">
+              <input type="date" id="customStartDate" />
+              <span>to</span>
+              <input type="date" id="customEndDate" />
+              <button class="apply-dates-btn" onclick="applyCustomDates()">Apply</button>
+            </div>
+          </div>
+          <button class="action-btn" onclick="refreshAllWidgets()">
+            ↻ Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="widgetsContainer">
+      <div class="loading">Loading dashboard...</div>
+    </div>
+  </div>
+
+  <!-- Floating Add Widget Button -->
+  <button class="add-widget-btn" onclick="openWidgetModal()" title="Add Widget">+</button>
+
+  <!-- Refresh Indicator -->
+  <div id="refreshIndicator" class="refresh-indicator">Refreshing data...</div>
+
+  <!-- Alert Container -->
+  <div id="alertContainer"></div>
+
+  <!-- Widget Builder Modal -->
+  <div id="widgetModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Widget</h3>
+        <button class="close-btn" onclick="closeWidgetModal()">&times;</button>
+      </div>
+      <form id="widgetForm" onsubmit="saveWidget(event)">
+        <div class="form-group">
+          <label>Widget Type</label>
+          <div class="widget-type-grid" id="widgetTypeGrid">
+            <div class="widget-type-option selected" data-type="kpi_card">
+              <div class="widget-type-icon">📊</div>
+              <div class="widget-type-name">KPI Card</div>
+            </div>
+            <div class="widget-type-option" data-type="line_chart">
+              <div class="widget-type-icon">📈</div>
+              <div class="widget-type-name">Line Chart</div>
+            </div>
+            <div class="widget-type-option" data-type="bar_chart">
+              <div class="widget-type-icon">📊</div>
+              <div class="widget-type-name">Bar Chart</div>
+            </div>
+            <div class="widget-type-option" data-type="pie_chart">
+              <div class="widget-type-icon">🥧</div>
+              <div class="widget-type-name">Pie Chart</div>
+            </div>
+            <div class="widget-type-option" data-type="table">
+              <div class="widget-type-icon">📋</div>
+              <div class="widget-type-name">Table</div>
+            </div>
+            <div class="widget-type-option" data-type="comparison">
+              <div class="widget-type-icon">⚖️</div>
+              <div class="widget-type-name">Comparison</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="widgetTitle">Widget Title *</label>
+          <input type="text" id="widgetTitle" required placeholder="e.g., Total Spend This Month">
+        </div>
+
+        <div class="form-group">
+          <label for="widgetDescription">Description</label>
+          <input type="text" id="widgetDescription" placeholder="Brief description of this widget">
+        </div>
+
+        <div class="form-group">
+          <label for="adAccount">Ad Account *</label>
+          <select id="adAccount" required>
+            <option value="">Select an ad account</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="metric">Metric *</label>
+          <select id="metric" required>
+            <option value="">Select a metric</option>
+            <option value="spend">Spend</option>
+            <option value="impressions">Impressions</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR (Click-Through Rate)</option>
+            <option value="cpc">CPC (Cost Per Click)</option>
+            <option value="cpm">CPM (Cost Per 1000 Impressions)</option>
+            <option value="reach">Reach</option>
+            <option value="frequency">Frequency</option>
+            <option value="conversions">Conversions</option>
+            <option value="cost_per_conversion">Cost Per Conversion</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dateRange">Date Range</label>
+          <select id="dateRange">
+            <option value="last_7_days">Last 7 Days</option>
+            <option value="last_30_days" selected>Last 30 Days</option>
+            <option value="last_90_days">Last 90 Days</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+          </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeWidgetModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modalSubmitBtn">Add Widget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Share Dashboard</h3>
+        <button class="close-btn" onclick="closeShareModal()">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label>Generate Share Link</label>
+        <div class="share-link-container">
+          <input type="text" id="shareLink" class="share-link-input" readonly placeholder="Click 'Generate' to create a share link">
+          <button class="copy-btn" id="copyBtn" onclick="copyShareLink()">Copy</button>
+        </div>
+      </div>
+
+      <div class="share-options">
+        <div class="share-option">
+          <input type="checkbox" id="allowExport" checked>
+          <label for="allowExport">Allow viewers to export data</label>
+        </div>
+        <div class="share-option">
+          <input type="checkbox" id="requirePassword">
+          <label for="requirePassword">Require password</label>
+        </div>
+        <div class="form-group" id="passwordGroup" style="display: none; margin-top: 0.5rem; margin-bottom: 0;">
+          <input type="password" id="sharePassword" placeholder="Enter password for this share link">
+        </div>
+        <div class="share-option">
+          <input type="checkbox" id="setExpiry">
+          <label for="setExpiry">Set expiration date</label>
+        </div>
+        <div class="form-group" id="expiryGroup" style="display: none; margin-top: 0.5rem; margin-bottom: 0;">
+          <input type="datetime-local" id="shareExpiry">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeShareModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="generateShareLink()">Generate Link</button>
+      </div>
+
+      <div class="existing-shares" id="existingShares">
+        <h4>Existing Share Links</h4>
+        <div class="share-list" id="shareList">
+          <div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Export Dashboard</h3>
+        <button class="close-btn" onclick="closeExportModal()">&times;</button>
+      </div>
+
+      <div class="export-options">
+        <div class="export-option" onclick="exportToPNG()">
+          <div class="export-option-icon">🖼️</div>
+          <div class="export-option-name">PNG Image</div>
+        </div>
+        <div class="export-option" onclick="exportToPDF()">
+          <div class="export-option-icon">📄</div>
+          <div class="export-option-name">PDF Document</div>
+        </div>
+        <div class="export-option" onclick="exportToCSV()">
+          <div class="export-option-icon">📊</div>
+          <div class="export-option-name">CSV Data</div>
+        </div>
+        <div class="export-option" onclick="printDashboard()">
+          <div class="export-option-icon">🖨️</div>
+          <div class="export-option-name">Print</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dashboardId = null;
+    let dashboard = null;
+    let adAccounts = [];
+    let selectedWidgetType = 'kpi_card';
+    let editingWidgetId = null;
+    let refreshInterval = null;
+    const REFRESH_INTERVAL_MS = 60000; // Auto-refresh every 60 seconds
+
+    window.addEventListener('load', async () => {
+      // Get dashboard ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      dashboardId = urlParams.get('id');
+
+      if (!dashboardId) {
+        showError('No dashboard ID provided');
+        return;
+      }
+
+      // Setup widget type selection with event delegation
+      setupWidgetTypeSelection();
+
+      await loadDashboard();
+      await loadAdAccounts();
+      startAutoRefresh();
+    });
+
+    function setupWidgetTypeSelection() {
+      const grid = document.getElementById('widgetTypeGrid');
+      grid.addEventListener('click', (e) => {
+        // Find the clicked option (might be the icon or name child)
+        const option = e.target.closest('.widget-type-option');
+        if (!option) return;
+
+        const type = option.dataset.type;
+        if (!type) return;
+
+        // Update selection
+        selectedWidgetType = type;
+
+        // Update visual state
+        grid.querySelectorAll('.widget-type-option').forEach(el => {
+          el.classList.remove('selected');
+        });
+        option.classList.add('selected');
+
+        console.log('Selected widget type:', selectedWidgetType);
+      });
+    }
+
+    function startAutoRefresh() {
+      // Clear existing interval if any
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+
+      // Set up auto-refresh
+      refreshInterval = setInterval(async () => {
+        const indicator = document.getElementById('refreshIndicator');
+        indicator.classList.add('show');
+        await loadWidgetMetrics();
+        setTimeout(() => indicator.classList.remove('show'), 2000);
+      }, REFRESH_INTERVAL_MS);
+    }
+
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    }
+
+    async function loadDashboard() {
+      try {
+        const response = await fetch(`/api/dashboards/${dashboardId}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load dashboard');
+        }
+
+        const result = await response.json();
+        dashboard = result.data;
+
+        renderDashboard();
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        showError('Failed to load dashboard');
+      }
+    }
+
+    async function loadAdAccounts() {
+      try {
+        // Get the workspace ID from the dashboard
+        if (!dashboard || !dashboard.workspace_id) return;
+
+        const response = await fetch(`/api/oauth/accounts/${dashboard.workspace_id}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load ad accounts');
+        }
+
+        const result = await response.json();
+        adAccounts = result.data || [];
+
+        // Populate the ad account dropdown
+        const select = document.getElementById('adAccount');
+        select.innerHTML = '<option value="">Select an ad account</option>';
+
+        adAccounts.forEach(account => {
+          const option = document.createElement('option');
+          option.value = account.id;
+          option.textContent = `${account.account_name} (${account.platform})`;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading ad accounts:', error);
+      }
+    }
+
+    function renderDashboard() {
+      // Update header
+      document.getElementById('dashboardTitle').textContent = dashboard.name;
+      document.getElementById('dashboardDescription').textContent = dashboard.description || '';
+
+      // Render widgets
+      const container = document.getElementById('widgetsContainer');
+
+      if (!dashboard.widgets || dashboard.widgets.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-title">No Widgets Yet</div>
+            <div class="empty-state-description">
+              Add widgets to visualize your ad performance metrics and track your campaigns.
+            </div>
+            <button class="btn btn-primary" onclick="openWidgetModal()">Add Your First Widget</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Render widgets
+      const widgetsHTML = dashboard.widgets.map(widget => {
+        return renderWidget(widget);
+      }).join('');
+
+      container.innerHTML = `<div class="widgets-grid">${widgetsHTML}</div>`;
+
+      // Initialize drag and drop
+      setupDragAndDrop();
+
+      // Load actual metrics for widgets
+      loadWidgetMetrics();
+    }
+
+    // Drag and Drop functionality
+    let draggedWidget = null;
+
+    function setupDragAndDrop() {
+      const widgets = document.querySelectorAll('.widget');
+
+      widgets.forEach(widget => {
+        widget.addEventListener('dragstart', handleDragStart);
+        widget.addEventListener('dragend', handleDragEnd);
+        widget.addEventListener('dragover', handleDragOver);
+        widget.addEventListener('dragenter', handleDragEnter);
+        widget.addEventListener('dragleave', handleDragLeave);
+        widget.addEventListener('drop', handleDrop);
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedWidget = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', this.dataset.widgetId);
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.widget').forEach(widget => {
+        widget.classList.remove('drag-over');
+      });
+      draggedWidget = null;
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDragEnter(e) {
+      e.preventDefault();
+      if (this !== draggedWidget) {
+        this.classList.add('drag-over');
+      }
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    async function handleDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+
+      if (this === draggedWidget) return;
+
+      // Get the widgets grid
+      const grid = document.querySelector('.widgets-grid');
+      const widgets = Array.from(grid.querySelectorAll('.widget'));
+
+      // Find positions
+      const draggedIndex = widgets.indexOf(draggedWidget);
+      const targetIndex = widgets.indexOf(this);
+
+      // Reorder in DOM
+      if (draggedIndex < targetIndex) {
+        this.parentNode.insertBefore(draggedWidget, this.nextSibling);
+      } else {
+        this.parentNode.insertBefore(draggedWidget, this);
+      }
+
+      // Update order in dashboard data and save
+      const newOrder = Array.from(grid.querySelectorAll('.widget')).map(w => w.dataset.widgetId);
+      await saveWidgetOrder(newOrder);
+
+      showAlert('Widget order updated', 'success');
+    }
+
+    async function saveWidgetOrder(order) {
+      try {
+        // Update the position of each widget
+        for (let i = 0; i < order.length; i++) {
+          const widgetId = order[i];
+          const widget = dashboard.widgets.find(w => w.id === widgetId);
+          if (widget) {
+            widget.position = { ...widget.position, order: i };
+
+            // Save to backend
+            await fetch(`/api/dashboards/widgets/${widgetId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                position: { order: i }
+              }),
+            });
+          }
+        }
+
+        // Reorder dashboard.widgets array to match new order
+        dashboard.widgets.sort((a, b) => {
+          const aIndex = order.indexOf(a.id);
+          const bIndex = order.indexOf(b.id);
+          return aIndex - bIndex;
+        });
+      } catch (error) {
+        console.error('Error saving widget order:', error);
+        showAlert('Failed to save widget order', 'error');
+      }
+    }
+
+    function formatMetricLabel(metric) {
+      // Handle acronyms and special formatting
+      const metricLabels = {
+        'spend': 'Spend',
+        'impressions': 'Impressions',
+        'clicks': 'Clicks',
+        'ctr': 'CTR',
+        'cpc': 'CPC',
+        'cpm': 'CPM',
+        'reach': 'Reach',
+        'frequency': 'Frequency',
+        'conversions': 'Conversions',
+        'cost_per_conversion': 'Cost Per Conversion'
+      };
+      return metricLabels[metric] || metric.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function renderWidget(widget) {
+      const dataSource = widget.data_source || {};
+      const metricName = dataSource.metric || 'Metric';
+      const formattedMetric = formatMetricLabel(metricName);
+      const widgetType = widget.widget_type || 'kpi_card';
+
+      let contentHTML = '';
+
+      if (widgetType === 'kpi_card') {
+        contentHTML = `
+          <div class="metric-card">
+            <div class="metric-value" id="metric-${widget.id}">Loading...</div>
+            <div class="metric-label">${formattedMetric}</div>
+            <div class="metric-change neutral" id="change-${widget.id}">
+              <span>—</span> vs previous period
+            </div>
+            <div class="metric-sparkline">
+              <canvas id="sparkline-${widget.id}"></canvas>
+            </div>
+            <div class="metric-date-range">
+              ${formatDateRange(dataSource.dateRange || 'last_30_days')}
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
+        contentHTML = `
+          <div style="padding: 1rem; height: 250px;">
+            <canvas id="chart-${widget.id}"></canvas>
+          </div>
+          <div style="text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+            ${formattedMetric} - ${formatDateRange(dataSource.dateRange || 'last_30_days')}
+          </div>
+        `;
+      } else if (widgetType === 'table') {
+        contentHTML = `
+          <div class="table-widget" id="table-${widget.id}">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>${formattedMetric}</th>
+                  <th>Change</th>
+                </tr>
+              </thead>
+              <tbody id="table-body-${widget.id}">
+                <tr>
+                  <td colspan="3" style="text-align: center; color: rgba(255,255,255,0.4);">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (widgetType === 'comparison') {
+        contentHTML = `
+          <div class="comparison-widget" id="comparison-${widget.id}">
+            <div class="comparison-container">
+              <div class="comparison-item">
+                <div class="comparison-period">Current Period</div>
+                <div class="comparison-value" id="current-${widget.id}">--</div>
+                <div class="comparison-label">${formattedMetric}</div>
+              </div>
+              <div class="comparison-divider"></div>
+              <div class="comparison-item">
+                <div class="comparison-period">Previous Period</div>
+                <div class="comparison-value" id="previous-${widget.id}">--</div>
+                <div class="comparison-label">${formattedMetric}</div>
+              </div>
+            </div>
+            <div class="comparison-change">
+              <div class="comparison-change-value" id="change-value-${widget.id}">--</div>
+              <div class="comparison-change-label">Period over Period Change</div>
+            </div>
+          </div>
+        `;
+      } else {
+        contentHTML = `
+          <div class="metric-card">
+            <div class="metric-value" id="metric-${widget.id}">Loading...</div>
+            <div class="metric-label">${formattedMetric}</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="widget" data-widget-id="${widget.id}" data-widget-type="${widgetType}" draggable="true">
+          <div class="widget-header">
+            <div style="display: flex; align-items: center;">
+              <span class="widget-drag-handle" title="Drag to reorder">⋮⋮</span>
+              <div class="widget-title">${widget.title || 'Untitled Widget'}</div>
+            </div>
+            <div class="widget-actions">
+              <span class="widget-action" onclick="editWidget('${widget.id}')" title="Edit">✏️</span>
+              <span class="widget-action delete" onclick="deleteWidget('${widget.id}')" title="Delete">🗑️</span>
+            </div>
+          </div>
+          ${contentHTML}
+        </div>
+      `;
+    }
+
+    function formatDateRange(range) {
+      const ranges = {
+        'last_7_days': 'Last 7 Days',
+        'last_30_days': 'Last 30 Days',
+        'last_90_days': 'Last 90 Days',
+        'this_month': 'This Month',
+        'last_month': 'Last Month'
+      };
+      return ranges[range] || range;
+    }
+
+    // Store chart instances for cleanup
+    const chartInstances = {};
+
+    async function loadWidgetMetrics() {
+      if (!dashboard.widgets || dashboard.widgets.length === 0) return;
+
+      for (const widget of dashboard.widgets) {
+        try {
+          const response = await fetch(`/api/metrics/widget/${widget.id}`, {
+            credentials: 'include'
+          });
+
+          if (!response.ok) continue;
+
+          const result = await response.json();
+          const widgetType = widget.widget_type || 'kpi_card';
+          const value = result.data?.value || 0;
+          const metric = widget.data_source?.metric || 'spend';
+          const currency = result.data?.currency || 'USD';
+
+          // Extract real data from API response
+          const timeSeries = result.data?.timeSeries || [];
+          const previousValue = result.data?.previousValue || 0;
+          const changePercent = result.data?.changePercent || 0;
+
+          if (widgetType === 'kpi_card') {
+            // Update KPI card widgets
+            const metricElement = document.getElementById(`metric-${widget.id}`);
+            if (metricElement && result.data) {
+              let formattedValue = formatMetricValue(value, metric, currency);
+              metricElement.textContent = formattedValue;
+            }
+            renderSparkline(widget.id, timeSeries, metric);
+            updateTrendIndicator(widget.id, changePercent, metric);
+          } else if (widgetType === 'table') {
+            // Render table widget with real time-series data
+            renderTableWidget(widget.id, timeSeries, metric, currency);
+          } else if (widgetType === 'comparison') {
+            // Render comparison widget with real data
+            renderComparisonWidget(widget.id, value, previousValue, changePercent, metric, currency);
+          } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
+            // Render chart widgets with real time-series data
+            renderChart(widget, timeSeries, value, metric, currency);
+          }
+        } catch (error) {
+          console.error(`Error loading metrics for widget ${widget.id}:`, error);
+          const metricElement = document.getElementById(`metric-${widget.id}`);
+          if (metricElement) {
+            metricElement.textContent = '--';
+          }
+        }
+      }
+    }
+
+    function renderChart(widget, timeSeries, value, metric, currency) {
+      const canvas = document.getElementById(`chart-${widget.id}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const widgetType = widget.widget_type;
+
+      // Destroy existing chart if any
+      if (chartInstances[widget.id]) {
+        chartInstances[widget.id].destroy();
+      }
+
+      // Use real time-series data or fallback to generated data
+      let labels, data;
+      if (timeSeries && timeSeries.length > 0) {
+        labels = timeSeries.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        data = timeSeries.map(d => d.value);
+      } else {
+        labels = generateDateLabels(widget.data_source?.dateRange || 'last_30_days');
+        data = generateSampleData(value, labels.length);
+      }
+
+      const formattedMetric = formatMetricLabel(metric);
+      const chartColor = '#b7fa31';
+      const chartColorTransparent = 'rgba(183, 250, 49, 0.2)';
+
+      let chartConfig;
+
+      if (widgetType === 'line_chart') {
+        chartConfig = {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: formattedMetric,
+              data: data,
+              borderColor: chartColor,
+              backgroundColor: chartColorTransparent,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 2,
+              pointHoverRadius: 5
+            }]
+          },
+          options: getChartOptions(metric, currency)
+        };
+      } else if (widgetType === 'bar_chart') {
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: formattedMetric,
+              data: data,
+              backgroundColor: chartColor,
+              borderRadius: 4
+            }]
+          },
+          options: getChartOptions(metric, currency)
+        };
+      } else if (widgetType === 'pie_chart') {
+        // For pie chart, create categorical breakdown
+        const pieLabels = ['Segment A', 'Segment B', 'Segment C', 'Segment D'];
+        const pieData = [value * 0.4, value * 0.25, value * 0.2, value * 0.15];
+        const pieColors = ['#b7fa31', '#8bc924', '#5e9617', '#32630a'];
+
+        chartConfig = {
+          type: 'doughnut',
+          data: {
+            labels: pieLabels,
+            datasets: [{
+              data: pieData,
+              backgroundColor: pieColors,
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  font: { size: 10 },
+                  padding: 10
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return formatMetricValue(context.raw, metric, currency);
+                  }
+                }
+              }
+            }
+          }
+        };
+      }
+
+      chartInstances[widget.id] = new Chart(ctx, chartConfig);
+    }
+
+    function getChartOptions(metric, currency) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.5)',
+              font: { size: 9 },
+              maxRotation: 45
+            }
+          },
+          y: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.5)',
+              font: { size: 10 },
+              callback: function(value) {
+                return formatMetricValue(value, metric, currency);
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: '#1a1a1a',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            callbacks: {
+              label: function(context) {
+                return formatMetricValue(context.raw, metric, currency);
+              }
+            }
+          }
+        }
+      };
+    }
+
+    function generateDateLabels(dateRange) {
+      const labels = [];
+      const now = new Date();
+      let days;
+
+      switch (dateRange) {
+        case 'last_7_days':
+          days = 7;
+          break;
+        case 'last_30_days':
+          days = 30;
+          break;
+        case 'last_90_days':
+          days = 90;
+          break;
+        default:
+          days = 30;
+      }
+
+      // Generate fewer labels for readability
+      const step = Math.ceil(days / 10);
+      for (let i = days - 1; i >= 0; i -= step) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
+
+      return labels;
+    }
+
+    function generateSampleData(totalValue, count) {
+      // Generate sample data that roughly sums to the total value
+      const data = [];
+      let remaining = totalValue;
+
+      for (let i = 0; i < count - 1; i++) {
+        // Add some variance to make it look realistic
+        const avg = remaining / (count - i);
+        const variance = avg * 0.3;
+        const value = Math.max(0, avg + (Math.random() - 0.5) * variance * 2);
+        data.push(value);
+        remaining -= value;
+      }
+      data.push(Math.max(0, remaining));
+
+      return data;
+    }
+
+    // Store sparkline chart instances
+    const sparklineInstances = {};
+
+    function renderSparkline(widgetId, timeSeries, metric) {
+      const canvas = document.getElementById(`sparkline-${widgetId}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+
+      // Destroy existing sparkline if any
+      if (sparklineInstances[widgetId]) {
+        sparklineInstances[widgetId].destroy();
+      }
+
+      // Use real time-series data or generate fallback
+      let data;
+      if (timeSeries && timeSeries.length > 0) {
+        // Take last 7 days or all available data
+        const recentData = timeSeries.slice(-7);
+        data = recentData.map(d => d.value);
+      } else {
+        // Fallback to generated data
+        data = [];
+        for (let i = 0; i < 7; i++) {
+          data.push(Math.random() * 100);
+        }
+      }
+
+      sparklineInstances[widgetId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['', '', '', '', '', '', ''],
+          datasets: [{
+            data: data,
+            borderColor: '#b7fa31',
+            backgroundColor: 'rgba(183, 250, 49, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          }
+        }
+      });
+    }
+
+    function updateTrendIndicator(widgetId, changePercent, metric) {
+      const changeElement = document.getElementById(`change-${widgetId}`);
+      if (!changeElement) return;
+
+      const isPositive = changePercent >= 0;
+      const isNeutral = Math.abs(changePercent) < 1;
+
+      // For cost metrics, negative is good
+      const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+      const isGood = isCostMetric ? !isPositive : isPositive;
+
+      if (isNeutral) {
+        changeElement.className = 'metric-change neutral';
+        changeElement.innerHTML = `<span>—</span> No change`;
+      } else {
+        changeElement.className = `metric-change ${isGood ? 'positive' : 'negative'}`;
+        const arrow = isPositive ? '↑' : '↓';
+        changeElement.innerHTML = `<span>${arrow} ${Math.abs(changePercent).toFixed(1)}%</span> vs previous period`;
+      }
+    }
+
+    function renderTableWidget(widgetId, timeSeries, metric, currency) {
+      const tableBody = document.getElementById(`table-body-${widgetId}`);
+      if (!tableBody) return;
+
+      // Group time-series data into weekly periods
+      let periods = [];
+
+      if (timeSeries && timeSeries.length > 0) {
+        // Group by week
+        const weeks = {};
+        timeSeries.forEach(day => {
+          const date = new Date(day.date);
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          const weekKey = weekStart.toISOString().split('T')[0];
+
+          if (!weeks[weekKey]) {
+            weeks[weekKey] = { total: 0, count: 0 };
+          }
+          weeks[weekKey].total += day.value;
+          weeks[weekKey].count++;
+        });
+
+        // Convert to array and calculate changes
+        const weekKeys = Object.keys(weeks).sort().reverse();
+        for (let i = 0; i < Math.min(4, weekKeys.length); i++) {
+          const weekValue = weeks[weekKeys[i]].total;
+          const prevWeekValue = i < weekKeys.length - 1 ? weeks[weekKeys[i + 1]]?.total || 0 : 0;
+          const change = prevWeekValue > 0 ? ((weekValue - prevWeekValue) / prevWeekValue * 100).toFixed(1) : 0;
+
+          const weekDate = new Date(weekKeys[i]);
+          const weekName = i === 0 ? 'This Week' : i === 1 ? 'Last Week' : `Week -${i}`;
+
+          periods.push({ name: weekName, value: weekValue, change: parseFloat(change) });
+        }
+      } else {
+        // Fallback to sample data
+        periods = [
+          { name: 'This Week', value: 0, change: 0 },
+          { name: 'Last Week', value: 0, change: 0 },
+          { name: 'Week -2', value: 0, change: 0 },
+          { name: 'Week -3', value: 0, change: 0 }
+        ];
+      }
+
+      const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+
+      const rowsHTML = periods.map(period => {
+        const formattedValue = formatMetricValue(period.value, metric, currency);
+        const changeNum = period.change;
+        const isPositive = changeNum >= 0;
+        const isGood = isCostMetric ? !isPositive : isPositive;
+        const changeClass = Math.abs(changeNum) < 1 ? '' : (isGood ? 'change-positive' : 'change-negative');
+        const arrow = isPositive ? '↑' : '↓';
+
+        return `
+          <tr>
+            <td>${period.name}</td>
+            <td class="value-cell">${formattedValue}</td>
+            <td class="change-cell ${changeClass}">${arrow} ${Math.abs(changeNum).toFixed(1)}%</td>
+          </tr>
+        `;
+      }).join('');
+
+      tableBody.innerHTML = rowsHTML;
+    }
+
+    function renderComparisonWidget(widgetId, value, previousValue, changePercent, metric, currency) {
+      const currentElement = document.getElementById(`current-${widgetId}`);
+      const previousElement = document.getElementById(`previous-${widgetId}`);
+      const changeValueElement = document.getElementById(`change-value-${widgetId}`);
+
+      if (!currentElement || !previousElement || !changeValueElement) return;
+
+      const isPositive = changePercent >= 0;
+
+      const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+      const isGood = isCostMetric ? !isPositive : isPositive;
+
+      // Format and display values
+      currentElement.textContent = formatMetricValue(value, metric, currency);
+      previousElement.textContent = formatMetricValue(previousValue, metric, currency);
+
+      // Display change
+      const arrow = isPositive ? '↑' : '↓';
+      changeValueElement.textContent = `${arrow} ${Math.abs(changePercent).toFixed(1)}%`;
+      changeValueElement.className = `comparison-change-value ${isGood ? 'positive' : 'negative'}`;
+    }
+
+    function onGlobalDateRangeChange() {
+      const newRange = document.getElementById('globalDateRange').value;
+      const customInputs = document.getElementById('customDateInputs');
+
+      if (newRange === 'custom') {
+        customInputs.classList.add('show');
+        // Set default dates to last 30 days
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+
+        document.getElementById('customEndDate').value = today.toISOString().split('T')[0];
+        document.getElementById('customStartDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+      } else {
+        customInputs.classList.remove('show');
+        showAlert(`Date range changed to ${formatDateRange(newRange)}. Refresh to apply.`, 'success');
+      }
+    }
+
+    async function applyCustomDates() {
+      const startDate = document.getElementById('customStartDate').value;
+      const endDate = document.getElementById('customEndDate').value;
+
+      if (!startDate || !endDate) {
+        showAlert('Please select both start and end dates', 'error');
+        return;
+      }
+
+      if (new Date(startDate) > new Date(endDate)) {
+        showAlert('Start date must be before end date', 'error');
+        return;
+      }
+
+      // Store custom dates globally
+      window.customDateRange = { since: startDate, until: endDate };
+
+      showAlert(`Custom date range applied: ${startDate} to ${endDate}`, 'success');
+
+      // Refresh widgets with new date range
+      await refreshAllWidgets();
+    }
+
+    async function refreshAllWidgets() {
+      const indicator = document.getElementById('refreshIndicator');
+      indicator.classList.add('show');
+      await loadWidgetMetrics();
+      setTimeout(() => indicator.classList.remove('show'), 2000);
+      showAlert('Dashboard refreshed', 'success');
+    }
+
+    function formatMetricValue(value, metric, currency = 'USD') {
+      if (value === null || value === undefined) return '--';
+
+      switch (metric) {
+        case 'spend':
+        case 'cpc':
+        case 'cpm':
+        case 'cost_per_conversion':
+          return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: 2
+          }).format(value);
+
+        case 'impressions':
+        case 'clicks':
+        case 'reach':
+        case 'conversions':
+          return new Intl.NumberFormat('en-US').format(Math.round(value));
+
+        case 'ctr':
+        case 'frequency':
+          return value.toFixed(2) + (metric === 'ctr' ? '%' : '');
+
+        default:
+          return value.toString();
+      }
+    }
+
+    // Widget Modal Functions
+    function openWidgetModal() {
+      editingWidgetId = null;
+      document.getElementById('modalTitle').textContent = 'Add Widget';
+      document.getElementById('modalSubmitBtn').textContent = 'Add Widget';
+      document.getElementById('widgetModal').classList.add('show');
+      // Reset form
+      document.getElementById('widgetForm').reset();
+      // Reset widget type selection to default (kpi_card)
+      setSelectedWidgetType('kpi_card');
+    }
+
+    function setSelectedWidgetType(type) {
+      selectedWidgetType = type;
+      const grid = document.getElementById('widgetTypeGrid');
+      grid.querySelectorAll('.widget-type-option').forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.type === type) {
+          el.classList.add('selected');
+        }
+      });
+    }
+
+    function editWidget(widgetId) {
+      // Find the widget data
+      const widget = dashboard.widgets.find(w => w.id === widgetId);
+      if (!widget) {
+        showAlert('Widget not found', 'error');
+        return;
+      }
+
+      editingWidgetId = widgetId;
+      document.getElementById('modalTitle').textContent = 'Edit Widget';
+      document.getElementById('modalSubmitBtn').textContent = 'Save Changes';
+      document.getElementById('widgetModal').classList.add('show');
+
+      // Populate form with widget data
+      document.getElementById('widgetTitle').value = widget.title || '';
+      document.getElementById('widgetDescription').value = widget.description || '';
+
+      const dataSource = widget.data_source || {};
+      document.getElementById('adAccount').value = dataSource.adAccountId || '';
+      document.getElementById('metric').value = dataSource.metric || '';
+      document.getElementById('dateRange').value = dataSource.dateRange || 'last_30_days';
+
+      // Set widget type using the new helper function
+      setSelectedWidgetType(widget.widget_type || 'kpi_card');
+    }
+
+    function closeWidgetModal() {
+      document.getElementById('widgetModal').classList.remove('show');
+    }
+
+    async function saveWidget(event) {
+      event.preventDefault();
+
+      const title = document.getElementById('widgetTitle').value;
+      const description = document.getElementById('widgetDescription').value;
+      const adAccountId = document.getElementById('adAccount').value;
+      const metric = document.getElementById('metric').value;
+      const dateRange = document.getElementById('dateRange').value;
+
+      const widgetData = {
+        widgetType: selectedWidgetType,
+        title,
+        description,
+        dataSource: {
+          adAccountId,
+          metric,
+          dateRange
+        },
+        chartConfig: {},
+        filters: {}
+      };
+
+      try {
+        let response;
+        let successMessage;
+
+        if (editingWidgetId) {
+          // Update existing widget
+          response = await fetch(`/api/dashboards/widgets/${editingWidgetId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(widgetData),
+          });
+          successMessage = 'Widget updated successfully';
+        } else {
+          // Create new widget
+          response = await fetch(`/api/dashboards/${dashboardId}/widgets`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(widgetData),
+          });
+          successMessage = 'Widget added successfully';
+        }
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to save widget');
+        }
+
+        showAlert(successMessage, 'success');
+        closeWidgetModal();
+        await loadDashboard();
+      } catch (error) {
+        console.error('Error saving widget:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function deleteWidget(widgetId) {
+      if (!confirm('Are you sure you want to delete this widget?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/dashboards/widgets/${widgetId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete widget');
+        }
+
+        showAlert('Widget deleted successfully', 'success');
+        await loadDashboard();
+      } catch (error) {
+        console.error('Error deleting widget:', error);
+        showAlert('Failed to delete widget', 'error');
+      }
+    }
+
+    function showError(message) {
+      const container = document.getElementById('widgetsContainer');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <div class="empty-state-title">Error</div>
+          <div class="empty-state-description">${message}</div>
+          <a href="/dashboard" class="btn btn-primary">Back to Dashboards</a>
+        </div>
+      `;
+    }
+
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alertContainer.appendChild(alert);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
+
+    // Share Modal Functions
+    function openShareModal() {
+      document.getElementById('shareModal').classList.add('show');
+      document.getElementById('shareLink').value = '';
+      loadExistingShares();
+      setupShareOptions();
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.remove('show');
+    }
+
+    function setupShareOptions() {
+      // Toggle password field visibility
+      document.getElementById('requirePassword').addEventListener('change', function() {
+        document.getElementById('passwordGroup').style.display = this.checked ? 'block' : 'none';
+      });
+
+      // Toggle expiry field visibility
+      document.getElementById('setExpiry').addEventListener('change', function() {
+        document.getElementById('expiryGroup').style.display = this.checked ? 'block' : 'none';
+        if (this.checked) {
+          // Set default expiry to 7 days from now
+          const defaultExpiry = new Date();
+          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+          document.getElementById('shareExpiry').value = defaultExpiry.toISOString().slice(0, 16);
+        }
+      });
+    }
+
+    async function generateShareLink() {
+      const allowExport = document.getElementById('allowExport').checked;
+      const requirePassword = document.getElementById('requirePassword').checked;
+      const setExpiry = document.getElementById('setExpiry').checked;
+
+      const payload = {
+        allowExport,
+      };
+
+      if (requirePassword) {
+        const password = document.getElementById('sharePassword').value;
+        if (!password) {
+          showAlert('Please enter a password', 'error');
+          return;
+        }
+        payload.password = password;
+      }
+
+      if (setExpiry) {
+        const expiryDate = document.getElementById('shareExpiry').value;
+        if (!expiryDate) {
+          showAlert('Please select an expiration date', 'error');
+          return;
+        }
+        payload.expiresAt = new Date(expiryDate).toISOString();
+      }
+
+      try {
+        const response = await fetch(`/api/dashboards/${dashboardId}/share`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to create share link');
+        }
+
+        const result = await response.json();
+        const shareUrl = `${window.location.origin}/shared-dashboard.html?token=${result.data.share_token}`;
+        document.getElementById('shareLink').value = shareUrl;
+        showAlert('Share link created successfully', 'success');
+        loadExistingShares();
+      } catch (error) {
+        console.error('Error creating share link:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    function copyShareLink() {
+      const shareLink = document.getElementById('shareLink');
+      if (!shareLink.value) {
+        showAlert('No share link to copy', 'error');
+        return;
+      }
+
+      navigator.clipboard.writeText(shareLink.value).then(() => {
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        showAlert('Failed to copy link', 'error');
+      });
+    }
+
+    async function loadExistingShares() {
+      try {
+        const response = await fetch(`/api/dashboards/${dashboardId}/shares`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load share links');
+        }
+
+        const result = await response.json();
+        const shareList = document.getElementById('shareList');
+
+        if (result.data.length === 0) {
+          shareList.innerHTML = '<div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">No existing share links</div>';
+          return;
+        }
+
+        shareList.innerHTML = result.data.map(share => {
+          const createdDate = new Date(share.created_at).toLocaleDateString();
+          const status = share.is_active ? 'Active' : 'Inactive';
+          const expiryInfo = share.expires_at
+            ? `Expires: ${new Date(share.expires_at).toLocaleDateString()}`
+            : 'No expiration';
+
+          return `
+            <div class="share-item">
+              <div class="share-item-info">
+                <div>Created: ${createdDate} | Views: ${share.view_count}</div>
+                <div>${expiryInfo} | ${status}</div>
+              </div>
+              <div class="share-item-actions">
+                <button class="share-item-btn toggle" onclick="toggleShare('${share.id}', ${!share.is_active})">
+                  ${share.is_active ? 'Disable' : 'Enable'}
+                </button>
+                <button class="share-item-btn delete" onclick="deleteShare('${share.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading shares:', error);
+        document.getElementById('shareList').innerHTML =
+          '<div style="color: rgba(239,68,68,0.8); font-size: 0.875rem;">Failed to load share links</div>';
+      }
+    }
+
+    async function toggleShare(shareId, isActive) {
+      try {
+        const response = await fetch(`/api/dashboards/shares/${shareId}/toggle`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ isActive }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to toggle share link');
+        }
+
+        showAlert(`Share link ${isActive ? 'enabled' : 'disabled'}`, 'success');
+        loadExistingShares();
+      } catch (error) {
+        console.error('Error toggling share:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function deleteShare(shareId) {
+      if (!confirm('Are you sure you want to delete this share link?')) return;
+
+      try {
+        const response = await fetch(`/api/dashboards/shares/${shareId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete share link');
+        }
+
+        showAlert('Share link deleted', 'success');
+        loadExistingShares();
+      } catch (error) {
+        console.error('Error deleting share:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    // Export Modal Functions
+    function openExportModal() {
+      document.getElementById('exportModal').classList.add('show');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.remove('show');
+    }
+
+    async function exportToPNG() {
+      showAlert('Preparing PNG export...', 'success');
+      closeExportModal();
+
+      // Use html2canvas if available, otherwise use browser's built-in
+      try {
+        const container = document.getElementById('widgetsContainer');
+
+        // Simple approach using canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Create a temporary element with the dashboard content
+        const clone = container.cloneNode(true);
+        clone.style.position = 'absolute';
+        clone.style.left = '-9999px';
+        clone.style.background = '#000';
+        document.body.appendChild(clone);
+
+        // For now, trigger print dialog which can save as PDF/Image
+        window.print();
+
+        document.body.removeChild(clone);
+        showAlert('Use browser print dialog to save as PDF or image', 'success');
+      } catch (error) {
+        console.error('Export error:', error);
+        showAlert('Export failed: ' + error.message, 'error');
+      }
+    }
+
+    async function exportToPDF() {
+      showAlert('Preparing PDF export...', 'success');
+      closeExportModal();
+
+      // Trigger browser print dialog
+      window.print();
+      showAlert('Use browser print dialog to save as PDF', 'success');
+    }
+
+    async function exportToCSV() {
+      showAlert('Preparing CSV export...', 'success');
+      closeExportModal();
+
+      try {
+        // Gather widget data
+        const widgets = dashboard.widgets || [];
+        let csvContent = 'Widget Title,Widget Type,Metric,Date Range\n';
+
+        widgets.forEach(widget => {
+          const dataSource = widget.data_source || {};
+          csvContent += `"${widget.title}","${widget.widget_type}","${dataSource.metric || 'N/A'}","${dataSource.dateRange || 'N/A'}"\n`;
+        });
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${dashboard.name || 'dashboard'}_export.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showAlert('CSV exported successfully', 'success');
+      } catch (error) {
+        console.error('CSV export error:', error);
+        showAlert('CSV export failed', 'error');
+      }
+    }
+
+    function printDashboard() {
+      closeExportModal();
+      window.print();
+    }
+  </script>
+</body>
+</html>

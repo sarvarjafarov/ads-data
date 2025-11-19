@@ -7,7 +7,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "migrate": "node src/database/migrate.js",
-    "db:setup": "npm run migrate",
+    "seed": "node src/database/seed.js",
+    "db:setup": "npm run migrate && npm run seed",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +24,8 @@
   },
   "homepage": "https://github.com/sarvarjafarov/ads-data#readme",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

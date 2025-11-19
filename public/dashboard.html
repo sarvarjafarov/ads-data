@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - AdsData Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .header {
+      background-color: #1a1a1a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      background-color: #b7fa31;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #000000;
+      font-size: 0.875rem;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .user-email {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background-color: #b7fa31;
+      color: #000000;
+    }
+
+    .btn-primary:hover {
+      background-color: #a8eb22;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      background-color: rgba(183, 250, 49, 0.3);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-danger {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .card {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .card-subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+    }
+
+    .workspace-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .workspace-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .workspace-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #b7fa31 0%, #8bc34a 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .workspace-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 0.25rem;
+    }
+
+    .workspace-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .workspace-selector {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .workspace-selector label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.5);
+      white-space: nowrap;
+    }
+
+    select {
+      min-width: 250px;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    select:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #b7fa31;
+      box-shadow: 0 0 0 3px rgba(183, 250, 49, 0.1);
+    }
+
+    .connection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .connection-card {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 2px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .connection-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .connection-card.connected {
+      border: 2px solid #b7fa31;
+      background-color: rgba(183, 250, 49, 0.05);
+    }
+
+    .platform-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .platform-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .connection-status {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 1.5rem;
+    }
+
+    .connection-status.connected {
+      color: #b7fa31;
+      font-weight: 600;
+    }
+
+    .accounts-list {
+      margin-top: 1.5rem;
+    }
+
+    .account-item {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .account-info {
+      flex: 1;
+    }
+
+    .account-name {
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+      font-size: 0.9375rem;
+    }
+
+    .account-id {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .account-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .account-status {
+      display: inline-block;
+      padding: 0.375rem 0.875rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .account-status.active {
+      background-color: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+    }
+
+    .account-status.inactive {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 0.75rem;
+      margin-bottom: 2rem;
+      font-size: 0.875rem;
+    }
+
+    .alert-success {
+      background-color: rgba(183, 250, 49, 0.1);
+      color: #b7fa31;
+      border: 1px solid rgba(183, 250, 49, 0.3);
+    }
+
+    .alert-error {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .alert-warning {
+      background-color: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .dashboard-card {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .dashboard-card:hover {
+      border-color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .dashboard-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .dashboard-card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-card-description {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+
+    .dashboard-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .dashboard-card-date {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .dashboard-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .btn-icon.danger:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .create-dashboard-card {
+      background-color: rgba(183, 250, 49, 0.05);
+      border: 2px dashed rgba(183, 250, 49, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+
+    .create-dashboard-card:hover {
+      border-color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.1);
+    }
+
+    .create-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #b7fa31;
+    }
+
+    .create-text {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #b7fa31;
+    }
+
+    .ai-generate-card {
+      background-color: rgba(147, 51, 234, 0.05);
+      border: 2px dashed rgba(147, 51, 234, 0.3);
+    }
+
+    .ai-generate-card:hover {
+      border-color: #9333ea;
+      background-color: rgba(147, 51, 234, 0.1);
+    }
+
+    .ai-generate-card .create-icon {
+      color: #9333ea;
+    }
+
+    .ai-generate-card .create-text {
+      color: #9333ea;
+    }
+
+    .ai-modal-content {
+      max-width: 600px;
+    }
+
+    .ai-prompt-textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .ai-generating {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .ai-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(147, 51, 234, 0.3);
+      border-top-color: #9333ea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .ai-preview {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-top: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .ai-preview h4 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #9333ea;
+    }
+
+    .ai-preview-item {
+      padding: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.875rem;
+    }
+
+    .ai-preview-item:last-child {
+      border-bottom: none;
+    }
+
+    .ai-insights {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: rgba(147, 51, 234, 0.1);
+      border-radius: 0.75rem;
+    }
+
+    .ai-insights h4 {
+      font-size: 0.875rem;
+      color: #9333ea;
+      margin-bottom: 0.5rem;
+    }
+
+    .ai-insights ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .ai-insights li {
+      margin-bottom: 0.25rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      color: #ffffff;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">AD</div>
+      <div class="logo-text">AdsData</div>
+    </div>
+    <div class="user-info">
+      <span class="user-email" id="userEmail">Loading...</span>
+      <button class="btn btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="alertContainer"></div>
+
+    <div class="card">
+      <div class="workspace-card">
+        <div class="workspace-info">
+          <div class="workspace-icon">🏢</div>
+          <div>
+            <div class="workspace-label">Current Workspace</div>
+            <div class="workspace-name" id="currentWorkspaceName">Loading...</div>
+          </div>
+        </div>
+        <div class="workspace-selector">
+          <label for="workspaceSelect">Switch workspace</label>
+          <select id="workspaceSelect" onchange="handleWorkspaceChange()">
+            <option value="">Loading workspaces...</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Connect Ad Accounts</h2>
+      <p class="card-subtitle">Connect your Meta Ads and Google Ads accounts to start syncing your advertising data.</p>
+
+      <div class="connection-grid">
+        <!-- Meta Ads Connection -->
+        <div class="connection-card" id="metaCard">
+          <div class="platform-icon">📘</div>
+          <div class="platform-name">Meta Ads</div>
+          <div class="connection-status" id="metaStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectMeta()" id="metaConnectBtn">Connect Meta Ads</button>
+        </div>
+
+        <!-- Google Ads Connection -->
+        <div class="connection-card">
+          <div class="platform-icon">🔍</div>
+          <div class="platform-name">Google Ads</div>
+          <div class="connection-status">Coming soon</div>
+          <button class="btn btn-secondary" disabled>Coming Soon</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Connected Accounts</h2>
+      <div id="accountsList">
+        <div class="loading">Loading accounts...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>My Dashboards</h2>
+      <p class="card-subtitle">Create and manage custom analytics dashboards to visualize your ad performance.</p>
+      <div id="dashboardsList">
+        <div class="loading">Loading dashboards...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create/Edit Dashboard Modal -->
+  <div id="dashboardModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Create New Dashboard</h3>
+        <button class="close-btn" onclick="closeDashboardModal()">&times;</button>
+      </div>
+      <form id="dashboardForm" onsubmit="saveDashboard(event)">
+        <div class="form-group">
+          <label for="dashboardName">Dashboard Name *</label>
+          <input type="text" id="dashboardName" required placeholder="e.g., Q4 Performance Dashboard">
+        </div>
+        <div class="form-group">
+          <label for="dashboardDescription">Description</label>
+          <textarea id="dashboardDescription" placeholder="Describe what this dashboard will track..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeDashboardModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- AI Dashboard Generation Modal -->
+  <div id="aiModal" class="modal">
+    <div class="modal-content ai-modal-content">
+      <div class="modal-header">
+        <h3>Generate Dashboard with AI</h3>
+        <button class="close-btn" onclick="closeAIModal()">&times;</button>
+      </div>
+      <div id="aiFormSection">
+        <div class="form-group">
+          <label for="aiAdAccount">Select Ad Account</label>
+          <select id="aiAdAccount" class="form-control" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+            <option value="">Loading accounts...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="aiPrompt">Describe your dashboard</label>
+          <textarea id="aiPrompt" class="ai-prompt-textarea" placeholder="e.g., Create a dashboard to track e-commerce performance with focus on ROAS, conversion costs, and daily spend trends. Include comparison charts and KPI cards for key metrics."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAIModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="generateAIDashboard()" style="background-color: #9333ea;">Generate with AI</button>
+        </div>
+      </div>
+      <div id="aiGenerating" class="ai-generating" style="display: none;">
+        <div class="ai-spinner"></div>
+        <div>Generating your dashboard...</div>
+        <div style="font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">This may take a few seconds</div>
+      </div>
+      <div id="aiPreviewSection" style="display: none;">
+        <div class="ai-preview">
+          <h4 id="aiPreviewName">Dashboard Name</h4>
+          <div id="aiPreviewDescription" style="font-size: 0.875rem; color: rgba(255,255,255,0.6); margin-bottom: 1rem;"></div>
+          <div id="aiPreviewWidgets"></div>
+        </div>
+        <div id="aiInsights" class="ai-insights" style="display: none;">
+          <h4>AI Insights</h4>
+          <ul id="aiInsightsList"></ul>
+        </div>
+        <div class="modal-footer" style="margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" onclick="resetAIModal()">Try Again</button>
+          <button type="button" class="btn btn-primary" onclick="createAIDashboard()" style="background-color: #9333ea;">Create Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let workspaces = [];
+    let selectedWorkspaceId = null;
+    let aiGeneratedConfig = null;
+
+    // Check for OAuth callback messages
+    window.addEventListener('load', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const oauthStatus = urlParams.get('oauth');
+      const platform = urlParams.get('platform');
+      const message = urlParams.get('message');
+
+      if (oauthStatus === 'success') {
+        showAlert(`Successfully connected ${platform} account!`, 'success');
+        // Clean URL
+        window.history.replaceState({}, document.title, '/dashboard');
+        loadAccounts();
+      } else if (oauthStatus === 'error') {
+        showAlert(`Failed to connect account: ${message || 'Unknown error'}`, 'error');
+        window.history.replaceState({}, document.title, '/dashboard');
+      }
+
+      loadUser();
+    });
+
+    async function loadUser() {
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        const data = await response.json();
+        currentUser = data.user;
+        document.getElementById('userEmail').textContent = currentUser.email;
+
+        // Load workspaces
+        await loadWorkspaces();
+      } catch (error) {
+        console.error('Error loading user:', error);
+        window.location.href = '/admin/login';
+      }
+    }
+
+    async function loadWorkspaces() {
+      try {
+        const response = await fetch('/api/workspaces', {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load workspaces');
+        }
+
+        const data = await response.json();
+        workspaces = data.data || [];
+
+        const select = document.getElementById('workspaceSelect');
+        select.innerHTML = '';
+
+        if (workspaces.length === 0) {
+          select.innerHTML = '<option value="">No workspaces available</option>';
+          return;
+        }
+
+        workspaces.forEach(workspace => {
+          const option = document.createElement('option');
+          option.value = workspace.id;
+          option.textContent = workspace.name;
+          select.appendChild(option);
+        });
+
+        // Select first workspace by default
+        selectedWorkspaceId = workspaces[0].id;
+        select.value = selectedWorkspaceId;
+        document.getElementById('currentWorkspaceName').textContent = workspaces[0].name;
+
+        await loadAccounts();
+        await loadDashboards();
+      } catch (error) {
+        console.error('Error loading workspaces:', error);
+        showAlert('Failed to load workspaces', 'error');
+      }
+    }
+
+    async function handleWorkspaceChange() {
+      const select = document.getElementById('workspaceSelect');
+      selectedWorkspaceId = select.value;
+
+      // Update workspace name display
+      const selectedWorkspace = workspaces.find(w => w.id === selectedWorkspaceId);
+      if (selectedWorkspace) {
+        document.getElementById('currentWorkspaceName').textContent = selectedWorkspace.name;
+      }
+
+      await loadAccounts();
+      await loadDashboards();
+    }
+
+    async function loadAccounts() {
+      if (!selectedWorkspaceId) {
+        document.getElementById('accountsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><div>Please select a workspace</div></div>';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/oauth/accounts/${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load accounts');
+        }
+
+        const data = await response.json();
+        const accounts = data.data || [];
+
+        const accountsList = document.getElementById('accountsList');
+
+        if (accounts.length === 0) {
+          accountsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔌</div><div>No connected accounts. Connect your first ad account above!</div></div>';
+          return;
+        }
+
+        accountsList.innerHTML = accounts.map(account => `
+          <div class="account-item">
+            <div class="account-info">
+              <div class="account-name">${account.platform.toUpperCase()}: ${account.account_name}</div>
+              <div class="account-id">Account ID: ${account.account_id}</div>
+            </div>
+            <div class="account-actions">
+              <span class="account-status ${account.status}">${account.status}</span>
+              <button class="btn btn-danger" onclick="disconnectAccount('${account.id}')">Disconnect</button>
+            </div>
+          </div>
+        `).join('');
+
+        // Update Meta status
+        const metaAccounts = accounts.filter(a => a.platform === 'meta');
+        if (metaAccounts.length > 0) {
+          document.getElementById('metaStatus').textContent = `Connected (${metaAccounts.length} account${metaAccounts.length > 1 ? 's' : ''})`;
+          document.getElementById('metaStatus').classList.add('connected');
+          document.getElementById('metaCard').classList.add('connected');
+          document.getElementById('metaConnectBtn').textContent = 'Reconnect';
+        }
+      } catch (error) {
+        console.error('Error loading accounts:', error);
+        document.getElementById('accountsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load accounts</div></div>';
+      }
+    }
+
+    async function connectMeta() {
+      if (!selectedWorkspaceId) {
+        showAlert('Please select a workspace first', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/oauth/meta?workspaceId=${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to initiate OAuth');
+        }
+
+        // Redirect to Meta OAuth
+        window.location.href = data.authUrl;
+      } catch (error) {
+        console.error('Error connecting Meta:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function disconnectAccount(accountId) {
+      if (!confirm('Are you sure you want to disconnect this account?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/oauth/accounts/${accountId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to disconnect account');
+        }
+
+        showAlert('Account disconnected successfully', 'success');
+        await loadAccounts();
+      } catch (error) {
+        console.error('Error disconnecting account:', error);
+        showAlert('Failed to disconnect account', 'error');
+      }
+    }
+
+    // Dashboard management
+    let dashboards = [];
+    let currentDashboardId = null;
+
+    async function loadDashboards() {
+      if (!selectedWorkspaceId) {
+        document.getElementById('dashboardsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div>Please select a workspace to view dashboards</div></div>';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/dashboards/workspace/${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load dashboards');
+        }
+
+        const result = await response.json();
+        dashboards = result.data;
+
+        renderDashboards();
+      } catch (error) {
+        console.error('Error loading dashboards:', error);
+        document.getElementById('dashboardsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load dashboards</div></div>';
+      }
+    }
+
+    function renderDashboards() {
+      const container = document.getElementById('dashboardsList');
+
+      if (dashboards.length === 0) {
+        container.innerHTML = `
+          <div class="dashboard-grid">
+            <div class="dashboard-card create-dashboard-card ai-generate-card" onclick="openAIModal()">
+              <div class="create-icon">AI</div>
+              <div class="create-text">Generate with AI</div>
+            </div>
+            <div class="dashboard-card create-dashboard-card" onclick="openCreateDashboardModal()">
+              <div class="create-icon">+</div>
+              <div class="create-text">Create Your First Dashboard</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const dashboardsHTML = dashboards.map(dashboard => {
+        const date = new Date(dashboard.created_at).toLocaleDateString();
+        return `
+          <div class="dashboard-card" onclick="viewDashboard('${dashboard.id}')">
+            <div class="dashboard-card-header">
+              <div>
+                <div class="dashboard-card-title">${dashboard.name}</div>
+                <div class="dashboard-card-description">${dashboard.description || 'No description'}</div>
+              </div>
+            </div>
+            <div class="dashboard-card-footer">
+              <div class="dashboard-card-date">Created ${date}</div>
+              <div class="dashboard-actions" onclick="event.stopPropagation()">
+                <button class="btn-icon" onclick="editDashboard('${dashboard.id}')" title="Edit">
+                  ✏️
+                </button>
+                <button class="btn-icon danger" onclick="deleteDashboard('${dashboard.id}')" title="Delete">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="dashboard-grid">
+          ${dashboardsHTML}
+          <div class="dashboard-card create-dashboard-card ai-generate-card" onclick="openAIModal()">
+            <div class="create-icon">AI</div>
+            <div class="create-text">Generate with AI</div>
+          </div>
+          <div class="dashboard-card create-dashboard-card" onclick="openCreateDashboardModal()">
+            <div class="create-icon">+</div>
+            <div class="create-text">Create New Dashboard</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function openCreateDashboardModal() {
+      currentDashboardId = null;
+      document.getElementById('modalTitle').textContent = 'Create New Dashboard';
+      document.getElementById('dashboardName').value = '';
+      document.getElementById('dashboardDescription').value = '';
+      document.getElementById('dashboardModal').classList.add('show');
+    }
+
+    function editDashboard(dashboardId) {
+      const dashboard = dashboards.find(d => d.id === dashboardId);
+      if (!dashboard) return;
+
+      currentDashboardId = dashboardId;
+      document.getElementById('modalTitle').textContent = 'Edit Dashboard';
+      document.getElementById('dashboardName').value = dashboard.name;
+      document.getElementById('dashboardDescription').value = dashboard.description || '';
+      document.getElementById('dashboardModal').classList.add('show');
+    }
+
+    function closeDashboardModal() {
+      document.getElementById('dashboardModal').classList.remove('show');
+      currentDashboardId = null;
+    }
+
+    async function saveDashboard(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('dashboardName').value;
+      const description = document.getElementById('dashboardDescription').value;
+
+      try {
+        const url = currentDashboardId
+          ? `/api/dashboards/${currentDashboardId}`
+          : '/api/dashboards';
+
+        const method = currentDashboardId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            name,
+            description,
+            workspaceId: selectedWorkspaceId,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to save dashboard');
+        }
+
+        showAlert(currentDashboardId ? 'Dashboard updated successfully' : 'Dashboard created successfully', 'success');
+        closeDashboardModal();
+        await loadDashboards();
+      } catch (error) {
+        console.error('Error saving dashboard:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function deleteDashboard(dashboardId) {
+      if (!confirm('Are you sure you want to delete this dashboard? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/dashboards/${dashboardId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete dashboard');
+        }
+
+        showAlert('Dashboard deleted successfully', 'success');
+        await loadDashboards();
+      } catch (error) {
+        console.error('Error deleting dashboard:', error);
+        showAlert('Failed to delete dashboard', 'error');
+      }
+    }
+
+    function viewDashboard(dashboardId) {
+      // Navigate to dashboard viewer
+      window.location.href = `/dashboard-viewer?id=${dashboardId}`;
+    }
+
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alertContainer.appendChild(alert);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+
+    // AI Dashboard Generation Functions
+    async function openAIModal() {
+      resetAIModal();
+      document.getElementById('aiModal').classList.add('show');
+
+      // Populate ad accounts dropdown
+      const select = document.getElementById('aiAdAccount');
+      select.innerHTML = '<option value="">Loading accounts...</option>';
+
+      try {
+        const response = await fetch(`/api/oauth/accounts/${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+        const result = await response.json();
+
+        if (result.success && result.data.length > 0) {
+          select.innerHTML = result.data.map(acc =>
+            `<option value="${acc.id}">${acc.account_name} (${acc.platform})</option>`
+          ).join('');
+        } else {
+          select.innerHTML = '<option value="">No accounts connected</option>';
+        }
+      } catch (error) {
+        select.innerHTML = '<option value="">Error loading accounts</option>';
+      }
+    }
+
+    function closeAIModal() {
+      document.getElementById('aiModal').classList.remove('show');
+      resetAIModal();
+    }
+
+    function resetAIModal() {
+      document.getElementById('aiFormSection').style.display = 'block';
+      document.getElementById('aiGenerating').style.display = 'none';
+      document.getElementById('aiPreviewSection').style.display = 'none';
+      document.getElementById('aiPrompt').value = '';
+      aiGeneratedConfig = null;
+    }
+
+    async function generateAIDashboard() {
+      const prompt = document.getElementById('aiPrompt').value.trim();
+      const adAccountId = document.getElementById('aiAdAccount').value;
+
+      if (!adAccountId) {
+        showAlert('Please select an ad account', 'error');
+        return;
+      }
+
+      if (!prompt) {
+        showAlert('Please describe what kind of dashboard you want to create', 'error');
+        return;
+      }
+
+      // Show loading state
+      document.getElementById('aiFormSection').style.display = 'none';
+      document.getElementById('aiGenerating').style.display = 'flex';
+
+      try {
+        const response = await fetch('/api/dashboards/ai/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            prompt,
+            workspaceId: selectedWorkspaceId,
+            adAccountId,
+            createDashboard: false,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to generate dashboard');
+        }
+
+        const result = await response.json();
+        aiGeneratedConfig = result.data.config;
+
+        // Show preview
+        document.getElementById('aiGenerating').style.display = 'none';
+        document.getElementById('aiPreviewSection').style.display = 'block';
+
+        // Populate preview
+        document.getElementById('aiPreviewName').textContent = aiGeneratedConfig.name;
+        document.getElementById('aiPreviewDescription').textContent = aiGeneratedConfig.description;
+
+        // Show widgets
+        const widgetsHTML = aiGeneratedConfig.widgets.map(w => `
+          <div class="ai-preview-item">
+            <strong>${w.title}</strong> (${w.widgetType})
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">Metric: ${w.metric}</div>
+          </div>
+        `).join('');
+        document.getElementById('aiPreviewWidgets').innerHTML = widgetsHTML;
+
+        // Show insights if available
+        if (aiGeneratedConfig.insights && aiGeneratedConfig.insights.length > 0) {
+          document.getElementById('aiInsights').style.display = 'block';
+          const insightsHTML = aiGeneratedConfig.insights.map(i => `<li>${i}</li>`).join('');
+          document.getElementById('aiInsightsList').innerHTML = insightsHTML;
+        }
+
+      } catch (error) {
+        console.error('AI generation error:', error);
+        showAlert(error.message, 'error');
+        resetAIModal();
+      }
+    }
+
+    async function createAIDashboard() {
+      if (!aiGeneratedConfig) {
+        showAlert('No dashboard configuration available', 'error');
+        return;
+      }
+
+      try {
+        const prompt = document.getElementById('aiPrompt').value.trim();
+        const adAccountId = document.getElementById('aiAdAccount').value;
+
+        const response = await fetch('/api/dashboards/ai/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            prompt,
+            workspaceId: selectedWorkspaceId,
+            adAccountId,
+            createDashboard: true,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to create dashboard');
+        }
+
+        const result = await response.json();
+
+        showAlert('AI-generated dashboard created successfully!', 'success');
+        closeAIModal();
+        await loadDashboards();
+
+        // Navigate to the new dashboard
+        if (result.data.dashboard && result.data.dashboard.id) {
+          window.location.href = `/dashboard-viewer?id=${result.data.dashboard.id}`;
+        }
+
+      } catch (error) {
+        console.error('Error creating AI dashboard:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    function logout() {
+      fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      }).then(() => {
+        window.location.href = '/admin/login';
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Dashboard - AdsData Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: #1a1a1a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .shared-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      background-color: rgba(183, 250, 49, 0.15);
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      color: #b7fa31;
+    }
+
+    .dashboard-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .dashboard-description {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.25rem;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .widgets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .widget {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+    }
+
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .widget-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 200px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .metric-card {
+      text-align: center;
+      padding: 1.5rem 1rem;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #b7fa31;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-trend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+    }
+
+    .trend-up {
+      color: #22c55e;
+    }
+
+    .trend-down {
+      color: #ef4444;
+    }
+
+    .chart-container {
+      height: 250px;
+      position: relative;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-description {
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Password Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-header h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-size: 0.875rem;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #b7fa31;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background-color: #b7fa31;
+      color: #000000;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background-color: #a8eb22;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <div class="dashboard-title" id="dashboardTitle">Loading...</div>
+        <div class="dashboard-description" id="dashboardDescription"></div>
+      </div>
+      <span class="shared-badge">Shared View</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="widgetsContainer">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Modal -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Password Required</h3>
+      </div>
+      <form id="passwordForm" onsubmit="submitPassword(event)">
+        <div class="form-group">
+          <label for="password">Enter password to view this dashboard</label>
+          <input type="password" id="password" required placeholder="Password">
+          <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">View Dashboard</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let shareToken = null;
+    let dashboard = null;
+
+    window.addEventListener('load', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      shareToken = urlParams.get('token');
+
+      if (!shareToken) {
+        showError('Invalid share link');
+        return;
+      }
+
+      await loadSharedDashboard();
+    });
+
+    async function loadSharedDashboard(password = '') {
+      try {
+        const url = password
+          ? `/api/dashboards/shared/${shareToken}?password=${encodeURIComponent(password)}`
+          : `/api/dashboards/shared/${shareToken}`;
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          const error = await response.json();
+
+          if (error.requiresPassword) {
+            document.getElementById('passwordModal').classList.add('show');
+            return;
+          }
+
+          throw new Error(error.message || 'Failed to load dashboard');
+        }
+
+        const result = await response.json();
+        dashboard = result.data.dashboard;
+
+        // Close password modal if open
+        document.getElementById('passwordModal').classList.remove('show');
+
+        // Render dashboard
+        document.getElementById('dashboardTitle').textContent = dashboard.name;
+        document.getElementById('dashboardDescription').textContent = dashboard.description || '';
+
+        renderWidgets();
+        loadWidgetMetrics();
+      } catch (error) {
+        console.error('Load dashboard error:', error);
+        showError(error.message);
+      }
+    }
+
+    async function submitPassword(e) {
+      e.preventDefault();
+      const password = document.getElementById('password').value;
+
+      try {
+        await loadSharedDashboard(password);
+      } catch (error) {
+        document.getElementById('errorMessage').textContent = 'Invalid password';
+        document.getElementById('errorMessage').style.display = 'block';
+      }
+    }
+
+    function renderWidgets() {
+      const container = document.getElementById('widgetsContainer');
+
+      if (!dashboard.widgets || dashboard.widgets.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-title">No Widgets</div>
+            <div class="empty-state-description">This dashboard has no widgets yet.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const html = `
+        <div class="widgets-grid">
+          ${dashboard.widgets.map(widget => `
+            <div class="widget" data-widget-id="${widget.id}">
+              <div class="widget-header">
+                <div class="widget-title">${widget.title}</div>
+              </div>
+              <div class="widget-content" id="widget-${widget.id}">
+                <div class="loading-spinner">
+                  <div class="spinner"></div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    async function loadWidgetMetrics() {
+      if (!dashboard || !dashboard.widgets) return;
+
+      for (const widget of dashboard.widgets) {
+        const contentDiv = document.getElementById(`widget-${widget.id}`);
+        const dataSource = widget.data_source || {};
+
+        if (!dataSource.adAccountId) {
+          contentDiv.innerHTML = renderPlaceholder(widget.widget_type);
+          continue;
+        }
+
+        try {
+          const response = await fetch(`/api/metrics/widget/${widget.id}`, {
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            contentDiv.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5);">Failed to load data</div>';
+            continue;
+          }
+
+          const result = await response.json();
+          const metricsData = result.data || {};
+
+          renderWidgetContent(contentDiv, widget, metricsData);
+        } catch (error) {
+          console.error(`Error loading widget ${widget.id}:`, error);
+          contentDiv.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5);">Error loading data</div>';
+        }
+      }
+    }
+
+    function renderWidgetContent(container, widget, data) {
+      switch (widget.widget_type) {
+        case 'kpi_card':
+          container.innerHTML = renderKPICard(data);
+          break;
+        case 'line_chart':
+        case 'bar_chart':
+        case 'area_chart':
+          container.innerHTML = '<div class="chart-container"><canvas id="chart-' + widget.id + '"></canvas></div>';
+          renderChart(widget.id, widget.widget_type, data);
+          break;
+        default:
+          container.innerHTML = renderKPICard(data);
+      }
+    }
+
+    function renderKPICard(data) {
+      const value = formatValue(data.value, data.label);
+      const trend = data.changePercent || 0;
+      const trendClass = trend >= 0 ? 'trend-up' : 'trend-down';
+      const trendIcon = trend >= 0 ? '↑' : '↓';
+
+      return `
+        <div class="metric-card">
+          <div class="metric-value">${value}</div>
+          <div class="metric-label">${data.label || 'Metric'}</div>
+          <div class="metric-trend ${trendClass}">
+            ${trendIcon} ${Math.abs(trend).toFixed(1)}% vs previous period
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChart(widgetId, chartType, data) {
+      const canvas = document.getElementById(`chart-${widgetId}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const timeSeries = data.timeSeries || [];
+
+      new Chart(ctx, {
+        type: chartType === 'bar_chart' ? 'bar' : 'line',
+        data: {
+          labels: timeSeries.map(d => new Date(d.date).toLocaleDateString()),
+          datasets: [{
+            label: data.label || 'Value',
+            data: timeSeries.map(d => d.value),
+            borderColor: '#b7fa31',
+            backgroundColor: chartType === 'bar_chart' ? 'rgba(183, 250, 49, 0.5)' : 'rgba(183, 250, 49, 0.1)',
+            fill: chartType === 'area_chart',
+            tension: 0.4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: 'rgba(255, 255, 255, 0.5)' }
+            },
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: 'rgba(255, 255, 255, 0.5)' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderPlaceholder(widgetType) {
+      return `
+        <div class="metric-card">
+          <div class="metric-value">--</div>
+          <div class="metric-label">No data source</div>
+        </div>
+      `;
+    }
+
+    function formatValue(value, metric) {
+      if (value === null || value === undefined) return '--';
+
+      const numValue = parseFloat(value);
+
+      if (['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric)) {
+        return '$' + numValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      if (['ctr', 'frequency'].includes(metric)) {
+        return numValue.toFixed(2) + '%';
+      }
+
+      if (numValue >= 1000000) {
+        return (numValue / 1000000).toFixed(1) + 'M';
+      }
+
+      if (numValue >= 1000) {
+        return (numValue / 1000).toFixed(1) + 'K';
+      }
+
+      return numValue.toLocaleString();
+    }
+
+    function showError(message) {
+      const container = document.getElementById('widgetsContainer');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <div class="empty-state-title">Error</div>
+          <div class="empty-state-description">${message}</div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

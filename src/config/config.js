@@ -10,4 +10,44 @@ module.exports = {
   jwtExpire: process.env.JWT_EXPIRE || '7d',
   adminUsername: process.env.ADMIN_USERNAME || 'admin',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
+
+  // Meta Ads OAuth
+  meta: {
+    appId: process.env.META_APP_ID,
+    appSecret: process.env.META_APP_SECRET,
+    redirectUri: process.env.META_REDIRECT_URI || 'http://localhost:3000/api/oauth/meta/callback',
+    scopes: [
+      'ads_read',
+      'ads_management',
+      'business_management',
+      'read_insights',
+    ].join(','),
+  },
+
+  // Google Ads OAuth
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/oauth/google/callback',
+    developerToken: process.env.GOOGLE_DEVELOPER_TOKEN,
+  },
+
+  // TikTok Ads OAuth
+  tiktok: {
+    appId: process.env.TIKTOK_APP_ID,
+    appSecret: process.env.TIKTOK_APP_SECRET,
+    redirectUri: process.env.TIKTOK_REDIRECT_URI || 'http://localhost:3000/api/oauth/tiktok/callback',
+  },
+
+  // LinkedIn Ads OAuth
+  linkedin: {
+    clientId: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+    redirectUri: process.env.LINKEDIN_REDIRECT_URI || 'http://localhost:3000/api/oauth/linkedin/callback',
+  },
+
+  // Anthropic AI
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  },
 };

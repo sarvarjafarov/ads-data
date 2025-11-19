@@ -1,12 +1,9 @@
-const userData = require('../models/userData');
+const User = require('../models/User');
 
 // Get all users (admin only)
-const getAllUsers = (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
-    const users = userData.getAll().map(user => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
+    const users = await User.findAll();
 
     res.json({
       success: true,
@@ -22,12 +19,9 @@ const getAllUsers = (req, res) => {
 };
 
 // Get pending users (admin only)
-const getPendingUsers = (req, res) => {
+const getPendingUsers = async (req, res) => {
   try {
-    const pendingUsers = userData.getPending().map(user => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
+    const pendingUsers = await User.findPending();
 
     res.json({
       success: true,
@@ -43,10 +37,10 @@ const getPendingUsers = (req, res) => {
 };
 
 // Get user by ID (admin only)
-const getUserById = (req, res) => {
+const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = userData.getById(id);
+    const user = await User.findById(id);
 
     if (!user) {
       return res.status(404).json({
@@ -55,11 +49,9 @@ const getUserById = (req, res) => {
       });
     }
 
-    const { password, ...userWithoutPassword } = user;
-
     res.json({
       success: true,
-      data: userWithoutPassword,
+      data: user,
     });
   } catch (error) {
     res.status(500).json({
@@ -70,10 +62,10 @@ const getUserById = (req, res) => {
 };
 
 // Approve user (admin only)
-const approveUser = (req, res) => {
+const approveUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = userData.approve(id);
+    const user = await User.approve(id);
 
     if (!user) {
       return res.status(404).json({
@@ -96,10 +88,10 @@ const approveUser = (req, res) => {
 };
 
 // Reject user (admin only)
-const rejectUser = (req, res) => {
+const rejectUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = userData.reject(id);
+    const user = await User.reject(id);
 
     if (!user) {
       return res.status(404).json({
@@ -122,10 +114,10 @@ const rejectUser = (req, res) => {
 };
 
 // Delete user (admin only)
-const deleteUser = (req, res) => {
+const deleteUser = async (req, res) => {
   try {
-    const { id} = req.params;
-    const deleted = userData.delete(id);
+    const { id } = req.params;
+    const deleted = await User.delete(id);
 
     if (!deleted) {
       return res.status(404).json({
