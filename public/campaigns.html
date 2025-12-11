@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campaign Explorer | ADS Data</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #000000;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .breadcrumb a {
+      color: #b7fa31;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .breadcrumb a:hover {
+      color: #d4ff5c;
+    }
+
+    .breadcrumb-separator {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .account-selector {
+      margin-bottom: 2rem;
+    }
+
+    .account-selector label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .account-selector select {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .table-container {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr {
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    tbody tr:hover {
+      background: rgba(183, 250, 49, 0.05);
+    }
+
+    .item-name {
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status.active {
+      background: rgba(183, 250, 49, 0.2);
+      color: #b7fa31;
+    }
+
+    .status.paused {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .metric-value {
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .metric-positive {
+      color: #b7fa31;
+    }
+
+    .metric-negative {
+      color: #ef4444;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .demo-badge {
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(183, 250, 49, 0.1);
+      border: 1px solid rgba(183, 250, 49, 0.3);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      color: #b7fa31;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Campaign Explorer</h1>
+      <a href="/dashboard" class="back-btn">
+        ← Back to Dashboard
+      </a>
+    </div>
+
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div class="account-selector" id="accountSelectorContainer">
+      <label for="accountSelect">Select Ad Account:</label>
+      <select id="accountSelect">
+        <option value="">Loading accounts...</option>
+      </select>
+    </div>
+
+    <div id="content">
+      <div class="loading">Select an ad account to view campaigns</div>
+    </div>
+  </div>
+
+  <script>
+    let currentView = 'accounts'; // accounts, campaigns, adsets, ads
+    let currentAccount = null;
+    let currentCampaign = null;
+    let currentAdSet = null;
+    let adAccounts = [];
+
+    // Load ad accounts on page load
+    async function loadAdAccounts() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+
+        // Get user's workspaces first
+        const workspacesResponse = await fetch('/api/workspaces', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const workspacesResult = await workspacesResponse.json();
+
+        if (workspacesResult.success && workspacesResult.data.length > 0) {
+          const workspace = workspacesResult.data[0];
+
+          // Get accounts for this workspace
+          const accountsResponse = await fetch(`/api/oauth/accounts/${workspace.id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const accountsResult = await accountsResponse.json();
+
+          if (accountsResult.success) {
+            adAccounts = accountsResult.data.filter(acc => acc.platform !== 'search_console');
+            renderAccountSelector();
+          }
+        }
+      } catch (error) {
+        console.error('Load accounts error:', error);
+      }
+    }
+
+    function renderAccountSelector() {
+      const select = document.getElementById('accountSelect');
+      select.innerHTML = '<option value="">Select an account...</option>';
+
+      adAccounts.forEach(account => {
+        const option = document.createElement('option');
+        option.value = account.id;
+        option.textContent = `${account.account_name} (${account.platform.toUpperCase()})`;
+        select.appendChild(option);
+      });
+
+      select.addEventListener('change', (e) => {
+        if (e.target.value) {
+          currentAccount = adAccounts.find(acc => acc.id === e.target.value);
+          loadCampaigns(currentAccount.id);
+        }
+      });
+    }
+
+    function updateBreadcrumb() {
+      const breadcrumb = document.getElementById('breadcrumb');
+      let html = '';
+
+      if (currentView === 'campaigns' && currentAccount) {
+        html = `<span>${currentAccount.account_name}</span>`;
+      } else if (currentView === 'adsets' && currentCampaign) {
+        html = `
+          <a href="#" onclick="loadCampaigns('${currentAccount.id}'); return false;">${currentAccount.account_name}</a>
+          <span class="breadcrumb-separator">/</span>
+          <span>${currentCampaign.campaign_name}</span>
+        `;
+      } else if (currentView === 'ads' && currentAdSet) {
+        html = `
+          <a href="#" onclick="loadCampaigns('${currentAccount.id}'); return false;">${currentAccount.account_name}</a>
+          <span class="breadcrumb-separator">/</span>
+          <a href="#" onclick="loadAdSets('${currentCampaign.id}'); return false;">${currentCampaign.campaign_name}</a>
+          <span class="breadcrumb-separator">/</span>
+          <span>${currentAdSet.ad_set_name}</span>
+        `;
+      }
+
+      breadcrumb.innerHTML = html;
+      breadcrumb.style.display = html ? 'flex' : 'none';
+    }
+
+    async function loadCampaigns(accountId) {
+      currentView = 'campaigns';
+      updateBreadcrumb();
+
+      const content = document.getElementById('content');
+      content.innerHTML = '<div class="loading">Loading campaigns...</div>';
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/campaigns/accounts/${accountId}/campaigns`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          renderCampaigns(result.data, result._demoData);
+        }
+      } catch (error) {
+        console.error('Load campaigns error:', error);
+        content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load campaigns</p></div>';
+      }
+    }
+
+    function renderCampaigns(campaigns, isDemoData) {
+      const content = document.getElementById('content');
+
+      if (campaigns.length === 0) {
+        content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><p>No campaigns found</p></div>';
+        return;
+      }
+
+      const demoLabel = isDemoData ? '<span class="demo-badge">DEMO DATA</span>' : '';
+
+      const html = `
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Campaign Name ${demoLabel}</th>
+                <th>Status</th>
+                <th>Objective</th>
+                <th>Budget</th>
+                <th>Spend</th>
+                <th>Impressions</th>
+                <th>Clicks</th>
+                <th>CTR</th>
+                <th>CPC</th>
+                <th>Conversions</th>
+                <th>ROAS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${campaigns.map(campaign => `
+                <tr onclick="selectCampaign('${campaign.id}', '${escape(JSON.stringify(campaign))}')">
+                  <td class="item-name">${campaign.campaign_name || 'Unnamed Campaign'}</td>
+                  <td><span class="status ${(campaign.status || '').toLowerCase()}">${campaign.status || 'UNKNOWN'}</span></td>
+                  <td>${campaign.objective || '-'}</td>
+                  <td>$${(campaign.budget_amount || 0).toLocaleString()} ${campaign.budget_type || ''}</td>
+                  <td class="metric-value">$${(campaign.spend || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(campaign.impressions || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(campaign.clicks || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(campaign.ctr || 0).toFixed(2)}%</td>
+                  <td class="metric-value">$${(campaign.cpc || 0).toFixed(2)}</td>
+                  <td class="metric-value">${(campaign.conversions || 0).toLocaleString()}</td>
+                  <td class="metric-value ${campaign.roas >= 3 ? 'metric-positive' : ''}">${(campaign.roas || 0).toFixed(2)}x</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      content.innerHTML = html;
+    }
+
+    function selectCampaign(campaignId, campaignDataStr) {
+      currentCampaign = JSON.parse(unescape(campaignDataStr));
+      loadAdSets(campaignId);
+    }
+
+    async function loadAdSets(campaignId) {
+      currentView = 'adsets';
+      updateBreadcrumb();
+
+      const content = document.getElementById('content');
+      content.innerHTML = '<div class="loading">Loading ad sets...</div>';
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/campaigns/campaigns/${campaignId}/adsets`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          renderAdSets(result.data, result._demoData);
+        }
+      } catch (error) {
+        console.error('Load ad sets error:', error);
+        content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load ad sets</p></div>';
+      }
+    }
+
+    function renderAdSets(adSets, isDemoData) {
+      const content = document.getElementById('content');
+
+      if (adSets.length === 0) {
+        content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><p>No ad sets found</p></div>';
+        return;
+      }
+
+      const demoLabel = isDemoData ? '<span class="demo-badge">DEMO DATA</span>' : '';
+
+      const html = `
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Ad Set Name ${demoLabel}</th>
+                <th>Status</th>
+                <th>Budget</th>
+                <th>Bid</th>
+                <th>Spend</th>
+                <th>Impressions</th>
+                <th>Clicks</th>
+                <th>CTR</th>
+                <th>CPC</th>
+                <th>Conversions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${adSets.map(adSet => `
+                <tr onclick="selectAdSet('${adSet.id}', '${escape(JSON.stringify(adSet))}')">
+                  <td class="item-name">${adSet.ad_set_name || 'Unnamed Ad Set'}</td>
+                  <td><span class="status ${(adSet.status || '').toLowerCase()}">${adSet.status || 'UNKNOWN'}</span></td>
+                  <td>$${(adSet.budget_amount || 0).toLocaleString()}</td>
+                  <td>$${(adSet.bid_amount || 0).toFixed(2)}</td>
+                  <td class="metric-value">$${(adSet.spend || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(adSet.impressions || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(adSet.clicks || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(adSet.ctr || 0).toFixed(2)}%</td>
+                  <td class="metric-value">$${(adSet.cpc || 0).toFixed(2)}</td>
+                  <td class="metric-value">${(adSet.conversions || 0).toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      content.innerHTML = html;
+    }
+
+    function selectAdSet(adSetId, adSetDataStr) {
+      currentAdSet = JSON.parse(unescape(adSetDataStr));
+      loadAds(adSetId);
+    }
+
+    async function loadAds(adSetId) {
+      currentView = 'ads';
+      updateBreadcrumb();
+
+      const content = document.getElementById('content');
+      content.innerHTML = '<div class="loading">Loading ads...</div>';
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/campaigns/adsets/${adSetId}/ads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          renderAds(result.data, result._demoData);
+        }
+      } catch (error) {
+        console.error('Load ads error:', error);
+        content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load ads</p></div>';
+      }
+    }
+
+    function renderAds(ads, isDemoData) {
+      const content = document.getElementById('content');
+
+      if (ads.length === 0) {
+        content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><p>No ads found</p></div>';
+        return;
+      }
+
+      const demoLabel = isDemoData ? '<span class="demo-badge">DEMO DATA</span>' : '';
+
+      const html = `
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Ad Name ${demoLabel}</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Spend</th>
+                <th>Impressions</th>
+                <th>Clicks</th>
+                <th>CTR</th>
+                <th>CPC</th>
+                <th>Conversions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ads.map(ad => `
+                <tr>
+                  <td class="item-name">${ad.ad_name || 'Unnamed Ad'}</td>
+                  <td>${ad.ad_type || '-'}</td>
+                  <td><span class="status ${(ad.status || '').toLowerCase()}">${ad.status || 'UNKNOWN'}</span></td>
+                  <td class="metric-value">$${(ad.spend || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(ad.impressions || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(ad.clicks || 0).toLocaleString()}</td>
+                  <td class="metric-value">${(ad.ctr || 0).toFixed(2)}%</td>
+                  <td class="metric-value">$${(ad.cpc || 0).toFixed(2)}</td>
+                  <td class="metric-value">${(ad.conversions || 0).toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      content.innerHTML = html;
+    }
+
+    // Helper to escape JSON strings for HTML attributes
+    function escape(str) {
+      return encodeURIComponent(str);
+    }
+
+    function unescape(str) {
+      return decodeURIComponent(str);
+    }
+
+    // Initialize on page load
+    loadAdAccounts();
+  </script>
+</body>
+</html>

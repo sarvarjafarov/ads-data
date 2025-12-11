@@ -8,6 +8,8 @@ const {
   handleTikTokCallback,
   initiateLinkedInOAuth,
   handleLinkedInCallback,
+  initiateSearchConsoleOAuth,
+  handleSearchConsoleCallback,
   getConnectedAccounts,
   disconnectAccount,
   getSupportedPlatforms,
@@ -34,6 +36,10 @@ router.get('/tiktok/callback', handleTikTokCallback);
 // LinkedIn OAuth flow
 router.get('/linkedin', authenticate, initiateLinkedInOAuth);
 router.get('/linkedin/callback', handleLinkedInCallback);
+
+// Google Search Console OAuth flow
+router.get('/search-console', authenticate, initiateSearchConsoleOAuth);
+router.get('/search-console/callback', handleSearchConsoleCallback);
 
 // Account management
 router.get('/accounts/:workspaceId', authenticate, getConnectedAccounts);

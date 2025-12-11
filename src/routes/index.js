@@ -8,6 +8,18 @@ const workspaceRoutes = require('./workspaceRoutes');
 const dashboardRoutes = require('./dashboardRoutes');
 const metricsRoutes = require('./metricsRoutes');
 const alertRoutes = require('./alertRoutes');
+const searchConsoleRoutes = require('./searchConsoleRoutes');
+const budgetRoutes = require('./budgetRoutes');
+const anomalyRoutes = require('./anomalyRoutes');
+const campaignRoutes = require('./campaignRoutes');
+const reportRoutes = require('./reportRoutes');
+const filterRoutes = require('./filterRoutes');
+const goalRoutes = require('./goalRoutes');
+const exportRoutes = require('./exportRoutes');
+const commentRoutes = require('./commentRoutes');
+const tiktokRoutes = require('./tiktokRoutes');
+const linkedinRoutes = require('./linkedinRoutes');
+const unifiedReportingRoutes = require('./unifiedReportingRoutes');
 
 const router = express.Router();
 
@@ -20,5 +32,17 @@ router.use('/workspaces', workspaceRoutes);
 router.use('/dashboards', dashboardRoutes);
 router.use('/metrics', metricsRoutes);
 router.use('/alerts', alertRoutes);
+router.use('/search-console', searchConsoleRoutes);
+router.use('/budget', budgetRoutes);
+router.use('/anomalies', anomalyRoutes);
+router.use('/campaigns', campaignRoutes);
+router.use('/reports', reportRoutes);
+router.use('/filters', filterRoutes);
+router.use('/goals', goalRoutes);
+router.use('/export', exportRoutes);
+router.use('/comments', commentRoutes);
+router.use('/tiktok', tiktokRoutes);
+router.use('/linkedin', linkedinRoutes);
+router.use('/unified', unifiedReportingRoutes);
 
 module.exports = router;

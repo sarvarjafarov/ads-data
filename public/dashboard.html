@@ -54,6 +54,32 @@
       color: #ffffff;
     }
 
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+    }
+
+    .nav-link:hover {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.1);
+    }
+
+    .nav-link.active {
+      color: #b7fa31;
+      background-color: rgba(183, 250, 49, 0.15);
+    }
+
     .user-info {
       display: flex;
       align-items: center;
@@ -674,6 +700,10 @@
       <div class="logo-icon">AD</div>
       <div class="logo-text">AdsData</div>
     </div>
+    <nav class="nav-menu">
+      <a href="/dashboard" class="nav-link active">Dashboard</a>
+      <a href="/campaigns" class="nav-link">Campaign Explorer</a>
+    </nav>
     <div class="user-info">
       <span class="user-email" id="userEmail">Loading...</span>
       <button class="btn btn-secondary" onclick="logout()">Logout</button>
@@ -703,7 +733,7 @@
 
     <div class="card">
       <h2>Connect Ad Accounts</h2>
-      <p class="card-subtitle">Connect your Meta Ads and Google Ads accounts to start syncing your advertising data.</p>
+      <p class="card-subtitle">Connect your ad accounts and Search Console to sync advertising and organic search data.</p>
 
       <div class="connection-grid">
         <!-- Meta Ads Connection -->
@@ -715,11 +745,19 @@
         </div>
 
         <!-- Google Ads Connection -->
-        <div class="connection-card">
+        <div class="connection-card" id="googleCard">
           <div class="platform-icon">🔍</div>
           <div class="platform-name">Google Ads</div>
-          <div class="connection-status">Coming soon</div>
-          <button class="btn btn-secondary" disabled>Coming Soon</button>
+          <div class="connection-status" id="googleStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectGoogle()" id="googleConnectBtn">Connect Google Ads</button>
+        </div>
+
+        <!-- Google Search Console Connection -->
+        <div class="connection-card" id="searchConsoleCard">
+          <div class="platform-icon">🔎</div>
+          <div class="platform-name">Search Console</div>
+          <div class="connection-status" id="searchConsoleStatus">Not connected</div>
+          <button class="btn btn-primary" onclick="connectSearchConsole()" id="searchConsoleConnectBtn">Connect Search Console</button>
         </div>
       </div>
     </div>
@@ -960,6 +998,24 @@
           document.getElementById('metaCard').classList.add('connected');
           document.getElementById('metaConnectBtn').textContent = 'Reconnect';
         }
+
+        // Update Google Ads status
+        const googleAccounts = accounts.filter(a => a.platform === 'google');
+        if (googleAccounts.length > 0) {
+          document.getElementById('googleStatus').textContent = `Connected (${googleAccounts.length} account${googleAccounts.length > 1 ? 's' : ''})`;
+          document.getElementById('googleStatus').classList.add('connected');
+          document.getElementById('googleCard').classList.add('connected');
+          document.getElementById('googleConnectBtn').textContent = 'Reconnect';
+        }
+
+        // Update Search Console status
+        const searchConsoleAccounts = accounts.filter(a => a.platform === 'search_console');
+        if (searchConsoleAccounts.length > 0) {
+          document.getElementById('searchConsoleStatus').textContent = `Connected (${searchConsoleAccounts.length} property${searchConsoleAccounts.length > 1 ? 's' : ''})`;
+          document.getElementById('searchConsoleStatus').classList.add('connected');
+          document.getElementById('searchConsoleCard').classList.add('connected');
+          document.getElementById('searchConsoleConnectBtn').textContent = 'Reconnect';
+        }
       } catch (error) {
         console.error('Error loading accounts:', error);
         document.getElementById('accountsList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>Failed to load accounts</div></div>';
@@ -987,6 +1043,56 @@
         window.location.href = data.authUrl;
       } catch (error) {
         console.error('Error connecting Meta:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function connectGoogle() {
+      if (!selectedWorkspaceId) {
+        showAlert('Please select a workspace first', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/oauth/google?workspaceId=${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to initiate OAuth');
+        }
+
+        // Redirect to Google OAuth
+        window.location.href = data.authUrl;
+      } catch (error) {
+        console.error('Error connecting Google Ads:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    async function connectSearchConsole() {
+      if (!selectedWorkspaceId) {
+        showAlert('Please select a workspace first', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/oauth/search-console?workspaceId=${selectedWorkspaceId}`, {
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to initiate OAuth');
+        }
+
+        // Redirect to Search Console OAuth
+        window.location.href = data.authUrl;
+      } catch (error) {
+        console.error('Error connecting Search Console:', error);
         showAlert(error.message, 'error');
       }
     }

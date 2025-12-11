@@ -587,6 +587,9 @@
     /* Table Widget Styles */
     .table-widget {
       padding: 0.5rem;
+      overflow-x: auto;
+      max-height: 350px;
+      overflow-y: auto;
     }
 
     .data-table {
@@ -705,6 +708,378 @@
       margin-top: 0.25rem;
     }
 
+    /* KPI Tracker Widget Styles */
+    .kpi-tracker-widget {
+      padding: 1rem;
+    }
+
+    .kpi-tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .kpi-tracker-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .kpi-tracker-target {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .kpi-tracker-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .kpi-tracker-status.on-track {
+      background: rgba(183, 250, 49, 0.2);
+      color: #b7fa31;
+    }
+
+    .kpi-tracker-status.at-risk {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .kpi-tracker-status.behind {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .kpi-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .kpi-progress-fill.excellent {
+      background: linear-gradient(90deg, #b7fa31 0%, #8fd417 100%);
+    }
+
+    .kpi-progress-fill.good {
+      background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .kpi-progress-fill.warning {
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .kpi-progress-fill.danger {
+      background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .kpi-progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .kpi-tracker-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.75rem;
+    }
+
+    .kpi-remaining {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .kpi-trend {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .kpi-trend.positive {
+      color: #b7fa31;
+    }
+
+    .kpi-trend.negative {
+      color: #ef4444;
+    }
+
+    /* Gauge Widget Styles */
+    .gauge-widget {
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .gauge-container {
+      position: relative;
+      width: 160px;
+      height: 80px;
+      margin: 0 auto 1rem;
+    }
+
+    .gauge-background {
+      position: absolute;
+      width: 160px;
+      height: 80px;
+      border-radius: 80px 80px 0 0;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .gauge-fill {
+      position: absolute;
+      width: 160px;
+      height: 80px;
+      border-radius: 80px 80px 0 0;
+      transform-origin: center bottom;
+      transition: transform 0.5s ease;
+    }
+
+    .gauge-fill.excellent {
+      background: linear-gradient(90deg, #b7fa31 0%, #8fd417 100%);
+    }
+
+    .gauge-fill.good {
+      background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .gauge-fill.warning {
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .gauge-fill.danger {
+      background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .gauge-center {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 60px;
+      background: #1a1a1a;
+      border-radius: 60px 60px 0 0;
+    }
+
+    .gauge-value {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.5rem;
+    }
+
+    .gauge-target-info {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.5rem;
+    }
+
+    /* Budget Pacing Widget Styles */
+    .budget-pacing-widget {
+      padding: 1.5rem;
+    }
+
+    .budget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .budget-amounts {
+      flex: 1;
+    }
+
+    .budget-current {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .budget-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .budget-total {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 0.25rem;
+    }
+
+    .budget-alert {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .budget-alert.on-track {
+      background: rgba(183, 250, 49, 0.1);
+      color: #b7fa31;
+      border: 1px solid rgba(183, 250, 49, 0.2);
+    }
+
+    .budget-alert.ahead-of-pace {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .budget-alert.warning {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .budget-alert.critical {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .budget-alert.exceeded {
+      background: rgba(220, 38, 38, 0.15);
+      color: #dc2626;
+      border: 1px solid rgba(220, 38, 38, 0.3);
+    }
+
+    .budget-progress-container {
+      margin: 1.5rem 0;
+    }
+
+    .budget-progress-bar {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .budget-progress-fill {
+      height: 100%;
+      transition: width 0.5s ease;
+      position: relative;
+    }
+
+    .budget-progress-fill.on-track {
+      background: linear-gradient(90deg, #b7fa31 0%, #8fd417 100%);
+    }
+
+    .budget-progress-fill.ahead-of-pace {
+      background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    .budget-progress-fill.warning {
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .budget-progress-fill.critical {
+      background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .budget-progress-fill.exceeded {
+      background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+    }
+
+    .budget-progress-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .budget-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .budget-stat {
+      text-align: center;
+    }
+
+    .budget-stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .budget-stat-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .budget-projection {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .budget-projection-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 0.5rem;
+    }
+
+    .budget-projection-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .budget-projection-diff {
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .budget-projection-diff.positive {
+      color: #b7fa31;
+    }
+
+    .budget-projection-diff.negative {
+      color: #ef4444;
+    }
+
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
@@ -715,6 +1090,163 @@
       font-size: 4rem;
       margin-bottom: 1rem;
       opacity: 0.3;
+    }
+
+    /* Notification Bell Styles */
+    .notification-bell-container {
+      position: relative;
+    }
+
+    .notification-bell-btn {
+      position: relative;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #ef4444;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 2px 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .notification-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 400px;
+      max-height: 500px;
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      overflow: hidden;
+      flex-direction: column;
+    }
+
+    .notification-panel.show {
+      display: flex;
+    }
+
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .notification-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .mark-all-read-btn {
+      background: none;
+      border: none;
+      color: #b7fa31;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      transition: opacity 0.2s;
+    }
+
+    .mark-all-read-btn:hover {
+      opacity: 0.8;
+    }
+
+    .notification-list {
+      overflow-y: auto;
+      max-height: 440px;
+    }
+
+    .notification-loading,
+    .notification-empty {
+      padding: 2rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.875rem;
+    }
+
+    .notification-item {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .notification-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .notification-item.unread {
+      background: rgba(183, 250, 49, 0.03);
+      border-left: 3px solid #b7fa31;
+    }
+
+    .notification-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #ffffff;
+      flex: 1;
+    }
+
+    .notification-severity {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 0.5rem;
+    }
+
+    .notification-severity.critical {
+      background: rgba(220, 38, 38, 0.2);
+      color: #dc2626;
+    }
+
+    .notification-severity.high {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .notification-severity.medium {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .notification-severity.low,
+    .notification-severity.info {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+
+    .notification-message {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
     }
 
     .empty-state-title {
@@ -990,6 +1522,297 @@
         opacity: 1;
       }
     }
+
+    /* Auto-refresh control */
+    .auto-refresh-control select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      color: #fff;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    /* Last updated bar */
+    .last-updated-bar {
+      padding: 0.5rem 2rem;
+      background: rgba(0, 0, 0, 0.2);
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Skeleton loader */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    .skeleton-text {
+      height: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .skeleton-value {
+      height: 2.5rem;
+      width: 60%;
+      margin-bottom: 0.5rem;
+    }
+
+    .skeleton-chart {
+      height: 100px;
+      margin-top: 1rem;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Sortable table headers */
+    .data-table th.sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-right: 1.5rem;
+    }
+
+    .data-table th.sortable:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .data-table th.sortable::after {
+      content: '⇅';
+      position: absolute;
+      right: 0.5rem;
+      opacity: 0.3;
+      font-size: 0.7rem;
+    }
+
+    .data-table th.sortable.asc::after {
+      content: '↑';
+      opacity: 1;
+    }
+
+    .data-table th.sortable.desc::after {
+      content: '↓';
+      opacity: 1;
+    }
+
+    /* Truncated text with tooltip */
+    .truncate-cell {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+      cursor: default;
+    }
+
+    .truncate-cell:hover::after {
+      content: attr(data-full-text);
+      position: absolute;
+      left: 0;
+      top: 100%;
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.5rem;
+      border-radius: 4px;
+      z-index: 1000;
+      white-space: normal;
+      max-width: 300px;
+      font-size: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Color-coded position changes */
+    .position-improved {
+      color: #10b981;
+    }
+
+    .position-declined {
+      color: #ef4444;
+    }
+
+    .position-neutral {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Error state with retry */
+    .widget-error {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .widget-error-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.5;
+    }
+
+    .widget-error-message {
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .retry-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+
+    .retry-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Widget refresh button */
+    .widget-refresh-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .widget-refresh-btn:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .widget-refresh-btn.loading {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* No data state */
+    .no-data-state {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .no-data-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .no-data-message {
+      font-size: 0.875rem;
+    }
+
+    /* Widget timestamp */
+    .widget-timestamp {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.3);
+      margin-left: auto;
+      padding-left: 0.5rem;
+    }
+
+    /* Template cards */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .template-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .template-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #b7fa31;
+      transform: translateY(-2px);
+    }
+
+    .template-card button {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #b7fa31 0%, #8fd417 100%);
+      color: #0a0a0a;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .template-card button:hover {
+      background: linear-gradient(135deg, #c4ff4d 0%, #9fe527 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(183, 250, 49, 0.3);
+    }
+
+    .template-card button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .template-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .template-name {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .template-description {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.75rem;
+    }
+
+    .template-widgets {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .template-account-select {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .template-account-select label {
+      display: block;
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .template-account-select select {
+      width: 100%;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 0.875rem;
+    }
   </style>
 </head>
 <body>
@@ -1030,10 +1853,42 @@
               <button class="apply-dates-btn" onclick="applyCustomDates()">Apply</button>
             </div>
           </div>
+          <div class="auto-refresh-control">
+            <select id="autoRefreshInterval" onchange="setAutoRefresh()">
+              <option value="0">Auto-refresh: Off</option>
+              <option value="30000">Every 30s</option>
+              <option value="60000">Every 1min</option>
+              <option value="300000">Every 5min</option>
+            </select>
+          </div>
+          <button class="action-btn" onclick="openTemplateModal()" title="Apply Template">
+            📋 Templates
+          </button>
+          <button class="action-btn" onclick="exportDashboardCSV()" title="Export to CSV">
+            ⬇ Export
+          </button>
           <button class="action-btn" onclick="refreshAllWidgets()">
             ↻ Refresh
           </button>
+          <div class="notification-bell-container">
+            <button class="action-btn notification-bell-btn" onclick="toggleNotifications()" title="Notifications">
+              🔔
+              <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+            </button>
+            <div class="notification-panel" id="notificationPanel">
+              <div class="notification-header">
+                <h3>Notifications</h3>
+                <button class="mark-all-read-btn" onclick="markAllNotificationsRead()">Mark all as read</button>
+              </div>
+              <div class="notification-list" id="notificationList">
+                <div class="notification-loading">Loading notifications...</div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+      <div class="last-updated-bar">
+        <span id="lastUpdatedTime">Last updated: --</span>
       </div>
     </div>
   </div>
@@ -1049,6 +1904,20 @@
 
   <!-- Refresh Indicator -->
   <div id="refreshIndicator" class="refresh-indicator">Refreshing data...</div>
+
+  <!-- Template Modal -->
+  <div id="templateModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3>Dashboard Templates</h3>
+        <button class="close-btn" onclick="closeTemplateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: rgba(255,255,255,0.6); margin-bottom: 1rem;">Select a template to quickly set up your dashboard with pre-configured widgets.</p>
+        <div class="template-grid" id="templateGrid"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Alert Container -->
   <div id="alertContainer"></div>
@@ -1087,6 +1956,18 @@
             <div class="widget-type-option" data-type="comparison">
               <div class="widget-type-icon">⚖️</div>
               <div class="widget-type-name">Comparison</div>
+            </div>
+            <div class="widget-type-option" data-type="kpi_tracker">
+              <div class="widget-type-icon">🎯</div>
+              <div class="widget-type-name">KPI Tracker</div>
+            </div>
+            <div class="widget-type-option" data-type="gauge">
+              <div class="widget-type-icon">🌡️</div>
+              <div class="widget-type-name">Gauge</div>
+            </div>
+            <div class="widget-type-option" data-type="budget_pacing">
+              <div class="widget-type-icon">💰</div>
+              <div class="widget-type-name">Budget Pacing</div>
             </div>
           </div>
         </div>
@@ -1134,6 +2015,12 @@
             <option value="this_month">This Month</option>
             <option value="last_month">Last Month</option>
           </select>
+        </div>
+
+        <div class="form-group target-group" id="targetGroup" style="display: none;">
+          <label for="targetValue">Target Value</label>
+          <input type="number" id="targetValue" placeholder="e.g., 10000" step="any">
+          <small style="color: rgba(255,255,255,0.5); font-size: 0.75rem;">Set a target to track progress against</small>
         </div>
 
         <div class="modal-footer">
@@ -1235,7 +2122,18 @@
     let selectedWidgetType = 'kpi_card';
     let editingWidgetId = null;
     let refreshInterval = null;
-    const REFRESH_INTERVAL_MS = 60000; // Auto-refresh every 60 seconds
+    let autoRefreshIntervalId = null;
+    const REFRESH_INTERVAL_MS = 60000; // Default auto-refresh every 60 seconds
+
+    // Cache for widget data (5 minute TTL)
+    const widgetCache = new Map();
+    const CACHE_TTL = 5 * 60 * 1000;
+
+    // Store table data for sorting
+    const tableDataStore = new Map();
+
+    // Track widget export data
+    const exportDataStore = new Map();
 
     window.addEventListener('load', async () => {
       // Get dashboard ID from URL
@@ -1273,6 +2171,24 @@
           el.classList.remove('selected');
         });
         option.classList.add('selected');
+
+        // Show/hide target field based on widget type
+        const targetGroup = document.getElementById('targetGroup');
+        if (type === 'kpi_tracker' || type === 'gauge') {
+          targetGroup.style.display = 'block';
+        } else {
+          targetGroup.style.display = 'none';
+        }
+
+        // Hide metric selection for budget_pacing (it always uses spend)
+        const metricGroup = document.getElementById('metricSelect')?.closest('.form-group');
+        if (metricGroup) {
+          if (type === 'budget_pacing') {
+            metricGroup.style.display = 'none';
+          } else {
+            metricGroup.style.display = 'block';
+          }
+        }
 
         console.log('Selected widget type:', selectedWidgetType);
       });
@@ -1343,12 +2259,84 @@
         adAccounts.forEach(account => {
           const option = document.createElement('option');
           option.value = account.id;
+          option.dataset.platform = account.platform;
           option.textContent = `${account.account_name} (${account.platform})`;
           select.appendChild(option);
         });
+
+        // Add event listener for platform-specific metrics
+        select.addEventListener('change', updateMetricsForPlatform);
       } catch (error) {
         console.error('Error loading ad accounts:', error);
       }
+    }
+
+    // Platform-specific metrics configuration
+    const platformMetrics = {
+      meta: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'cpm', label: 'CPM (Cost Per 1000 Impressions)' },
+        { value: 'reach', label: 'Reach' },
+        { value: 'frequency', label: 'Frequency' },
+        { value: 'conversions', label: 'Conversions' },
+        { value: 'cost_per_conversion', label: 'Cost Per Conversion' },
+      ],
+      google: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'conversions', label: 'Conversions' },
+        { value: 'cost_per_conversion', label: 'Cost Per Conversion' },
+      ],
+      search_console: [
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'position', label: 'Average Position' },
+        { value: 'top_queries', label: 'Top Keywords/Queries (Table)' },
+        { value: 'top_pages', label: 'Top Pages (Table)' },
+        { value: 'device_breakdown', label: 'Device Breakdown (Table)' },
+        { value: 'country_breakdown', label: 'Country Breakdown (Table)' },
+      ],
+      tiktok: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'conversions', label: 'Conversions' },
+      ],
+      linkedin: [
+        { value: 'spend', label: 'Spend' },
+        { value: 'impressions', label: 'Impressions' },
+        { value: 'clicks', label: 'Clicks' },
+        { value: 'ctr', label: 'CTR (Click-Through Rate)' },
+        { value: 'cpc', label: 'CPC (Cost Per Click)' },
+        { value: 'conversions', label: 'Conversions' },
+      ],
+    };
+
+    function updateMetricsForPlatform() {
+      const adAccountSelect = document.getElementById('adAccount');
+      const metricSelect = document.getElementById('metric');
+      const selectedOption = adAccountSelect.options[adAccountSelect.selectedIndex];
+      const platform = selectedOption?.dataset?.platform || 'meta';
+
+      const metrics = platformMetrics[platform] || platformMetrics.meta;
+
+      metricSelect.innerHTML = '<option value="">Select a metric</option>';
+      metrics.forEach(metric => {
+        const option = document.createElement('option');
+        option.value = metric.value;
+        option.textContent = metric.label;
+        metricSelect.appendChild(option);
+      });
     }
 
     function renderDashboard() {
@@ -1550,20 +2538,22 @@
       } else if (widgetType === 'table') {
         contentHTML = `
           <div class="table-widget" id="table-${widget.id}">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Period</th>
-                  <th>${formattedMetric}</th>
-                  <th>Change</th>
-                </tr>
-              </thead>
-              <tbody id="table-body-${widget.id}">
-                <tr>
-                  <td colspan="3" style="text-align: center; color: rgba(255,255,255,0.4);">Loading...</td>
-                </tr>
-              </tbody>
-            </table>
+            <div id="table-container-${widget.id}">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th>${formattedMetric}</th>
+                    <th>Change</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body-${widget.id}">
+                  <tr>
+                    <td colspan="3" style="text-align: center; color: rgba(255,255,255,0.4);">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         `;
       } else if (widgetType === 'comparison') {
@@ -1588,6 +2578,92 @@
             </div>
           </div>
         `;
+      } else if (widgetType === 'kpi_tracker') {
+        const target = dataSource.target || 0;
+        contentHTML = `
+          <div class="kpi-tracker-widget">
+            <div class="kpi-tracker-header">
+              <div>
+                <div class="kpi-tracker-value" id="kpi-value-${widget.id}">Loading...</div>
+                <div class="kpi-tracker-target">Target: <span id="kpi-target-${widget.id}">${formatMetricValue(target, metricName)}</span></div>
+              </div>
+              <div class="kpi-tracker-status on-track" id="kpi-status-${widget.id}">On Track</div>
+            </div>
+            <div class="kpi-progress-bar">
+              <div class="kpi-progress-fill excellent" id="kpi-progress-${widget.id}" style="width: 0%"></div>
+            </div>
+            <div class="kpi-progress-info">
+              <span id="kpi-percent-${widget.id}">0%</span>
+              <span>${formattedMetric}</span>
+            </div>
+            <div class="kpi-tracker-footer">
+              <div class="kpi-remaining" id="kpi-remaining-${widget.id}">--</div>
+              <div class="kpi-trend positive" id="kpi-trend-${widget.id}">
+                <span>--</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'gauge') {
+        const target = dataSource.target || 100;
+        contentHTML = `
+          <div class="gauge-widget">
+            <div class="gauge-container">
+              <div class="gauge-background"></div>
+              <div class="gauge-fill excellent" id="gauge-fill-${widget.id}" style="clip-path: polygon(0 100%, 50% 100%, 50% 0, 0 0);"></div>
+              <div class="gauge-center"></div>
+              <div class="gauge-value" id="gauge-value-${widget.id}">--</div>
+            </div>
+            <div class="gauge-labels">
+              <span>0</span>
+              <span id="gauge-max-${widget.id}">${formatMetricValue(target, metricName)}</span>
+            </div>
+            <div class="gauge-target-info">
+              ${formattedMetric} - ${formatDateRange(dataSource.dateRange || 'last_30_days')}
+            </div>
+          </div>
+        `;
+      } else if (widgetType === 'budget_pacing') {
+        contentHTML = `
+          <div class="budget-pacing-widget" id="budget-pacing-${widget.id}">
+            <div class="budget-header">
+              <div class="budget-amounts">
+                <div class="budget-label">Current Spend</div>
+                <div class="budget-current" id="budget-current-${widget.id}">Loading...</div>
+                <div class="budget-total" id="budget-total-${widget.id}">of -- budget</div>
+              </div>
+              <div class="budget-alert on-track" id="budget-alert-${widget.id}">On Track</div>
+            </div>
+            <div class="budget-progress-container">
+              <div class="budget-progress-bar">
+                <div class="budget-progress-fill on-track" id="budget-progress-${widget.id}" style="width: 0%"></div>
+              </div>
+              <div class="budget-progress-labels">
+                <span id="budget-percent-${widget.id}">0%</span>
+                <span id="budget-month-progress-${widget.id}">0% of month elapsed</span>
+              </div>
+            </div>
+            <div class="budget-stats">
+              <div class="budget-stat">
+                <div class="budget-stat-value" id="budget-avg-daily-${widget.id}">--</div>
+                <div class="budget-stat-label">Avg Daily Spend</div>
+              </div>
+              <div class="budget-stat">
+                <div class="budget-stat-value" id="budget-days-passed-${widget.id}">--</div>
+                <div class="budget-stat-label">Days Passed</div>
+              </div>
+              <div class="budget-stat">
+                <div class="budget-stat-value" id="budget-days-remaining-${widget.id}">--</div>
+                <div class="budget-stat-label">Days Remaining</div>
+              </div>
+            </div>
+            <div class="budget-projection" id="budget-projection-${widget.id}">
+              <div class="budget-projection-label">Projected Month-End Spend</div>
+              <div class="budget-projection-value" id="budget-projected-${widget.id}">--</div>
+              <div class="budget-projection-diff" id="budget-projection-diff-${widget.id}">--</div>
+            </div>
+          </div>
+        `;
       } else {
         contentHTML = `
           <div class="metric-card">
@@ -1603,8 +2679,10 @@
             <div style="display: flex; align-items: center;">
               <span class="widget-drag-handle" title="Drag to reorder">⋮⋮</span>
               <div class="widget-title">${widget.title || 'Untitled Widget'}</div>
+              <span class="widget-timestamp" id="timestamp-${widget.id}"></span>
             </div>
             <div class="widget-actions">
+              <button class="widget-refresh-btn" onclick="refreshSingleWidget('${widget.id}')" title="Refresh">↻</button>
               <span class="widget-action" onclick="editWidget('${widget.id}')" title="Edit">✏️</span>
               <span class="widget-action delete" onclick="deleteWidget('${widget.id}')" title="Delete">🗑️</span>
             </div>
@@ -1637,13 +2715,24 @@
             credentials: 'include'
           });
 
-          if (!response.ok) continue;
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
 
           const result = await response.json();
           const widgetType = widget.widget_type || 'kpi_card';
           const value = result.data?.value || 0;
           const metric = widget.data_source?.metric || 'spend';
           const currency = result.data?.currency || 'USD';
+
+          // Store data for export
+          exportDataStore.set(widget.id, result.data);
+
+          // Update widget timestamp
+          const timestampElement = document.getElementById(`timestamp-${widget.id}`);
+          if (timestampElement) {
+            timestampElement.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
 
           // Extract real data from API response
           const timeSeries = result.data?.timeSeries || [];
@@ -1660,23 +2749,50 @@
             renderSparkline(widget.id, timeSeries, metric);
             updateTrendIndicator(widget.id, changePercent, metric);
           } else if (widgetType === 'table') {
-            // Render table widget with real time-series data
-            renderTableWidget(widget.id, timeSeries, metric, currency);
+            // Check if this is a table-type response (Search Console tables)
+            if (result.data?.type === 'table') {
+              renderDynamicTableWidget(widget.id, result.data);
+            } else {
+              // Render table widget with time-series data (weekly comparison)
+              renderTableWidget(widget.id, timeSeries, metric, currency);
+            }
           } else if (widgetType === 'comparison') {
             // Render comparison widget with real data
             renderComparisonWidget(widget.id, value, previousValue, changePercent, metric, currency);
           } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
             // Render chart widgets with real time-series data
             renderChart(widget, timeSeries, value, metric, currency);
+          } else if (widgetType === 'kpi_tracker') {
+            // Render KPI tracker widget
+            renderKpiTracker(widget, value, changePercent, metric, currency);
+          } else if (widgetType === 'gauge') {
+            // Render gauge widget
+            renderGaugeWidget(widget, value, metric, currency);
+          } else if (widgetType === 'budget_pacing') {
+            // Render budget pacing widget
+            renderBudgetPacing(widget, currency);
           }
         } catch (error) {
           console.error(`Error loading metrics for widget ${widget.id}:`, error);
-          const metricElement = document.getElementById(`metric-${widget.id}`);
-          if (metricElement) {
-            metricElement.textContent = '--';
+          // Show error state with retry button
+          const widgetElement = document.querySelector(`[data-widget-id="${widget.id}"]`);
+          if (widgetElement) {
+            const contentArea = widgetElement.querySelector('.metric-card, .table-widget, .comparison-widget, canvas');
+            if (contentArea) {
+              contentArea.parentElement.innerHTML = `
+                <div class="widget-error">
+                  <div class="widget-error-icon">⚠️</div>
+                  <div class="widget-error-message">Failed to load data</div>
+                  <button class="retry-btn" onclick="refreshSingleWidget('${widget.id}')">Retry</button>
+                </div>
+              `;
+            }
           }
         }
       }
+
+      // Update global last updated time
+      updateLastUpdatedTime();
     }
 
     function renderChart(widget, timeSeries, value, metric, currency) {
@@ -2023,6 +3139,65 @@
       tableBody.innerHTML = rowsHTML;
     }
 
+    function renderDynamicTableWidget(widgetId, tableData) {
+      const tableContainer = document.getElementById(`table-container-${widgetId}`);
+      if (!tableContainer) return;
+
+      const columns = tableData.columns || [];
+      const data = tableData.data || [];
+
+      // Store data for sorting
+      tableDataStore.set(widgetId, { columns, data });
+
+      // Build header row with sortable columns
+      const headerHTML = columns.map((col, idx) =>
+        `<th class="sortable" onclick="sortTableData('${widgetId}', ${idx}, '${col}')">${col}</th>`
+      ).join('');
+
+      // Build data rows
+      let rowsHTML = '';
+      if (data.length === 0) {
+        rowsHTML = `
+          <tr>
+            <td colspan="${columns.length}">
+              <div class="no-data-state">
+                <div class="no-data-icon">📊</div>
+                <div class="no-data-message">No data available for this period</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      } else {
+        rowsHTML = data.map(row => {
+          const cells = columns.map(col => {
+            // Map column names to data keys (lowercase, replace spaces with underscores)
+            const key = col.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+            const value = row[key] !== undefined ? row[key] : (row[col] !== undefined ? row[col] : '');
+
+            // Truncate long text with tooltip
+            const displayValue = String(value);
+            const needsTruncate = displayValue.length > 30;
+
+            if (needsTruncate) {
+              return `<td class="truncate-cell" data-full-text="${displayValue}">${displayValue.substring(0, 30)}...</td>`;
+            }
+            return `<td>${value}</td>`;
+          }).join('');
+          return `<tr>${cells}</tr>`;
+        }).join('');
+      }
+
+      // Replace entire table content
+      tableContainer.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>${headerHTML}</tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+      `;
+    }
+
     function renderComparisonWidget(widgetId, value, previousValue, changePercent, metric, currency) {
       const currentElement = document.getElementById(`current-${widgetId}`);
       const previousElement = document.getElementById(`previous-${widgetId}`);
@@ -2043,6 +3218,211 @@
       const arrow = isPositive ? '↑' : '↓';
       changeValueElement.textContent = `${arrow} ${Math.abs(changePercent).toFixed(1)}%`;
       changeValueElement.className = `comparison-change-value ${isGood ? 'positive' : 'negative'}`;
+    }
+
+    function renderKpiTracker(widget, value, changePercent, metric, currency) {
+      const dataSource = widget.data_source || {};
+      const target = dataSource.target || 0;
+      const widgetId = widget.id;
+
+      const kpiValue = document.getElementById(`kpi-value-${widgetId}`);
+      const kpiProgress = document.getElementById(`kpi-progress-${widgetId}`);
+      const kpiPercent = document.getElementById(`kpi-percent-${widgetId}`);
+      const kpiStatus = document.getElementById(`kpi-status-${widgetId}`);
+      const kpiRemaining = document.getElementById(`kpi-remaining-${widgetId}`);
+      const kpiTrend = document.getElementById(`kpi-trend-${widgetId}`);
+
+      if (!kpiValue || !kpiProgress) return;
+
+      // Calculate progress percentage
+      const progress = target > 0 ? Math.min((value / target) * 100, 150) : 0;
+      const displayProgress = Math.min(progress, 100);
+
+      // Determine status and color
+      let status, colorClass;
+      if (progress >= 100) {
+        status = 'On Track';
+        colorClass = 'excellent';
+      } else if (progress >= 75) {
+        status = 'On Track';
+        colorClass = 'good';
+      } else if (progress >= 50) {
+        status = 'At Risk';
+        colorClass = 'warning';
+      } else {
+        status = 'Behind';
+        colorClass = 'danger';
+      }
+
+      // Update elements
+      kpiValue.textContent = formatMetricValue(value, metric, currency);
+      kpiProgress.style.width = `${displayProgress}%`;
+      kpiProgress.className = `kpi-progress-fill ${colorClass}`;
+      kpiPercent.textContent = `${progress.toFixed(1)}%`;
+
+      if (kpiStatus) {
+        kpiStatus.textContent = status;
+        kpiStatus.className = `kpi-tracker-status ${status.toLowerCase().replace(' ', '-')}`;
+      }
+
+      if (kpiRemaining && target > 0) {
+        const remaining = Math.max(target - value, 0);
+        kpiRemaining.textContent = remaining > 0
+          ? `${formatMetricValue(remaining, metric, currency)} remaining`
+          : 'Target achieved!';
+      }
+
+      if (kpiTrend) {
+        const isPositive = changePercent >= 0;
+        const isCostMetric = ['spend', 'cpc', 'cpm', 'cost_per_conversion'].includes(metric);
+        const isGood = isCostMetric ? !isPositive : isPositive;
+        const arrow = isPositive ? '↑' : '↓';
+        kpiTrend.innerHTML = `<span>${arrow} ${Math.abs(changePercent).toFixed(1)}%</span>`;
+        kpiTrend.className = `kpi-trend ${isGood ? 'positive' : 'negative'}`;
+      }
+    }
+
+    function renderGaugeWidget(widget, value, metric, currency) {
+      const dataSource = widget.data_source || {};
+      const target = dataSource.target || 100;
+      const widgetId = widget.id;
+
+      const gaugeFill = document.getElementById(`gauge-fill-${widgetId}`);
+      const gaugeValue = document.getElementById(`gauge-value-${widgetId}`);
+
+      if (!gaugeFill || !gaugeValue) return;
+
+      // Calculate progress (0-180 degrees for semi-circle)
+      const progress = Math.min((value / target) * 100, 100);
+      const rotation = (progress / 100) * 180;
+
+      // Determine color class
+      let colorClass;
+      if (progress >= 100) {
+        colorClass = 'excellent';
+      } else if (progress >= 75) {
+        colorClass = 'good';
+      } else if (progress >= 50) {
+        colorClass = 'warning';
+      } else {
+        colorClass = 'danger';
+      }
+
+      // Update gauge
+      gaugeValue.textContent = `${progress.toFixed(0)}%`;
+      gaugeFill.className = `gauge-fill ${colorClass}`;
+
+      // Use clip-path for gauge fill effect
+      const clipProgress = progress / 100;
+      if (clipProgress <= 0.5) {
+        // Left side only
+        const angle = clipProgress * 180;
+        gaugeFill.style.clipPath = `polygon(50% 100%, 50% 0%, ${50 - Math.sin(angle * Math.PI / 180) * 50}% ${100 - Math.cos(angle * Math.PI / 180) * 100}%)`;
+      } else {
+        // Full left side + part of right
+        const angle = (clipProgress - 0.5) * 180;
+        gaugeFill.style.clipPath = `polygon(50% 100%, 50% 0%, 0% 0%, 0% 100%, ${50 + Math.sin(angle * Math.PI / 180) * 50}% ${100 - Math.cos(angle * Math.PI / 180) * 100}%)`;
+      }
+    }
+
+    async function renderBudgetPacing(widget, currency) {
+      const dataSource = widget.data_source || {};
+      const adAccountId = dataSource.adAccountId;
+      const widgetId = widget.id;
+
+      if (!adAccountId) {
+        console.error('No ad account ID provided for budget pacing widget');
+        return;
+      }
+
+      try {
+        // Fetch budget pacing data from API
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/budget/accounts/${adAccountId}/pacing`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch budget pacing data');
+        }
+
+        const result = await response.json();
+        const data = result.data;
+
+        // Format currency symbol
+        const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency;
+
+        // Update current spend
+        const currentSpend = data.spending.current || 0;
+        const monthlyBudget = data.budget.monthly || 0;
+        const spendPercentage = data.spending.percentage || 0;
+        const projectedSpend = data.spending.projected || 0;
+        const avgDaily = data.spending.avgDaily || 0;
+
+        document.getElementById(`budget-current-${widgetId}`).textContent =
+          `${currencySymbol}${currentSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        document.getElementById(`budget-total-${widgetId}`).textContent =
+          `of ${currencySymbol}${monthlyBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} budget`;
+
+        // Update alert status
+        const alertStatus = data.alert.status || 'on_track';
+        const alertElement = document.getElementById(`budget-alert-${widgetId}`);
+        const alertText = {
+          'on_track': 'On Track',
+          'ahead_of_pace': 'Ahead of Pace',
+          'warning': 'Warning',
+          'critical': 'Critical',
+          'exceeded': 'Exceeded'
+        }[alertStatus] || 'On Track';
+
+        alertElement.textContent = alertText;
+        alertElement.className = `budget-alert ${alertStatus.replace('_', '-')}`;
+
+        // Update progress bar
+        const progressFill = document.getElementById(`budget-progress-${widgetId}`);
+        progressFill.style.width = `${Math.min(spendPercentage, 100)}%`;
+        progressFill.className = `budget-progress-fill ${alertStatus.replace('_', '-')}`;
+
+        document.getElementById(`budget-percent-${widgetId}`).textContent =
+          `${spendPercentage.toFixed(1)}% spent`;
+
+        document.getElementById(`budget-month-progress-${widgetId}`).textContent =
+          `${(data.period.monthProgress || 0).toFixed(0)}% of month elapsed`;
+
+        // Update stats
+        document.getElementById(`budget-avg-daily-${widgetId}`).textContent =
+          `${currencySymbol}${avgDaily.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        document.getElementById(`budget-days-passed-${widgetId}`).textContent = data.period.daysPassed || 0;
+        document.getElementById(`budget-days-remaining-${widgetId}`).textContent = data.period.daysRemaining || 0;
+
+        // Update projection
+        document.getElementById(`budget-projected-${widgetId}`).textContent =
+          `${currencySymbol}${projectedSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        const projectionDiff = projectedSpend - monthlyBudget;
+        const projectionDiffPercent = monthlyBudget > 0 ? (projectionDiff / monthlyBudget * 100) : 0;
+        const projectionDiffElement = document.getElementById(`budget-projection-diff-${widgetId}`);
+
+        if (projectionDiff > 0) {
+          projectionDiffElement.textContent = `+${currencySymbol}${Math.abs(projectionDiff).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${projectionDiffPercent.toFixed(1)}%) over budget`;
+          projectionDiffElement.className = 'budget-projection-diff negative';
+        } else if (projectionDiff < 0) {
+          projectionDiffElement.textContent = `${currencySymbol}${Math.abs(projectionDiff).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${Math.abs(projectionDiffPercent).toFixed(1)}%) under budget`;
+          projectionDiffElement.className = 'budget-projection-diff positive';
+        } else {
+          projectionDiffElement.textContent = 'On target';
+          projectionDiffElement.className = 'budget-projection-diff';
+        }
+
+      } catch (error) {
+        console.error('Error rendering budget pacing:', error);
+        // Show error state
+        document.getElementById(`budget-current-${widgetId}`).textContent = 'Error loading data';
+      }
     }
 
     function onGlobalDateRangeChange() {
@@ -2091,8 +3471,397 @@
       const indicator = document.getElementById('refreshIndicator');
       indicator.classList.add('show');
       await loadWidgetMetrics();
+      updateLastUpdatedTime();
       setTimeout(() => indicator.classList.remove('show'), 2000);
       showAlert('Dashboard refreshed', 'success');
+    }
+
+    function updateLastUpdatedTime() {
+      const timeElement = document.getElementById('lastUpdatedTime');
+      if (timeElement) {
+        const now = new Date();
+        timeElement.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+      }
+    }
+
+    // Auto-refresh control
+    function setAutoRefresh() {
+      const interval = parseInt(document.getElementById('autoRefreshInterval').value);
+
+      // Clear existing interval
+      if (autoRefreshIntervalId) {
+        clearInterval(autoRefreshIntervalId);
+        autoRefreshIntervalId = null;
+      }
+
+      // Set new interval if not disabled
+      if (interval > 0) {
+        autoRefreshIntervalId = setInterval(async () => {
+          await refreshAllWidgets();
+        }, interval);
+        showAlert(`Auto-refresh set to ${interval / 1000}s`, 'success');
+      } else {
+        showAlert('Auto-refresh disabled', 'info');
+      }
+    }
+
+    // CSV Export
+    function exportDashboardCSV() {
+      if (!dashboard || !dashboard.widgets || dashboard.widgets.length === 0) {
+        showAlert('No data to export', 'error');
+        return;
+      }
+
+      let csvContent = 'Widget Name,Type,Metric,Value,Date Range\n';
+
+      dashboard.widgets.forEach(widget => {
+        const exportData = exportDataStore.get(widget.id);
+        const dataSource = widget.data_source || {};
+        const metric = dataSource.metric || 'N/A';
+        const dateRange = dataSource.dateRange || 'last_30_days';
+
+        let value = '--';
+        if (exportData) {
+          if (exportData.type === 'table' && exportData.data) {
+            // For table data, export as separate rows
+            exportData.data.forEach((row, i) => {
+              const rowValues = Object.values(row).join(' | ');
+              csvContent += `"${widget.title} - Row ${i + 1}","${widget.widget_type}","${metric}","${rowValues}","${dateRange}"\n`;
+            });
+            return;
+          } else {
+            value = exportData.value || exportData;
+          }
+        }
+
+        csvContent += `"${widget.title}","${widget.widget_type}","${metric}","${value}","${dateRange}"\n`;
+      });
+
+      // Download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `dashboard_${dashboard.name}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+
+      showAlert('Dashboard exported to CSV', 'success');
+    }
+
+    // Client-side caching
+    function getCachedData(key) {
+      const cached = widgetCache.get(key);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return cached.data;
+      }
+      return null;
+    }
+
+    function setCachedData(key, data) {
+      widgetCache.set(key, {
+        data,
+        timestamp: Date.now()
+      });
+    }
+
+    function clearCache() {
+      widgetCache.clear();
+    }
+
+    // Table sorting
+    function sortTableData(widgetId, columnIndex, columnName) {
+      const tableData = tableDataStore.get(widgetId);
+      if (!tableData || !tableData.data) return;
+
+      const th = document.querySelector(`#table-container-${widgetId} th:nth-child(${columnIndex + 1})`);
+      const allThs = document.querySelectorAll(`#table-container-${widgetId} th`);
+
+      // Determine sort direction
+      let sortDir = 'asc';
+      if (th.classList.contains('asc')) {
+        sortDir = 'desc';
+      } else if (th.classList.contains('desc')) {
+        sortDir = 'asc';
+      }
+
+      // Remove sort classes from all headers
+      allThs.forEach(header => {
+        header.classList.remove('asc', 'desc');
+      });
+
+      // Add sort class to current header
+      th.classList.add(sortDir);
+
+      // Get the key for this column
+      const key = columnName.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+
+      // Sort the data
+      const sortedData = [...tableData.data].sort((a, b) => {
+        let aVal = a[key];
+        let bVal = b[key];
+
+        // Handle numeric values (remove %, commas, etc.)
+        if (typeof aVal === 'string') {
+          aVal = aVal.replace(/[%,]/g, '');
+          if (!isNaN(aVal)) aVal = parseFloat(aVal);
+        }
+        if (typeof bVal === 'string') {
+          bVal = bVal.replace(/[%,]/g, '');
+          if (!isNaN(bVal)) bVal = parseFloat(bVal);
+        }
+
+        // Compare
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+        }
+
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        return sortDir === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+      });
+
+      // Re-render the table body
+      renderSortedTableBody(widgetId, tableData.columns, sortedData);
+    }
+
+    function renderSortedTableBody(widgetId, columns, data) {
+      const tbody = document.querySelector(`#table-container-${widgetId} tbody`);
+      if (!tbody) return;
+
+      const rowsHTML = data.map(row => {
+        const cells = columns.map(col => {
+          const key = col.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+          const value = row[key] !== undefined ? row[key] : (row[col] !== undefined ? row[col] : '');
+
+          // Truncate long text
+          const displayValue = String(value);
+          const needsTruncate = displayValue.length > 30;
+
+          if (needsTruncate) {
+            return `<td class="truncate-cell" data-full-text="${displayValue}">${displayValue.substring(0, 30)}...</td>`;
+          }
+          return `<td>${value}</td>`;
+        }).join('');
+        return `<tr>${cells}</tr>`;
+      }).join('');
+
+      tbody.innerHTML = rowsHTML;
+    }
+
+    // Refresh single widget
+    async function refreshSingleWidget(widgetId) {
+      const btn = document.querySelector(`[data-widget-id="${widgetId}"] .widget-refresh-btn`);
+      if (btn) btn.classList.add('loading');
+
+      const widget = dashboard.widgets.find(w => w.id === widgetId);
+      if (widget) {
+        // Clear cache for this widget
+        const cacheKey = `${widget.id}_${JSON.stringify(widget.data_source)}`;
+        widgetCache.delete(cacheKey);
+
+        // Reload the widget
+        await loadSingleWidgetMetrics(widget);
+      }
+
+      if (btn) {
+        setTimeout(() => btn.classList.remove('loading'), 500);
+      }
+    }
+
+    async function loadSingleWidgetMetrics(widget) {
+      const dataSource = widget.data_source || {};
+      const adAccountId = dataSource.adAccountId;
+      const metric = dataSource.metric || 'spend';
+      const widgetType = widget.widget_type;
+
+      if (!adAccountId) return;
+
+      const account = adAccounts.find(acc => acc.id === parseInt(adAccountId));
+      if (!account) return;
+
+      const dateRange = getActiveDateRange(dataSource.dateRange);
+      const { since, until } = calculateDateRange(dateRange);
+
+      try {
+        const token = localStorage.getItem('token');
+        const result = await fetch(`/api/metrics/widget/${widget.id}?since=${since}&until=${until}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.json());
+
+        if (result.success) {
+          // Store for export
+          exportDataStore.set(widget.id, result.data);
+
+          // Process and render based on widget type
+          // ... (similar to loadWidgetMetrics but for single widget)
+        }
+      } catch (error) {
+        console.error(`Error refreshing widget ${widget.id}:`, error);
+      }
+    }
+
+    // Dashboard Templates
+    const dashboardTemplates = {
+      seo: {
+        name: 'SEO Dashboard',
+        icon: '🔍',
+        description: 'Track organic search performance with clicks, impressions, keywords, and rankings.',
+        platform: 'search_console',
+        widgets: [
+          { title: 'Total Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'Total Impressions', type: 'kpi_card', metric: 'impressions' },
+          { title: 'Average CTR', type: 'kpi_card', metric: 'ctr' },
+          { title: 'Average Position', type: 'kpi_card', metric: 'position' },
+          { title: 'Top Keywords', type: 'table', metric: 'top_queries' },
+          { title: 'Top Pages', type: 'table', metric: 'top_pages' },
+          { title: 'Device Breakdown', type: 'table', metric: 'device_breakdown' },
+          { title: 'Country Breakdown', type: 'table', metric: 'country_breakdown' },
+        ]
+      },
+      ppc: {
+        name: 'PPC Dashboard',
+        icon: '💰',
+        description: 'Monitor paid advertising spend, clicks, conversions, and ROI metrics.',
+        platform: 'meta',
+        widgets: [
+          { title: 'Total Spend', type: 'kpi_card', metric: 'spend' },
+          { title: 'Total Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'Impressions', type: 'kpi_card', metric: 'impressions' },
+          { title: 'CTR', type: 'kpi_card', metric: 'ctr' },
+          { title: 'CPC', type: 'kpi_card', metric: 'cpc' },
+          { title: 'Conversions', type: 'kpi_card', metric: 'conversions' },
+          { title: 'Spend Over Time', type: 'line_chart', metric: 'spend' },
+          { title: 'Clicks Over Time', type: 'bar_chart', metric: 'clicks' },
+        ]
+      },
+      social: {
+        name: 'Social Media',
+        icon: '📱',
+        description: 'Track social media reach, engagement, and audience growth.',
+        platform: 'meta',
+        widgets: [
+          { title: 'Reach', type: 'kpi_card', metric: 'reach' },
+          { title: 'Impressions', type: 'kpi_card', metric: 'impressions' },
+          { title: 'Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'CTR', type: 'kpi_card', metric: 'ctr' },
+          { title: 'Frequency', type: 'kpi_card', metric: 'frequency' },
+          { title: 'Reach Trend', type: 'line_chart', metric: 'reach' },
+        ]
+      },
+      executive: {
+        name: 'Executive Summary',
+        icon: '📊',
+        description: 'High-level overview with key performance indicators and trends.',
+        platform: 'meta',
+        widgets: [
+          { title: 'Total Spend', type: 'kpi_card', metric: 'spend' },
+          { title: 'Total Conversions', type: 'kpi_card', metric: 'conversions' },
+          { title: 'Total Clicks', type: 'kpi_card', metric: 'clicks' },
+          { title: 'Spend vs Conversions', type: 'comparison', metric: 'spend' },
+        ]
+      }
+    };
+
+    function openTemplateModal() {
+      const modal = document.getElementById('templateModal');
+      const grid = document.getElementById('templateGrid');
+
+      // Build template cards
+      let cardsHTML = '';
+      for (const [key, template] of Object.entries(dashboardTemplates)) {
+        // Filter accounts by platform
+        const platformAccounts = adAccounts.filter(acc => acc.platform === template.platform);
+
+        cardsHTML += `
+          <div class="template-card" data-template="${key}">
+            <div class="template-icon">${template.icon}</div>
+            <div class="template-name">${template.name}</div>
+            <div class="template-description">${template.description}</div>
+            <div class="template-widgets">${template.widgets.length} widgets</div>
+            <div class="template-account-select">
+              <label>Select Account:</label>
+              <select id="template-account-${key}" onclick="event.stopPropagation()">
+                ${platformAccounts.length === 0
+                  ? `<option value="">No ${template.platform} accounts</option>`
+                  : platformAccounts.map(acc => `<option value="${acc.id}">${acc.account_name}</option>`).join('')
+                }
+              </select>
+            </div>
+            <button class="primary-btn" style="width: 100%; margin-top: 0.75rem;"
+              onclick="event.stopPropagation(); applyTemplate('${key}')"
+              ${platformAccounts.length === 0 ? 'disabled' : ''}>
+              Apply Template
+            </button>
+          </div>
+        `;
+      }
+
+      grid.innerHTML = cardsHTML;
+      modal.classList.add('show');
+    }
+
+    function closeTemplateModal() {
+      document.getElementById('templateModal').classList.remove('show');
+    }
+
+    async function applyTemplate(templateKey) {
+      const template = dashboardTemplates[templateKey];
+      if (!template) return;
+
+      const accountSelect = document.getElementById(`template-account-${templateKey}`);
+      const accountId = accountSelect?.value;
+
+      if (!accountId) {
+        showAlert('Please select an account', 'error');
+        return;
+      }
+
+      const confirmMsg = dashboard.widgets?.length > 0
+        ? 'This will add widgets to your existing dashboard. Continue?'
+        : `Apply ${template.name} template?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const token = localStorage.getItem('token');
+
+        // Create widgets for this template
+        let positionCounter = dashboard.widgets?.length || 0;
+        for (const widgetDef of template.widgets) {
+          const widgetData = {
+            title: widgetDef.title,
+            widgetType: widgetDef.type,
+            dataSource: {
+              adAccountId: accountId,
+              metric: widgetDef.metric,
+              dateRange: 'last_30_days'
+            },
+            position: positionCounter++
+          };
+
+          const response = await fetch(`/api/dashboards/${dashboardId}/widgets`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(widgetData)
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to create widget: ${widgetDef.title}`);
+          }
+        }
+
+        closeTemplateModal();
+        showAlert(`${template.name} applied successfully!`, 'success');
+
+        // Reload dashboard
+        await loadDashboard();
+
+      } catch (error) {
+        console.error('Error applying template:', error);
+        showAlert('Failed to apply template: ' + error.message, 'error');
+      }
     }
 
     function formatMetricValue(value, metric, currency = 'USD') {
@@ -2185,16 +3954,24 @@
       const adAccountId = document.getElementById('adAccount').value;
       const metric = document.getElementById('metric').value;
       const dateRange = document.getElementById('dateRange').value;
+      const targetValue = document.getElementById('targetValue').value;
+
+      const dataSource = {
+        adAccountId,
+        metric,
+        dateRange
+      };
+
+      // Add target for KPI tracker and gauge widgets
+      if ((selectedWidgetType === 'kpi_tracker' || selectedWidgetType === 'gauge') && targetValue) {
+        dataSource.target = parseFloat(targetValue);
+      }
 
       const widgetData = {
         widgetType: selectedWidgetType,
         title,
         description,
-        dataSource: {
-          adAccountId,
-          metric,
-          dateRange
-        },
+        dataSource,
         chartConfig: {},
         filters: {}
       };
@@ -2567,6 +4344,167 @@
       closeExportModal();
       window.print();
     }
+
+    // Notification Functions
+    async function loadNotifications() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies/notifications?limit=20', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load notifications');
+        }
+
+        const result = await response.json();
+        const notifications = result.data || [];
+        const unreadCount = result.unreadCount || 0;
+
+        // Update badge
+        const badge = document.getElementById('notificationBadge');
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount;
+          badge.style.display = 'block';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        // Render notifications
+        const notificationList = document.getElementById('notificationList');
+        if (notifications.length === 0) {
+          notificationList.innerHTML = '<div class="notification-empty">No notifications</div>';
+          return;
+        }
+
+        notificationList.innerHTML = notifications.map(notification => `
+          <div class="notification-item ${notification.is_read ? '' : 'unread'}" onclick="handleNotificationClick('${notification.id}')">
+            <div class="notification-item-header">
+              <div class="notification-title">${escapeHtml(notification.title)}</div>
+              <span class="notification-severity ${notification.severity}">${notification.severity}</span>
+            </div>
+            <div class="notification-message">${escapeHtml(notification.message)}</div>
+            <div class="notification-time">${formatTimeAgo(notification.created_at)}</div>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Load notifications error:', error);
+        document.getElementById('notificationList').innerHTML =
+          '<div class="notification-empty">Failed to load notifications</div>';
+      }
+    }
+
+    async function toggleNotifications() {
+      const panel = document.getElementById('notificationPanel');
+      const isShowing = panel.classList.contains('show');
+
+      if (isShowing) {
+        panel.classList.remove('show');
+      } else {
+        panel.classList.add('show');
+        await loadNotifications();
+      }
+
+      // Close panel when clicking outside
+      if (!isShowing) {
+        setTimeout(() => {
+          document.addEventListener('click', closeNotificationsPanelOutside);
+        }, 0);
+      } else {
+        document.removeEventListener('click', closeNotificationsPanelOutside);
+      }
+    }
+
+    function closeNotificationsPanelOutside(event) {
+      const panel = document.getElementById('notificationPanel');
+      const bellContainer = document.querySelector('.notification-bell-container');
+
+      if (!bellContainer.contains(event.target)) {
+        panel.classList.remove('show');
+        document.removeEventListener('click', closeNotificationsPanelOutside);
+      }
+    }
+
+    async function handleNotificationClick(notificationId) {
+      try {
+        const token = localStorage.getItem('token');
+        await fetch(`/api/anomalies/notifications/${notificationId}/read`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        // Reload notifications to update UI
+        await loadNotifications();
+      } catch (error) {
+        console.error('Mark notification read error:', error);
+      }
+    }
+
+    async function markAllNotificationsRead() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/anomalies/notifications/read-all', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to mark all as read');
+        }
+
+        // Reload notifications
+        await loadNotifications();
+        showAlert('All notifications marked as read', 'success');
+      } catch (error) {
+        console.error('Mark all read error:', error);
+        showAlert('Failed to mark all as read', 'error');
+      }
+    }
+
+    function formatTimeAgo(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const seconds = Math.floor((now - date) / 1000);
+
+      if (seconds < 60) return 'Just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days}d ago`;
+      const weeks = Math.floor(days / 7);
+      if (weeks < 4) return `${weeks}w ago`;
+      return date.toLocaleDateString();
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Load notifications periodically
+    setInterval(() => {
+      loadNotifications();
+    }, 60000); // Check every minute
+
+    // Initial notification load
+    setTimeout(() => {
+      loadNotifications();
+    }, 2000); // Load after 2 seconds
   </script>
 </body>
 </html>

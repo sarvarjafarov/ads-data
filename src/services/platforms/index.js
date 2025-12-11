@@ -7,12 +7,14 @@ const MetaAdsService = require('./metaAds');
 const GoogleAdsService = require('./googleAds');
 const TikTokAdsService = require('./tiktokAds');
 const LinkedInAdsService = require('./linkedinAds');
+const SearchConsoleService = require('./searchConsole');
 
 const platformServices = {
   meta: MetaAdsService,
   google: GoogleAdsService,
   tiktok: TikTokAdsService,
   linkedin: LinkedInAdsService,
+  search_console: SearchConsoleService,
 };
 
 /**
@@ -67,6 +69,12 @@ function getPlatformInfo(platform) {
       description: 'Connect your LinkedIn Campaign Manager accounts',
       color: '#0A66C2',
     },
+    search_console: {
+      name: 'Google Search Console',
+      icon: '🔎',
+      description: 'Connect your Search Console for organic search analytics',
+      color: '#34A853',
+    },
   };
 
   return info[platform] || { name: platform, icon: '📊', description: '', color: '#666666' };
@@ -80,4 +88,5 @@ module.exports = {
   GoogleAdsService,
   TikTokAdsService,
   LinkedInAdsService,
+  SearchConsoleService,
 };

@@ -19,18 +19,29 @@ const AVAILABLE_WIDGETS = [
 ];
 
 const AVAILABLE_METRICS = [
-  { id: 'spend', name: 'Ad Spend', description: 'Total advertising expenditure' },
-  { id: 'impressions', name: 'Impressions', description: 'Number of times ads were shown' },
-  { id: 'clicks', name: 'Clicks', description: 'Number of ad clicks' },
-  { id: 'ctr', name: 'CTR', description: 'Click-through rate (clicks/impressions)' },
-  { id: 'cpc', name: 'CPC', description: 'Cost per click' },
-  { id: 'cpm', name: 'CPM', description: 'Cost per 1000 impressions' },
-  { id: 'reach', name: 'Reach', description: 'Unique users who saw the ad' },
-  { id: 'frequency', name: 'Frequency', description: 'Average times each user saw the ad' },
-  { id: 'conversions', name: 'Conversions', description: 'Number of desired actions completed' },
-  { id: 'cost_per_conversion', name: 'Cost Per Conversion', description: 'Cost for each conversion' },
-  { id: 'roas', name: 'ROAS', description: 'Return on ad spend' },
-  { id: 'revenue', name: 'Revenue', description: 'Total revenue generated' },
+  // Paid advertising metrics
+  { id: 'spend', name: 'Ad Spend', description: 'Total advertising expenditure', category: 'paid' },
+  { id: 'impressions', name: 'Impressions', description: 'Number of times ads were shown', category: 'paid' },
+  { id: 'clicks', name: 'Clicks', description: 'Number of ad clicks', category: 'paid' },
+  { id: 'ctr', name: 'CTR', description: 'Click-through rate (clicks/impressions)', category: 'paid' },
+  { id: 'cpc', name: 'CPC', description: 'Cost per click', category: 'paid' },
+  { id: 'cpm', name: 'CPM', description: 'Cost per 1000 impressions', category: 'paid' },
+  { id: 'reach', name: 'Reach', description: 'Unique users who saw the ad', category: 'paid' },
+  { id: 'frequency', name: 'Frequency', description: 'Average times each user saw the ad', category: 'paid' },
+  { id: 'conversions', name: 'Conversions', description: 'Number of desired actions completed', category: 'paid' },
+  { id: 'cost_per_conversion', name: 'Cost Per Conversion', description: 'Cost for each conversion', category: 'paid' },
+  { id: 'roas', name: 'ROAS', description: 'Return on ad spend', category: 'paid' },
+  { id: 'revenue', name: 'Revenue', description: 'Total revenue generated', category: 'paid' },
+  // Search Console (organic search) metrics
+  { id: 'search_clicks', name: 'Organic Clicks', description: 'Clicks from organic search results', category: 'organic' },
+  { id: 'search_impressions', name: 'Search Impressions', description: 'Times site appeared in search results', category: 'organic' },
+  { id: 'search_ctr', name: 'Search CTR', description: 'Click-through rate from search results', category: 'organic' },
+  { id: 'average_position', name: 'Average Position', description: 'Average ranking position in search results', category: 'organic' },
+  { id: 'top_queries', name: 'Top Queries', description: 'Keywords driving traffic to site', category: 'organic' },
+  { id: 'top_pages', name: 'Top Pages', description: 'Best performing pages in search', category: 'organic' },
+  { id: 'device_breakdown', name: 'Device Breakdown', description: 'Traffic split by device type', category: 'organic' },
+  { id: 'country_breakdown', name: 'Country Breakdown', description: 'Traffic split by country', category: 'organic' },
+  { id: 'query_page_analysis', name: 'Query-Page Analysis', description: 'Which queries lead to which pages', category: 'organic' },
 ];
 
 /**

@@ -46,8 +46,25 @@ module.exports = {
     redirectUri: process.env.LINKEDIN_REDIRECT_URI || 'http://localhost:3000/api/oauth/linkedin/callback',
   },
 
+  // Google Search Console
+  searchConsole: {
+    clientId: process.env.SEARCH_CONSOLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.SEARCH_CONSOLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: process.env.SEARCH_CONSOLE_REDIRECT_URI || 'http://localhost:3000/api/oauth/search-console/callback',
+  },
+
   // Anthropic AI
   anthropic: {
     apiKey: process.env.ANTHROPIC_API_KEY,
+  },
+
+  // Email configuration
+  email: {
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT || '587'),
+    secure: process.env.EMAIL_SECURE === 'true',
+    user: process.env.EMAIL_USER,
+    password: process.env.EMAIL_PASSWORD,
+    from: process.env.EMAIL_FROM || 'AdsData Platform <noreply@adsdata.com>',
   },
 };

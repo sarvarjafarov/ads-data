@@ -59,6 +59,10 @@ app.get('/dashboard-viewer', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/dashboard-viewer.html'));
 });
 
+app.get('/campaigns', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/campaigns.html'));
+});
+
 // Root route
 app.get('/', (req, res) => {
   res.json({

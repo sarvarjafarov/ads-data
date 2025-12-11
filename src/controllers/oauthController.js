@@ -316,7 +316,7 @@ const { getPlatformService, getPlatformInfo } = require('../services/platforms')
  * Get list of supported platforms
  */
 const getSupportedPlatforms = (req, res) => {
-  const platforms = ['meta', 'google', 'tiktok', 'linkedin'].map(platform => ({
+  const platforms = ['meta', 'google', 'tiktok', 'linkedin', 'search_console'].map(platform => ({
     id: platform,
     ...getPlatformInfo(platform),
     configured: isPlatformConfigured(platform),
@@ -334,9 +334,63 @@ function isPlatformConfigured(platform) {
     case 'google': return !!config.google?.clientId;
     case 'tiktok': return !!config.tiktok?.appId;
     case 'linkedin': return !!config.linkedin?.clientId;
+    case 'search_console': return !!(config.searchConsole?.clientId || config.google?.clientId);
     default: return false;
   }
 }
+
+/**
+ * Initiate Google Search Console OAuth flow
+ */
+const initiateSearchConsoleOAuth = (req, res) => {
+  try {
+    const { workspaceId } = req.query;
+    if (!workspaceId) {
+      return res.status(400).json({ success: false, message: 'Workspace ID is required' });
+    }
+    if (!config.google?.clientId) {
+      return res.status(500).json({ success: false, message: 'Google OAuth is not configured' });
+    }
+
+    const state = Buffer.from(JSON.stringify({
+      workspaceId, userId: req.user.id, timestamp: Date.now(),
+    })).toString('base64');
+
+    const SearchConsoleService = getPlatformService('search_console');
+    const authUrl = SearchConsoleService.buildAuthUrl(config, state);
+    res.json({ success: true, authUrl });
+  } catch (error) {
+    console.error('Search Console OAuth initiation error:', error);
+    res.status(500).json({ success: false, message: 'Failed to initiate Search Console OAuth', error: error.message });
+  }
+};
+
+/**
+ * Handle Google Search Console OAuth callback
+ */
+const handleSearchConsoleCallback = async (req, res) => {
+  try {
+    const { code, state, error } = req.query;
+    if (error) return res.redirect(`/dashboard?oauth=error&message=${encodeURIComponent(error)}`);
+
+    const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
+    const { workspaceId, userId } = stateData;
+
+    const SearchConsoleService = getPlatformService('search_console');
+    const tokenData = await SearchConsoleService.exchangeCodeForToken(config, code);
+    const expiresAt = new Date();
+    expiresAt.setSeconds(expiresAt.getSeconds() + tokenData.expiresIn);
+
+    await storeOrUpdateToken(userId, workspaceId, 'search_console', tokenData.accessToken, tokenData.refreshToken, expiresAt);
+    const properties = await SearchConsoleService.fetchProperties(tokenData.accessToken);
+    await storeAdAccounts(userId, workspaceId, 'search_console', properties);
+
+    res.redirect(`/dashboard?oauth=success&platform=search_console`);
+  } catch (error) {
+    console.error('Search Console OAuth callback error:', error);
+    res.redirect(`/dashboard?oauth=error&message=${encodeURIComponent(error.message)}`);
+  }
+};
 
 /**
  * Initiate Google OAuth flow
@@ -557,6 +611,8 @@ module.exports = {
   handleTikTokCallback,
   initiateLinkedInOAuth,
   handleLinkedInCallback,
+  initiateSearchConsoleOAuth,
+  handleSearchConsoleCallback,
   getConnectedAccounts,
   disconnectAccount,
   getSupportedPlatforms,
