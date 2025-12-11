@@ -63,9 +63,9 @@ app.get('/campaigns', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/campaigns.html'));
 });
 
-// Root route - serve homepage/dashboard
+// Root route - serve landing page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Error handling middleware
