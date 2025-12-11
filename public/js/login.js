@@ -27,8 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
-                // Redirect to admin panel
-                window.location.href = '/admin';
+                // Redirect based on user role
+                if (data.user.role === 'admin') {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/dashboard';
+                }
             } else {
                 showError(data.message || 'Login failed');
             }
@@ -49,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkAuth() {
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) return;
 
         try {
@@ -59,7 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                window.location.href = '/admin';
+                // Redirect based on user role
+                if (user.role === 'admin') {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/dashboard';
+                }
             }
         } catch (error) {
             console.error('Auth check error:', error);

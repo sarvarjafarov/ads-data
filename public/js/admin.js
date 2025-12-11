@@ -58,8 +58,16 @@ function switchTab(tabName) {
 
 async function checkAuth() {
     const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
     if (!token) {
         window.location.href = '/admin/login';
+        return;
+    }
+
+    // Check if user has admin role
+    if (user.role !== 'admin') {
+        window.location.href = '/dashboard';
         return;
     }
 
@@ -74,6 +82,14 @@ async function checkAuth() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/admin/login';
+            return;
+        }
+
+        const data = await response.json();
+
+        // Double-check role from server response
+        if (data.user && data.user.role !== 'admin') {
+            window.location.href = '/dashboard';
         }
     } catch (error) {
         console.error('Auth check error:', error);
