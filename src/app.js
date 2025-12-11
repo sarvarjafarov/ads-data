@@ -63,13 +63,9 @@ app.get('/campaigns', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/campaigns.html'));
 });
 
-// Root route
+// Root route - serve homepage/dashboard
 app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Ads Data API',
-    version: '1.0.0',
-  });
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
 // Error handling middleware
