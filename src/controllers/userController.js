@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Workspace = require('../models/Workspace');
 
 // Get all users (admin only)
 const getAllUsers = async (req, res) => {
@@ -72,6 +73,26 @@ const approveUser = async (req, res) => {
         success: false,
         message: 'User not found',
       });
+    }
+
+    // Create a default workspace for the approved user
+    try {
+      const existingWorkspaces = await Workspace.findByUserId(user.id);
+
+      if (existingWorkspaces.length === 0) {
+        await Workspace.create({
+          name: `${user.company_name || user.username}'s Workspace`,
+          ownerId: user.id,
+          description: 'Default workspace',
+          settings: {
+            defaultCurrency: 'USD',
+            timezone: 'UTC',
+          },
+        });
+      }
+    } catch (workspaceError) {
+      console.error('Error creating workspace for approved user:', workspaceError);
+      // Don't fail the approval if workspace creation fails
     }
 
     res.json({
