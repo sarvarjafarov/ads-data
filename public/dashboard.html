@@ -1430,7 +1430,17 @@
         return;
       }
 
+      // Get buttons and add loading state
+      const createButton = document.querySelector('.ai-modal .modal-footer .btn-primary');
+      const tryAgainButton = document.querySelector('.ai-modal .modal-footer .btn-secondary');
+      const originalText = createButton.innerHTML;
+
       try {
+        // Disable buttons and show loading state
+        createButton.disabled = true;
+        tryAgainButton.disabled = true;
+        createButton.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 0.5rem;"><svg style="animation: spin 1s linear infinite; width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg>Creating Dashboard...</span>';
+
         const prompt = document.getElementById('aiPrompt').value.trim();
         const adAccountId = document.getElementById('aiAdAccount').value;
 
@@ -1467,6 +1477,11 @@
       } catch (error) {
         console.error('Error creating AI dashboard:', error);
         showAlert(error.message, 'error');
+
+        // Restore button state on error
+        createButton.disabled = false;
+        tryAgainButton.disabled = false;
+        createButton.innerHTML = originalText;
       }
     }
 
