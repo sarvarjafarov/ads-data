@@ -446,8 +446,22 @@ async function deleteUser(userId) {
     }
 }
 
-function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/admin/login';
+async function logout() {
+    try {
+        // Call logout API to clear server-side cookie
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    } catch (error) {
+        console.error('Logout API error:', error);
+    } finally {
+        // Always clear localStorage and redirect, even if API call fails
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/admin/login';
+    }
 }
