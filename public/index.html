@@ -20,6 +20,93 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 4px 14px 0 rgba(183, 250, 49, 0.4);
+      }
+      50% {
+        box-shadow: 0 4px 20px 0 rgba(183, 250, 49, 0.6);
+      }
+    }
+
+    .animate-fadeInUp {
+      animation: fadeInUp 0.8s ease-out forwards;
+      opacity: 0;
+    }
+
+    .animate-slideInLeft {
+      animation: slideInLeft 0.8s ease-out forwards;
+      opacity: 0;
+    }
+
+    .animate-slideInRight {
+      animation: slideInRight 0.8s ease-out forwards;
+      opacity: 0;
+    }
+
+    .animate-delay-1 {
+      animation-delay: 0.1s;
+    }
+
+    .animate-delay-2 {
+      animation-delay: 0.2s;
+    }
+
+    .animate-delay-3 {
+      animation-delay: 0.3s;
+    }
+
+    .animate-delay-4 {
+      animation-delay: 0.4s;
+    }
+
+    .animate-delay-5 {
+      animation-delay: 0.5s;
+    }
+
     .container {
       max-width: 1280px;
       margin: 0 auto;
@@ -106,7 +193,49 @@
     }
 
     .card:hover {
-      background-color: rgba(26, 26, 26, 0.8);
+      border-color: rgba(183, 250, 49, 0.2);
+      box-shadow: 0 8px 32px rgba(183, 250, 49, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, rgba(183, 250, 49, 0.15) 0%, rgba(183, 250, 49, 0.05) 100%);
+      border: 1px solid rgba(183, 250, 49, 0.3);
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #b7fa31;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #b7fa31;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .testimonial {
@@ -502,38 +631,59 @@
       <div class="hero-grid">
         <!-- Left Content -->
         <div>
-          <h1>
-            See all your <span class="text-primary">ad data</span> in one place
+          <div class="badge animate-fadeInUp">⚡ All Your Ad Data, One Dashboard</div>
+          <h1 class="animate-fadeInUp animate-delay-1">
+            Stop juggling <span class="text-primary">multiple ad platforms</span>
           </h1>
-          <p class="lead" style="font-size: 1.375rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem; line-height: 1.6; font-weight: 500;">
-            Connect Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads, and Search Console. View all your advertising data on custom dashboards.
+          <p class="lead animate-fadeInUp animate-delay-2" style="font-size: 1.375rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem; line-height: 1.6; font-weight: 500;">
+            Connect Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads, and Search Console in minutes. View everything in one unified dashboard powered by AI.
           </p>
 
-          <div class="hero-buttons">
-            <a href="/register" class="btn-primary">Get started free</a>
-            <a href="/admin/login" class="btn-secondary">Login</a>
+          <div class="hero-buttons animate-fadeInUp animate-delay-3">
+            <a href="/register" class="btn-primary" style="animation: pulse 2s infinite;">Start Free Trial →</a>
+            <a href="/admin/login" class="btn-secondary">Sign In</a>
+          </div>
+
+          <div class="stat-grid animate-fadeInUp animate-delay-4">
+            <div class="stat-item">
+              <span class="stat-number">5+</span>
+              <span class="stat-label">Platforms</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">< 5min</span>
+              <span class="stat-label">Setup Time</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">100%</span>
+              <span class="stat-label">Free to Start</span>
+            </div>
           </div>
         </div>
 
         <!-- Right Features Card -->
-        <div class="card">
-          <h3 style="font-size: 1.375rem; margin-bottom: 1.5rem; font-weight: 700;">What you can do:</h3>
+        <div class="card animate-slideInRight animate-delay-2">
+          <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #ffffff 0%, #b7fa31 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Why teams choose AdsData</h3>
           <ul style="list-style: none; padding: 0;">
-            <li style="margin-bottom: 1rem; display: flex; align-items: start; gap: 0.75rem;">
-              <span style="color: #b7fa31; font-weight: bold; font-size: 1.125rem;">✓</span>
-              <span style="font-size: 1rem; line-height: 1.5;">Connect Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads, and Search Console</span>
+            <li class="animate-fadeInUp animate-delay-3" style="margin-bottom: 1.25rem; display: flex; align-items: start; gap: 0.75rem;">
+              <span style="color: #b7fa31; font-weight: bold; font-size: 1.25rem;">✓</span>
+              <div>
+                <strong style="display: block; margin-bottom: 0.25rem;">Unified View</strong>
+                <span style="font-size: 0.9375rem; line-height: 1.5; color: rgba(255, 255, 255, 0.7);">See all ad platforms side-by-side, no more switching tabs</span>
+              </div>
             </li>
-            <li style="margin-bottom: 1rem; display: flex; align-items: start; gap: 0.75rem;">
-              <span style="color: #b7fa31; font-weight: bold; font-size: 1.125rem;">✓</span>
-              <span style="font-size: 1rem; line-height: 1.5;">View campaigns, ad sets, and ads from all platforms</span>
+            <li class="animate-fadeInUp animate-delay-4" style="margin-bottom: 1.25rem; display: flex; align-items: start; gap: 0.75rem;">
+              <span style="color: #b7fa31; font-weight: bold; font-size: 1.25rem;">✓</span>
+              <div>
+                <strong style="display: block; margin-bottom: 0.25rem;">AI-Powered Insights</strong>
+                <span style="font-size: 0.9375rem; line-height: 1.5; color: rgba(255, 255, 255, 0.7);">Auto-generate dashboards that highlight what matters most</span>
+              </div>
             </li>
-            <li style="margin-bottom: 1rem; display: flex; align-items: start; gap: 0.75rem;">
-              <span style="color: #b7fa31; font-weight: bold; font-size: 1.125rem;">✓</span>
-              <span style="font-size: 1rem; line-height: 1.5;">Create custom dashboards with charts and metrics</span>
-            </li>
-            <li style="display: flex; align-items: start; gap: 0.75rem;">
-              <span style="color: #b7fa31; font-weight: bold; font-size: 1.125rem;">✓</span>
-              <span style="font-size: 1rem; line-height: 1.5;">Generate dashboards automatically with AI</span>
+            <li class="animate-fadeInUp animate-delay-5" style="display: flex; align-items: start; gap: 0.75rem;">
+              <span style="color: #b7fa31; font-weight: bold; font-size: 1.25rem;">✓</span>
+              <div>
+                <strong style="display: block; margin-bottom: 0.25rem;">Real-Time Sync</strong>
+                <span style="font-size: 0.9375rem; line-height: 1.5; color: rgba(255, 255, 255, 0.7);">Always up-to-date data from all your connected accounts</span>
+              </div>
             </li>
           </ul>
         </div>
