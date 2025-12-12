@@ -387,6 +387,183 @@ class EmailService {
   }
 
   /**
+   * Send email verification email
+   * @param {Object} options - Email options
+   * @param {string} options.to - Recipient email address
+   * @param {string} options.username - Username
+   * @param {string} options.verificationToken - Verification token
+   */
+  async sendVerificationEmail({ to, username, verificationToken }) {
+    try {
+      const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Verify Your Email - AdsData</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+              background-color: #f5f5f5;
+            }
+            .container {
+              background-color: #ffffff;
+              border-radius: 8px;
+              padding: 40px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .logo {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .logo-box {
+              display: inline-block;
+              background-color: #b7fa31;
+              color: #000000;
+              padding: 12px 20px;
+              border-radius: 8px;
+              font-weight: bold;
+              font-size: 24px;
+            }
+            h1 {
+              color: #1a1a1a;
+              font-size: 24px;
+              margin-bottom: 20px;
+              text-align: center;
+            }
+            p {
+              color: #666;
+              margin-bottom: 20px;
+            }
+            .button {
+              display: inline-block;
+              background-color: #b7fa31;
+              color: #000000;
+              text-decoration: none;
+              padding: 14px 32px;
+              border-radius: 6px;
+              font-weight: 600;
+              text-align: center;
+              margin: 20px 0;
+            }
+            .button-container {
+              text-align: center;
+            }
+            .alt-link {
+              color: #666;
+              font-size: 12px;
+              word-break: break-all;
+              background-color: #f8f9fa;
+              padding: 12px;
+              border-radius: 4px;
+              margin-top: 20px;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              font-size: 12px;
+              color: #999;
+              text-align: center;
+            }
+            .warning {
+              background-color: #fff3cd;
+              border-left: 4px solid #ffc107;
+              padding: 12px;
+              margin: 20px 0;
+              border-radius: 4px;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="logo">
+              <div class="logo-box">AdsData</div>
+            </div>
+
+            <h1>Verify Your Email Address</h1>
+
+            <p>Hi ${username},</p>
+
+            <p>Thank you for registering with AdsData! To complete your registration and start using the platform, please verify your email address by clicking the button below:</p>
+
+            <div class="button-container">
+              <a href="${verificationUrl}" class="button">Verify Email Address</a>
+            </div>
+
+            <p>This verification link will expire in 24 hours.</p>
+
+            <div class="warning">
+              <strong>Important:</strong> If you didn't create an account with AdsData, please ignore this email.
+            </div>
+
+            <p style="font-size: 14px; color: #999;">If the button doesn't work, you can copy and paste this link into your browser:</p>
+            <div class="alt-link">${verificationUrl}</div>
+
+            <div class="footer">
+              <p>
+                This is an automated email from AdsData Platform.<br>
+                © ${new Date().getFullYear()} AdsData. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const text = `
+Hi ${username},
+
+Thank you for registering with AdsData!
+
+To complete your registration and start using the platform, please verify your email address by clicking the link below:
+
+${verificationUrl}
+
+This verification link will expire in 24 hours.
+
+If you didn't create an account with AdsData, please ignore this email.
+
+---
+This is an automated email from AdsData Platform.
+© ${new Date().getFullYear()} AdsData. All rights reserved.
+      `;
+
+      const mailOptions = {
+        from: config.email?.from || 'AdsData Platform <noreply@adsdata.com>',
+        to,
+        subject: 'Verify Your Email - AdsData',
+        html,
+        text,
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+
+      if (config.nodeEnv !== 'production') {
+        console.log('Verification email preview:', info.message?.toString());
+        console.log('Verification URL:', verificationUrl);
+      }
+
+      return {
+        success: true,
+        messageId: info.messageId,
+      };
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Test email configuration
    */
   async testConnection() {

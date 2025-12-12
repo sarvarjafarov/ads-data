@@ -252,6 +252,87 @@ class User {
       [id]
     );
   }
+
+  /**
+   * Generate and store email verification token
+   */
+  static async generateVerificationToken(userId) {
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // Token valid for 24 hours
+
+    await query(
+      `UPDATE users
+       SET verification_token = $1, verification_token_expires = $2
+       WHERE id = $3`,
+      [token, expiresAt, userId]
+    );
+
+    return token;
+  }
+
+  /**
+   * Find user by verification token
+   */
+  static async findByVerificationToken(token) {
+    const result = await query(
+      `SELECT id, username, email, role, status, company_name,
+              contact_person, phone, email_verified, verification_token_expires
+       FROM users
+       WHERE verification_token = $1`,
+      [token]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Verify email with token
+   */
+  static async verifyEmail(token) {
+    const user = await this.findByVerificationToken(token);
+
+    if (!user) {
+      throw new Error('Invalid verification token');
+    }
+
+    // Check if token has expired
+    if (new Date() > new Date(user.verification_token_expires)) {
+      throw new Error('Verification token has expired');
+    }
+
+    // Update user: mark as verified and approved
+    const result = await query(
+      `UPDATE users
+       SET email_verified = TRUE,
+           status = 'approved',
+           verification_token = NULL,
+           verification_token_expires = NULL
+       WHERE id = $1
+       RETURNING id, username, email, role, status, company_name,
+                 contact_person, phone, created_at, updated_at`,
+      [user.id]
+    );
+
+    return result.rows[0];
+  }
+
+  /**
+   * Resend verification email (generate new token)
+   */
+  static async regenerateVerificationToken(email) {
+    const user = await this.findByEmail(email);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.email_verified) {
+      throw new Error('Email is already verified');
+    }
+
+    return await this.generateVerificationToken(user.id);
+  }
 }
 
 module.exports = User;

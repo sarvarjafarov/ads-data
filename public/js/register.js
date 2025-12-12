@@ -43,13 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                showSuccess(data.message);
+                showSuccess(data.message + ' You will be redirected to the login page shortly.');
                 registerForm.reset();
 
-                // Redirect to login after 3 seconds
+                // Redirect to login after 5 seconds (give time to read the message)
                 setTimeout(() => {
                     window.location.href = '/admin/login';
-                }, 3000);
+                }, 5000);
             } else {
                 showError(data.message || 'Registration failed');
             }
