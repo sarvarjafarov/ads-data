@@ -692,6 +692,269 @@
       justify-content: flex-end;
       margin-top: 2rem;
     }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .header {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .logo {
+        gap: 0.5rem;
+      }
+
+      .logo-icon {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.75rem;
+      }
+
+      .logo-text {
+        font-size: 1rem;
+      }
+
+      .nav-menu {
+        order: 3;
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: 0.625rem 1rem;
+      }
+
+      .user-info {
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .user-email {
+        font-size: 0.75rem;
+      }
+
+      .btn {
+        padding: 0.625rem 1rem;
+        font-size: 0.8125rem;
+      }
+
+      .container {
+        padding: 1rem;
+      }
+
+      .card {
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+        border-radius: 1rem;
+      }
+
+      .card h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .card-subtitle {
+        font-size: 0.8125rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .workspace-card {
+        flex-direction: column;
+        gap: 1.25rem;
+        align-items: flex-start;
+      }
+
+      .workspace-info {
+        width: 100%;
+      }
+
+      .workspace-selector {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+      }
+
+      .workspace-selector label {
+        font-size: 0.6875rem;
+      }
+
+      select {
+        width: 100%;
+        min-width: auto;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8125rem;
+      }
+
+      .connection-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .connection-card {
+        padding: 1.5rem;
+      }
+
+      .platform-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .platform-name {
+        font-size: 1rem;
+      }
+
+      .connection-status {
+        font-size: 0.8125rem;
+        margin-bottom: 1rem;
+      }
+
+      .account-item {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        align-items: flex-start;
+      }
+
+      .account-actions {
+        width: 100%;
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+      }
+
+      .account-actions button {
+        width: 100%;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .dashboard-card {
+        padding: 1.25rem;
+      }
+
+      .dashboard-card-title {
+        font-size: 1rem;
+      }
+
+      .dashboard-card-description {
+        font-size: 0.8125rem;
+      }
+
+      .dashboard-card-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+      }
+
+      .create-dashboard-card {
+        min-height: 160px;
+      }
+
+      .create-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .create-text {
+        font-size: 0.875rem;
+      }
+
+      .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+        border-radius: 1rem;
+      }
+
+      .modal-header h3 {
+        font-size: 1.25rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        font-size: 0.8125rem;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8125rem;
+      }
+
+      .modal-footer {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+      }
+
+      .modal-footer button {
+        width: 100%;
+      }
+
+      .ai-modal-content {
+        max-width: 95%;
+      }
+
+      .alert {
+        font-size: 0.8125rem;
+        padding: 0.875rem 1rem;
+        margin-bottom: 1.25rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 0.875rem;
+      }
+
+      .logo-text {
+        font-size: 0.9375rem;
+      }
+
+      .container {
+        padding: 0.75rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .card h2 {
+        font-size: 1.125rem;
+      }
+
+      .workspace-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.125rem;
+      }
+
+      .workspace-name {
+        font-size: 1rem;
+      }
+
+      .connection-card {
+        padding: 1.25rem;
+      }
+
+      .btn {
+        padding: 0.5625rem 0.875rem;
+      }
+
+      .modal-content {
+        padding: 1.25rem;
+      }
+    }
   </style>
 </head>
 <body>
