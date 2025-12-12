@@ -2,8 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const errorMessage = document.getElementById('errorMessage');
 
-    // Check if already logged in
-    checkAuth();
+    // Check if coming from logout
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromLogout = urlParams.get('logout');
+
+    // Only check auth if not coming from logout
+    if (!fromLogout) {
+        checkAuth();
+    }
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();

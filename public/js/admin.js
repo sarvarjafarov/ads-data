@@ -447,21 +447,26 @@ async function deleteUser(userId) {
 }
 
 async function logout() {
+    // Get token before clearing
+    const token = localStorage.getItem('token');
+
+    // Clear localStorage FIRST to prevent race conditions
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
     try {
         // Call logout API to clear server-side cookie
         await fetch('/api/auth/logout', {
             method: 'POST',
             credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`
             }
         });
     } catch (error) {
         console.error('Logout API error:', error);
-    } finally {
-        // Always clear localStorage and redirect, even if API call fails
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/admin/login';
     }
+
+    // Redirect with logout parameter to skip auth check
+    window.location.href = '/admin/login?logout=true';
 }
