@@ -1430,9 +1430,10 @@
         return;
       }
 
-      // Get buttons and add loading state
-      const createButton = document.querySelector('.ai-modal .modal-footer .btn-primary');
-      const tryAgainButton = document.querySelector('.ai-modal .modal-footer .btn-secondary');
+      // Get buttons from the preview section specifically
+      const previewSection = document.getElementById('aiPreviewSection');
+      const createButton = previewSection.querySelector('.btn-primary');
+      const tryAgainButton = previewSection.querySelector('.btn-secondary');
       const originalText = createButton.innerHTML;
 
       try {
