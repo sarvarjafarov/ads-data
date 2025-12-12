@@ -5,7 +5,28 @@ const Workspace = require('../models/Workspace');
  */
 const getUserWorkspaces = async (req, res) => {
   try {
-    const workspaces = await Workspace.findByUserId(req.user.id);
+    let workspaces = await Workspace.findByUserId(req.user.id);
+
+    // Safety net: If user has no workspaces, create a default one
+    if (workspaces.length === 0) {
+      console.log(`User ${req.user.id} has no workspaces. Creating default workspace.`);
+
+      const User = require('../models/User');
+      const user = await User.findById(req.user.id);
+
+      const defaultWorkspace = await Workspace.create({
+        name: `${user.company_name || user.username}'s Workspace`,
+        ownerId: req.user.id,
+        description: 'Default workspace',
+        settings: {
+          defaultCurrency: 'USD',
+          timezone: 'UTC',
+        },
+      });
+
+      // Re-fetch workspaces to include the newly created one
+      workspaces = await Workspace.findByUserId(req.user.id);
+    }
 
     res.json({
       success: true,
