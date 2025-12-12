@@ -64,7 +64,7 @@ const handleMetaCallback = async (req, res) => {
     // Handle OAuth errors
     if (error) {
       console.error('Meta OAuth error:', error, error_description);
-      return res.redirect(`http://localhost:3000/dashboard?oauth=error&message=${encodeURIComponent(error_description || error)}`);
+      return res.redirect(`/dashboard?oauth=error&message=${encodeURIComponent(error_description || error)}`);
     }
 
     if (!code || !state) {
@@ -145,10 +145,10 @@ const handleMetaCallback = async (req, res) => {
     await fetchAndStoreAdAccounts(userId, workspaceId, longLivedToken);
 
     // Redirect to success page
-    res.redirect(`http://localhost:3000/dashboard?oauth=success&platform=meta`);
+    res.redirect(`/dashboard?oauth=success&platform=meta`);
   } catch (error) {
     console.error('Meta OAuth callback error:', error);
-    res.redirect(`http://localhost:3000/dashboard?oauth=error&message=${encodeURIComponent(error.message)}`);
+    res.redirect(`/dashboard?oauth=error&message=${encodeURIComponent(error.message)}`);
   }
 };
 
