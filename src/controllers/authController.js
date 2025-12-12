@@ -4,16 +4,26 @@ const User = require('../models/User');
 const emailService = require('../services/emailService');
 const Workspace = require('../models/Workspace');
 
-// Register new user (B2B registration - requires approval)
+// Register new user (Supports both B2B and B2C)
 const register = async (req, res) => {
   try {
-    const { username, email, password, companyName, contactPerson, phone } = req.body;
+    const { username, email, password, companyName, contactPerson, phone, customerType } = req.body;
 
-    // Validation
-    if (!username || !email || !password || !companyName) {
+    // Determine customer type (default to B2B for backward compatibility)
+    const type = customerType || 'b2b';
+
+    // Validation - companyName required for B2B, optional for B2C
+    if (!username || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide username, email, password, and company name',
+        message: 'Please provide username, email, and password',
+      });
+    }
+
+    if (type === 'b2b' && !companyName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Company name is required for business accounts',
       });
     }
 
@@ -39,11 +49,12 @@ const register = async (req, res) => {
       username,
       email,
       password,
-      companyName,
+      companyName: companyName || null,
       contactPerson,
       phone,
       role: 'user',
       status: 'unverified',
+      customerType: type,
     });
 
     // Generate verification token

@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     companyName,
                     contactPerson,
                     phone,
+                    customerType: 'b2b',
                 }),
             });
 

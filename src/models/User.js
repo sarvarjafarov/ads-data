@@ -113,7 +113,8 @@ class User {
       status = 'pending',
       companyName,
       contactPerson,
-      phone
+      phone,
+      customerType = 'b2b'
     } = userData;
 
     // Hash the password
@@ -121,11 +122,11 @@ class User {
 
     const result = await query(
       `INSERT INTO users (username, email, password_hash, role, status,
-                          company_name, contact_person, phone)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                          company_name, contact_person, phone, customer_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id, username, email, role, status, company_name,
-                 contact_person, phone, created_at, updated_at, last_login_at`,
-      [username, email, passwordHash, role, status, companyName, contactPerson, phone]
+                 contact_person, phone, customer_type, created_at, updated_at, last_login_at`,
+      [username, email, passwordHash, role, status, companyName, contactPerson, phone, customerType]
     );
 
     return result.rows[0];
