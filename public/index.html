@@ -249,19 +249,23 @@
     }
 
     .btn-secondary {
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: #ffffff;
+      border: 2px solid rgba(183, 250, 49, 0.3);
+      background: rgba(183, 250, 49, 0.05);
+      color: #b7fa31;
       padding: 0.875rem 1.75rem;
       border-radius: 9999px;
-      font-weight: 500;
+      font-weight: 700;
       text-decoration: none;
-      font-size: 0.875rem;
+      font-size: 1rem;
       transition: all 0.2s;
       display: inline-block;
     }
 
     .btn-secondary:hover {
-      background-color: rgba(255, 255, 255, 0.05);
+      background-color: rgba(183, 250, 49, 0.1);
+      border-color: rgba(183, 250, 49, 0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(183, 250, 49, 0.2);
     }
 
     .card {
@@ -281,101 +285,193 @@
       transform: translateY(-5px);
     }
 
-    .platform-ticker {
-      margin-top: 3rem;
-      overflow: hidden;
-      position: relative;
-      padding: 1.5rem 0;
-    }
-
-    .platform-ticker::before,
-    .platform-ticker::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      width: 100px;
-      height: 100%;
-      z-index: 2;
-    }
-
-    .platform-ticker::before {
-      left: 0;
-      background: linear-gradient(90deg, #000000 0%, transparent 100%);
-    }
-
-    .platform-ticker::after {
-      right: 0;
-      background: linear-gradient(270deg, #000000 0%, transparent 100%);
-    }
-
-    .ticker-content {
+    .platform-logos {
       display: flex;
-      gap: 3rem;
-      animation: ticker 30s linear infinite;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
     }
 
-    .ticker-item {
-      flex-shrink: 0;
-      opacity: 0.4;
-      font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.6);
-      font-weight: 500;
+    .platform-logo {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 12px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      transition: opacity 0.3s;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.8);
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
     }
 
-    .ticker-item:hover {
-      opacity: 0.8;
+    .platform-logo:hover {
+      background: rgba(183, 250, 49, 0.1);
+      border-color: rgba(183, 250, 49, 0.5);
+      transform: translateY(-3px);
     }
 
-    .ticker-dot {
-      width: 6px;
-      height: 6px;
+    .dashboard-mockup {
+      position: relative;
+      background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(183, 250, 49, 0.2);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(183, 250, 49, 0.1);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .mockup-header {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .mockup-dot {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      background-color: #b7fa31;
-      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .mockup-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .mockup-stat {
+      background: rgba(183, 250, 49, 0.05);
+      border: 1px solid rgba(183, 250, 49, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mockup-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mockup-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #b7fa31;
+    }
+
+    .mockup-chart {
+      background: rgba(183, 250, 49, 0.05);
+      border-radius: 12px;
+      padding: 1rem;
+      height: 120px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-bar {
+      position: absolute;
+      bottom: 0;
+      width: 12%;
+      background: linear-gradient(180deg, #b7fa31 0%, rgba(183, 250, 49, 0.3) 100%);
+      border-radius: 4px 4px 0 0;
+      animation: chartGrow 2s ease-out forwards;
+    }
+
+    @keyframes chartGrow {
+      from {
+        height: 0;
+      }
+    }
+
+    .social-proof {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: rgba(183, 250, 49, 0.03);
+      border: 1px solid rgba(183, 250, 49, 0.1);
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .social-proof-number {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #b7fa31;
+      display: block;
+    }
+
+    .social-proof-text {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 0.25rem;
     }
 
     .badge {
-      display: inline-block;
-      padding: 0.5rem 1rem;
-      background: linear-gradient(135deg, rgba(183, 250, 49, 0.15) 0%, rgba(183, 250, 49, 0.05) 100%);
-      border: 1px solid rgba(183, 250, 49, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      background: linear-gradient(135deg, rgba(183, 250, 49, 0.2) 0%, rgba(183, 250, 49, 0.05) 100%);
+      border: 1px solid rgba(183, 250, 49, 0.4);
       border-radius: 9999px;
       font-size: 0.875rem;
-      font-weight: 600;
+      font-weight: 700;
       color: #b7fa31;
       margin-bottom: 1.5rem;
+      box-shadow: 0 0 20px rgba(183, 250, 49, 0.15);
+    }
+
+    .badge-icon {
+      font-size: 1rem;
+      animation: pulse 2s ease-in-out infinite;
     }
 
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 1rem;
+      margin-top: 2.5rem;
     }
 
     .stat-item {
       text-align: center;
+      background: rgba(183, 250, 49, 0.03);
+      border: 1px solid rgba(183, 250, 49, 0.15);
+      border-radius: 16px;
+      padding: 1.5rem 1rem;
+      transition: all 0.3s;
+    }
+
+    .stat-item:hover {
+      background: rgba(183, 250, 49, 0.08);
+      border-color: rgba(183, 250, 49, 0.3);
+      transform: translateY(-3px);
     }
 
     .stat-number {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #b7fa31;
+      font-size: 2.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #b7fa31 0%, #d4ff6a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       display: block;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
     }
 
     .stat-label {
       font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.6);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 1px;
+      font-weight: 600;
     }
 
     .testimonial {
@@ -772,21 +868,24 @@
       <div class="hero-grid">
         <!-- Left Content -->
         <div>
-          <div class="badge animate-fadeInUp">⚡ All Your Ad Data, One Dashboard</div>
+          <div class="badge animate-fadeInUp">
+            <span class="badge-icon">🚀</span>
+            <span>Trusted by 1,000+ marketing teams</span>
+          </div>
           <h1 class="animate-fadeInUp animate-delay-1">
             Stop juggling <span class="text-primary">multiple ad platforms</span>
           </h1>
-          <p class="lead animate-fadeInUp animate-delay-2" style="font-size: 1.375rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem; line-height: 1.6; font-weight: 500;">
-            Connect Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads, and Search Console in minutes. View everything in one unified dashboard powered by AI.
+          <p class="lead animate-fadeInUp animate-delay-2" style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 2.5rem; line-height: 1.7; max-width: 540px;">
+            One dashboard for Meta, Google, TikTok, LinkedIn & Search Console. Real-time data, AI insights, zero tab-switching.
           </p>
 
           <div class="hero-buttons animate-fadeInUp animate-delay-3">
-            <a href="/register-b2c" class="btn-primary" style="animation: pulse 2s infinite;">Start Free (Personal) →</a>
-            <a href="/register" class="btn-secondary" style="border-color: #b7fa31; color: #b7fa31;">For Business</a>
+            <a href="/register-b2c" class="btn-primary">Start Free (Personal) →</a>
+            <a href="/register" class="btn-secondary">For Business</a>
           </div>
-          <div style="text-align: center; margin-top: 0.75rem;">
-            <a href="/admin/login" style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); text-decoration: none;">Already have an account? <span style="color: #b7fa31;">Sign In</span></a>
-          </div>
+          <p style="text-align: center; margin-top: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.5);">
+            No credit card required · 2-minute setup · Cancel anytime
+          </p>
 
           <div class="stat-grid animate-fadeInUp animate-delay-4">
             <div class="stat-item">
@@ -794,57 +893,57 @@
               <span class="stat-label">Platforms</span>
             </div>
             <div class="stat-item">
-              <span class="stat-number">< 5min</span>
-              <span class="stat-label">Setup Time</span>
+              <span class="stat-number">&lt;2min</span>
+              <span class="stat-label">Setup</span>
             </div>
             <div class="stat-item">
               <span class="stat-number">100%</span>
-              <span class="stat-label">Free to Start</span>
+              <span class="stat-label">Free Start</span>
             </div>
           </div>
 
-          <div class="platform-ticker animate-fadeInUp animate-delay-5">
-            <div class="ticker-content">
-              <div class="ticker-item"><span class="ticker-dot"></span> Meta Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> Google Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> TikTok Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> LinkedIn Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> Search Console</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> Meta Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> Google Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> TikTok Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> LinkedIn Ads</div>
-              <div class="ticker-item"><span class="ticker-dot"></span> Search Console</div>
-            </div>
+          <div class="platform-logos animate-fadeInUp animate-delay-5">
+            <div class="platform-logo" title="Meta Ads">M</div>
+            <div class="platform-logo" title="Google Ads">G</div>
+            <div class="platform-logo" title="TikTok Ads">T</div>
+            <div class="platform-logo" title="LinkedIn Ads">in</div>
+            <div class="platform-logo" title="Search Console">SC</div>
           </div>
         </div>
 
-        <!-- Right Features Card -->
-        <div class="card animate-slideInRight animate-delay-2">
-          <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #ffffff 0%, #b7fa31 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Why teams choose AdsData</h3>
-          <ul style="list-style: none; padding: 0;">
-            <li class="animate-fadeInUp animate-delay-3" style="margin-bottom: 1.25rem; display: flex; align-items: start; gap: 0.75rem;">
-              <span style="color: #b7fa31; font-weight: bold; font-size: 1.25rem;">✓</span>
+        <!-- Right Dashboard Mockup -->
+        <div class="dashboard-mockup animate-slideInRight animate-delay-2">
+          <div class="mockup-header">
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+          </div>
+          <div class="mockup-content">
+            <div class="mockup-stat">
               <div>
-                <strong style="display: block; margin-bottom: 0.25rem;">Unified View</strong>
-                <span style="font-size: 0.9375rem; line-height: 1.5; color: rgba(255, 255, 255, 0.7);">All platforms in one dashboard</span>
+                <div class="mockup-label">Total Ad Spend</div>
+                <div class="mockup-value">$127.5K</div>
               </div>
-            </li>
-            <li class="animate-fadeInUp animate-delay-4" style="margin-bottom: 1.25rem; display: flex; align-items: start; gap: 0.75rem;">
-              <span style="color: #b7fa31; font-weight: bold; font-size: 1.25rem;">✓</span>
+            </div>
+            <div class="mockup-stat">
               <div>
-                <strong style="display: block; margin-bottom: 0.25rem;">AI-Powered Insights</strong>
-                <span style="font-size: 0.9375rem; line-height: 1.5; color: rgba(255, 255, 255, 0.7);">Smart recommendations automatically</span>
+                <div class="mockup-label">ROAS</div>
+                <div class="mockup-value">4.8x</div>
               </div>
-            </li>
-            <li class="animate-fadeInUp animate-delay-5" style="display: flex; align-items: start; gap: 0.75rem;">
-              <span style="color: #b7fa31; font-weight: bold; font-size: 1.25rem;">✓</span>
-              <div>
-                <strong style="display: block; margin-bottom: 0.25rem;">Real-Time Sync</strong>
-                <span style="font-size: 0.9375rem; line-height: 1.5; color: rgba(255, 255, 255, 0.7);">Live data, always up-to-date</span>
-              </div>
-            </li>
-          </ul>
+            </div>
+            <div class="mockup-chart">
+              <div class="chart-bar" style="left: 5%; height: 45%;"></div>
+              <div class="chart-bar" style="left: 20%; height: 65%;"></div>
+              <div class="chart-bar" style="left: 35%; height: 55%;"></div>
+              <div class="chart-bar" style="left: 50%; height: 80%;"></div>
+              <div class="chart-bar" style="left: 65%; height: 70%;"></div>
+              <div class="chart-bar" style="left: 80%; height: 90%; animation-delay: 0.2s;"></div>
+            </div>
+          </div>
+          <div class="social-proof">
+            <span class="social-proof-number">1,247</span>
+            <div class="social-proof-text">Teams switched this month</div>
+          </div>
         </div>
       </div>
     </div>
