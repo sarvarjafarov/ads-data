@@ -147,9 +147,10 @@
     }
 
     .container {
-      max-width: 1280px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 0 3rem;
+      width: 100%;
     }
 
     /* Hero Section */
@@ -160,7 +161,8 @@
       padding: 5rem 0;
       padding-top: 8rem;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: visible;
     }
 
     .hero::before {
@@ -324,10 +326,8 @@
       border-radius: 20px;
       padding: 1.5rem;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(183, 250, 49, 0.1);
-      animation: float 6s ease-in-out infinite;
       width: 100%;
-      max-width: 500px;
-      margin-left: auto;
+      max-width: 480px;
     }
 
     .mockup-header {
@@ -641,7 +641,6 @@
 
       .dashboard-mockup {
         max-width: 100%;
-        margin-left: 0;
       }
 
       .insights-grid {
@@ -922,7 +921,7 @@
         </div>
 
         <!-- Right Dashboard Mockup -->
-        <div class="dashboard-mockup animate-slideInRight animate-delay-2">
+        <div class="dashboard-mockup" style="opacity: 1 !important;">
           <div class="mockup-header">
             <div class="mockup-dot"></div>
             <div class="mockup-dot"></div>
