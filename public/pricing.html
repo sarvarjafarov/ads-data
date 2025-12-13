@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - AdsData</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background-color: #b7fa31;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000000;
+            font-size: 0.875rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #b7fa31;
+        }
+
+        .btn-primary {
+            background-color: #b7fa31;
+            color: #000000;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background-color: #a3e626;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 5rem 0 3rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .text-primary {
+            color: #b7fa31;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        /* Pricing Toggle */
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 4rem;
+        }
+
+        .toggle-label {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active {
+            background-color: #b7fa31;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            left: 32px;
+        }
+
+        .badge-save {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, rgba(183, 250, 49, 0.2) 0%, rgba(183, 250, 49, 0.1) 100%);
+            border: 1px solid rgba(183, 250, 49, 0.3);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #b7fa31;
+        }
+
+        /* Pricing Cards */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 5rem;
+        }
+
+        .pricing-card {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pricing-card:hover {
+            border-color: rgba(183, 250, 49, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .pricing-card.popular {
+            border-color: #b7fa31;
+            background: linear-gradient(135deg, rgba(183, 250, 49, 0.05) 0%, rgba(26, 26, 26, 1) 100%);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #b7fa31;
+            color: #000000;
+            padding: 0.375rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-description {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        .plan-price {
+            margin-bottom: 2rem;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #b7fa31;
+        }
+
+        .price-period {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+        }
+
+        .price-note {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 0.5rem;
+        }
+
+        .plan-cta {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            margin-bottom: 2rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .plan-cta.primary {
+            background-color: #b7fa31;
+            color: #000000;
+        }
+
+        .plan-cta.primary:hover {
+            background-color: #a3e626;
+            transform: translateY(-2px);
+        }
+
+        .plan-cta.secondary {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .plan-cta.secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .plan-features {
+            list-style: none;
+        }
+
+        .plan-features li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .feature-icon {
+            color: #b7fa31;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .feature-icon.disabled {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Feature Comparison */
+        .comparison-section {
+            padding: 5rem 0;
+            background-color: rgba(26, 26, 26, 0.5);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+        }
+
+        .comparison-table {
+            background-color: #1a1a1a;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            background-color: rgba(183, 250, 49, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table-header div {
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #b7fa31;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .feature-name {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .feature-value {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+
+        .check-icon {
+            color: #b7fa31;
+        }
+
+        .cross-icon {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 5rem 0;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .faq-question {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .faq-answer {
+            font-size: 0.9375rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 0;
+            text-align: center;
+        }
+
+        .cta-box {
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(183, 250, 49, 0.08) 0%, rgba(26, 26, 26, 0.95) 100%);
+            border: 2px solid rgba(183, 250, 49, 0.2);
+            border-radius: 2rem;
+            padding: 4rem 3rem;
+        }
+
+        .cta-box h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                margin: 0 auto 5rem;
+            }
+
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header,
+            .table-row {
+                grid-template-columns: 1.5fr 1fr 1fr 1fr;
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .comparison-table {
+                overflow-x: auto;
+            }
+
+            .table-header,
+            .table-row {
+                min-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">AD</div>
+                <span class="logo-text">AdsData</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/pricing">Pricing</a>
+                <a href="/admin/login">Login</a>
+                <a href="/register-b2c" class="btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Simple, <span class="text-primary">transparent pricing</span></h1>
+            <p>Choose the plan that fits your needs. Start free, upgrade when you grow.</p>
+
+            <!-- Pricing Toggle -->
+            <div class="pricing-toggle">
+                <span class="toggle-label">Monthly</span>
+                <div class="toggle-switch" id="billingToggle" onclick="toggleBilling()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="toggle-label">Yearly</span>
+                <span class="badge-save">Save 20%</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Cards -->
+    <section class="container">
+        <div class="pricing-grid">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Free</div>
+                <div class="plan-description">Perfect for individuals getting started</div>
+
+                <div class="plan-price">
+                    <div class="price">$0</div>
+                    <div class="price-period">Forever free</div>
+                </div>
+
+                <a href="/register-b2c" class="plan-cta secondary">Get Started</a>
+
+                <ul class="plan-features">
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>1 workspace</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>1 ad account</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>3 platforms (Meta, Google Ads, Search Console)</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>50 AI prompts/month</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Basic dashboards</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>7-day data history</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon disabled">✕</span>
+                        <span style="color: rgba(255, 255, 255, 0.3);">Team collaboration</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon disabled">✕</span>
+                        <span style="color: rgba(255, 255, 255, 0.3);">Advanced analytics</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">Most Popular</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-description">For growing businesses and teams</div>
+
+                <div class="plan-price">
+                    <div class="price" data-monthly="$49" data-yearly="$39">$49</div>
+                    <div class="price-period">per month</div>
+                    <div class="price-note">Billed <span id="billingCycle">monthly</span></div>
+                </div>
+
+                <a href="/register" class="plan-cta primary">Start Free Trial</a>
+
+                <ul class="plan-features">
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>5 workspaces</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>10 ad accounts</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>All platforms (Meta, Google, TikTok, LinkedIn, Search Console)</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>1,000 AI prompts/month</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Advanced dashboards & reports</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>90-day data history</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Team collaboration (up to 5 members)</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Email support</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Enterprise Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Enterprise</div>
+                <div class="plan-description">For large organizations with custom needs</div>
+
+                <div class="plan-price">
+                    <div class="price">Custom</div>
+                    <div class="price-period">Let's talk</div>
+                </div>
+
+                <a href="mailto:sales@adsdata.com" class="plan-cta secondary">Contact Sales</a>
+
+                <ul class="plan-features">
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Unlimited workspaces</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Unlimited ad accounts</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>All platforms + custom integrations</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Unlimited AI prompts</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Custom dashboards & white-label reports</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Unlimited data history</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Unlimited team members</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">✓</span>
+                        <span>Priority support & dedicated account manager</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Comparison -->
+    <section class="comparison-section">
+        <div class="container">
+            <h2 class="section-title">Compare <span class="text-primary">all features</span></h2>
+
+            <div class="comparison-table">
+                <div class="table-header">
+                    <div>Feature</div>
+                    <div>Free</div>
+                    <div>Pro</div>
+                    <div>Enterprise</div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Workspaces</div>
+                    <div class="feature-value">1</div>
+                    <div class="feature-value">5</div>
+                    <div class="feature-value">Unlimited</div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Ad Accounts</div>
+                    <div class="feature-value">1</div>
+                    <div class="feature-value">10</div>
+                    <div class="feature-value">Unlimited</div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Meta Ads</div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Google Ads</div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Google Search Console</div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">TikTok Ads</div>
+                    <div class="feature-value"><span class="cross-icon">✕</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">LinkedIn Ads</div>
+                    <div class="feature-value"><span class="cross-icon">✕</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">AI Prompts/Month</div>
+                    <div class="feature-value">50</div>
+                    <div class="feature-value">1,000</div>
+                    <div class="feature-value">Unlimited</div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Data History</div>
+                    <div class="feature-value">7 days</div>
+                    <div class="feature-value">90 days</div>
+                    <div class="feature-value">Unlimited</div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Team Members</div>
+                    <div class="feature-value">1</div>
+                    <div class="feature-value">5</div>
+                    <div class="feature-value">Unlimited</div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Custom Dashboards</div>
+                    <div class="feature-value"><span class="cross-icon">✕</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">API Access</div>
+                    <div class="feature-value"><span class="cross-icon">✕</span></div>
+                    <div class="feature-value"><span class="cross-icon">✕</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">White-Label Reports</div>
+                    <div class="feature-value"><span class="cross-icon">✕</span></div>
+                    <div class="feature-value"><span class="cross-icon">✕</span></div>
+                    <div class="feature-value"><span class="check-icon">✓</span></div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-name">Support</div>
+                    <div class="feature-value">Community</div>
+                    <div class="feature-value">Email</div>
+                    <div class="feature-value">Priority + AM</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="section-title">Frequently <span class="text-primary">asked questions</span></h2>
+
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">Can I change my plan later?</div>
+                    <div class="faq-answer">Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any charges.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">What happens when I run out of AI prompts?</div>
+                    <div class="faq-answer">Your dashboards will continue to work, but AI-generated insights will be paused until the next billing cycle. You can upgrade your plan for more prompts anytime.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Do you offer a free trial?</div>
+                    <div class="faq-answer">The Free plan is available forever with no credit card required. Pro plan comes with a 14-day free trial so you can test all features before committing.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">What payment methods do you accept?</div>
+                    <div class="faq-answer">We accept all major credit cards (Visa, Mastercard, American Express) and offer invoicing for Enterprise customers.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Can I add more ad accounts to my plan?</div>
+                    <div class="faq-answer">Yes! If you need more ad accounts than your current plan allows, you can either upgrade to a higher tier or contact us for custom pricing.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Is my data secure?</div>
+                    <div class="faq-answer">Absolutely. We use bank-level encryption, secure OAuth connections, and never store your ad platform credentials. Your data is backed up daily and stored securely.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-box">
+                <h2>Ready to get started?</h2>
+                <p>Join thousands of marketers who have simplified their ad reporting workflow.</p>
+                <div class="cta-buttons">
+                    <a href="/register-b2c" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem;">Start Free</a>
+                    <a href="mailto:sales@adsdata.com" class="plan-cta secondary" style="padding: 1rem 2.5rem; font-size: 1rem; margin: 0;">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let isYearly = false;
+
+        function toggleBilling() {
+            isYearly = !isYearly;
+            const toggle = document.getElementById('billingToggle');
+            const priceElement = document.querySelector('.price[data-monthly]');
+            const billingCycle = document.getElementById('billingCycle');
+
+            toggle.classList.toggle('active');
+
+            if (isYearly) {
+                priceElement.textContent = priceElement.dataset.yearly;
+                billingCycle.textContent = 'annually';
+            } else {
+                priceElement.textContent = priceElement.dataset.monthly;
+                billingCycle.textContent = 'monthly';
+            }
+        }
+    </script>
+</body>
+</html>
