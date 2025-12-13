@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Search Console Integration - AdsData</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background-color: #b7fa31;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000000;
+            font-size: 0.875rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .content {
+            padding: 5rem 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .text-primary {
+            color: #b7fa31;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        ul {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .feature-card h3 {
+            margin-top: 0;
+            color: #b7fa31;
+        }
+
+        .cta-section {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            background-color: #b7fa31;
+            color: #000000;
+            text-decoration: none;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background-color: rgba(183, 250, 49, 0.9);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .content {
+                padding: 3rem 0;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">AD</div>
+                <span class="logo-text">AdsData</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container">
+        <div class="content">
+            <h1>Search Console <span class="text-primary">Integration</span></h1>
+            <p class="subtitle">Track your organic search performance alongside paid advertising data</p>
+
+            <h2>What is Google Search Console?</h2>
+            <p>Google Search Console is a free tool from Google that helps you monitor, maintain, and troubleshoot your website's presence in Google Search results. It provides crucial insights into how Google sees your site and how users find you through organic search.</p>
+
+            <h2>What AdsData Does for Your Search Console Data</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Organic + Paid View</h3>
+                    <p>See organic search performance next to Google Ads data to understand your complete search strategy.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Keyword Discovery</h3>
+                    <p>Identify which organic keywords drive traffic and could inform your paid search campaigns.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Performance Trends</h3>
+                    <p>Track clicks, impressions, CTR, and average position over time with clear visualizations.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Content Opportunities</h3>
+                    <p>Find pages with high impressions but low clicks - opportunities for optimization or paid support.</p>
+                </div>
+            </div>
+
+            <h2>Key Metrics We Track</h2>
+            <ul>
+                <li><strong>Search Performance:</strong> Total clicks, impressions, average CTR, average position</li>
+                <li><strong>Query Analysis:</strong> Which search queries bring users to your site</li>
+                <li><strong>Page Performance:</strong> Top landing pages from organic search</li>
+                <li><strong>Geographic Data:</strong> Which countries drive the most organic traffic</li>
+                <li><strong>Device Breakdown:</strong> Mobile, desktop, and tablet performance</li>
+                <li><strong>Search Appearance:</strong> Rich results, AMP pages, and other SERP features</li>
+            </ul>
+
+            <h2>Why Combine Search Console with Ad Data?</h2>
+            <p>Most businesses manage organic and paid search separately, missing critical insights:</p>
+            <ul>
+                <li><strong>Budget Optimization:</strong> Reduce paid spend on keywords you already rank well for organically</li>
+                <li><strong>Keyword Strategy:</strong> Use organic data to find new paid keyword opportunities</li>
+                <li><strong>Complete Picture:</strong> Understand total search visibility (organic + paid) for important queries</li>
+                <li><strong>Content Planning:</strong> Identify high-value topics based on both organic and paid performance</li>
+                <li><strong>Competitive Analysis:</strong> See where you're winning organically vs. where you need paid support</li>
+            </ul>
+
+            <h2>Insights You'll Get</h2>
+            <ul>
+                <li>Pages with high organic impressions but low clicks (need optimization or paid boost)</li>
+                <li>Keywords where you're paying for clicks despite ranking organically</li>
+                <li>Seasonal trends in organic search that should inform paid campaigns</li>
+                <li>Content gaps where competitors rank but you don't</li>
+                <li>Mobile vs. desktop performance differences across organic and paid</li>
+            </ul>
+
+            <h2>Easy Setup</h2>
+            <p>Connect your Search Console property:</p>
+            <ul>
+                <li>Navigate to Integrations in AdsData</li>
+                <li>Select Google Search Console</li>
+                <li>Sign in with your Google account</li>
+                <li>Choose which properties to connect</li>
+                <li>Data syncs automatically</li>
+            </ul>
+
+            <h2>Security & Privacy</h2>
+            <p>We use Google's OAuth 2.0 for secure, read-only access. AdsData can view your Search Console data but cannot make changes to your website or settings. We never see your Google password.</p>
+
+            <div class="cta-section">
+                <h3>Ready to unify organic and paid search data?</h3>
+                <p>Connect Google Search Console and see your complete search performance.</p>
+                <a href="/register" class="btn">Start Free Trial</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Ads Integration - AdsData</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background-color: #b7fa31;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000000;
+            font-size: 0.875rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .content {
+            padding: 5rem 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .text-primary {
+            color: #b7fa31;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        ul {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .feature-card h3 {
+            margin-top: 0;
+            color: #b7fa31;
+        }
+
+        .cta-section {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            background-color: #b7fa31;
+            color: #000000;
+            text-decoration: none;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background-color: rgba(183, 250, 49, 0.9);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .content {
+                padding: 3rem 0;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">AD</div>
+                <span class="logo-text">AdsData</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container">
+        <div class="content">
+            <h1>Google Ads <span class="text-primary">Integration</span></h1>
+            <p class="subtitle">Connect your Google Ads accounts to track Search, Display, Shopping, and Video campaigns</p>
+
+            <h2>What is Google Ads?</h2>
+            <p>Google Ads is the world's largest online advertising platform, reaching billions of people across Google Search, YouTube, Gmail, and millions of partner websites. It's essential for businesses looking to capture high-intent customers actively searching for their products or services.</p>
+
+            <h2>What AdsData Does for Your Google Ads</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>All Campaign Types</h3>
+                    <p>Track Search, Display, Shopping, Video (YouTube), Performance Max, and App campaigns in one dashboard.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Keyword Performance</h3>
+                    <p>Analyze which keywords drive the best ROI and identify underperforming search terms.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Quality Score Tracking</h3>
+                    <p>Monitor Quality Scores to optimize ad rank and reduce costs per click.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Budget Optimization</h3>
+                    <p>Get AI recommendations on budget allocation across campaigns and account structure.</p>
+                </div>
+            </div>
+
+            <h2>Key Metrics We Track</h2>
+            <ul>
+                <li><strong>Search Performance:</strong> Clicks, impressions, CTR, average position</li>
+                <li><strong>Conversion Tracking:</strong> Conversion rate, cost per conversion, conversion value</li>
+                <li><strong>Cost Analysis:</strong> CPC, CPM, total spend, budget utilization</li>
+                <li><strong>Quality Metrics:</strong> Quality Score, expected CTR, ad relevance</li>
+                <li><strong>Shopping Campaigns:</strong> Product performance, ROAS, cart abandonment</li>
+                <li><strong>Video Campaigns:</strong> View rate, watch time, earned actions</li>
+            </ul>
+
+            <h2>Campaign Types Supported</h2>
+            <ul>
+                <li><strong>Search Campaigns:</strong> Text ads on Google search results</li>
+                <li><strong>Display Network:</strong> Banner and native ads across partner sites</li>
+                <li><strong>Shopping Campaigns:</strong> Product listings for e-commerce</li>
+                <li><strong>Video Campaigns:</strong> YouTube ads (skippable, non-skippable, bumper)</li>
+                <li><strong>Performance Max:</strong> Google's AI-powered campaign type</li>
+                <li><strong>App Campaigns:</strong> Mobile app install and engagement ads</li>
+            </ul>
+
+            <h2>Easy Setup</h2>
+            <p>Connect your Google Ads account in minutes:</p>
+            <ul>
+                <li>Go to Integrations in your AdsData dashboard</li>
+                <li>Select Google Ads and sign in with your Google account</li>
+                <li>Choose which ad accounts to connect</li>
+                <li>Data syncs automatically every hour</li>
+            </ul>
+
+            <h2>Security & Privacy</h2>
+            <p>We use Google's OAuth 2.0 authentication for secure, read-only access. AdsData can view your campaign data but cannot create, edit, or delete campaigns. We never see your Google password.</p>
+
+            <div class="cta-section">
+                <h3>Ready to optimize your Google Ads?</h3>
+                <p>Connect your account and unlock AI-powered insights.</p>
+                <a href="/register" class="btn">Start Free Trial</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

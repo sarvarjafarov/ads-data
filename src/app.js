@@ -83,6 +83,26 @@ app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/terms.html'));
 });
 
+app.get('/platforms/meta', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/platform-meta.html'));
+});
+
+app.get('/platforms/google-ads', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/platform-google.html'));
+});
+
+app.get('/platforms/tiktok', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/platform-tiktok.html'));
+});
+
+app.get('/platforms/linkedin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/platform-linkedin.html'));
+});
+
+app.get('/platforms/search-console', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/platform-searchconsole.html'));
+});
+
 // Root route - serve landing page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));

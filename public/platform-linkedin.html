@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Ads Integration - AdsData</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background-color: #b7fa31;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000000;
+            font-size: 0.875rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .content {
+            padding: 5rem 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .text-primary {
+            color: #b7fa31;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        ul {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .feature-card h3 {
+            margin-top: 0;
+            color: #b7fa31;
+        }
+
+        .cta-section {
+            background-color: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            background-color: #b7fa31;
+            color: #000000;
+            text-decoration: none;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background-color: rgba(183, 250, 49, 0.9);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .content {
+                padding: 3rem 0;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">AD</div>
+                <span class="logo-text">AdsData</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container">
+        <div class="content">
+            <h1>LinkedIn Ads <span class="text-primary">Integration</span></h1>
+            <p class="subtitle">Reach professionals and decision-makers with B2B-focused advertising</p>
+
+            <h2>What is LinkedIn Ads?</h2>
+            <p>LinkedIn Ads is the premier B2B advertising platform, connecting you with over 900 million professionals worldwide. It's the most effective platform for reaching decision-makers, generating quality leads, and building brand authority in the professional space.</p>
+
+            <h2>What AdsData Does for Your LinkedIn Ads</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>B2B Performance Tracking</h3>
+                    <p>Monitor lead quality, cost per lead, and conversion rates specifically for B2B campaigns.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Professional Targeting</h3>
+                    <p>Analyze which job titles, industries, and company sizes deliver the best ROI.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Lead Gen Forms</h3>
+                    <p>Track LinkedIn Lead Gen Form submissions and measure cost per quality lead.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Competitive Analysis</h3>
+                    <p>Compare LinkedIn ad performance with other B2B platforms and channels.</p>
+                </div>
+            </div>
+
+            <h2>Key Metrics We Track</h2>
+            <ul>
+                <li><strong>Lead Generation:</strong> Lead form submissions, cost per lead, lead quality scores</li>
+                <li><strong>Engagement:</strong> Clicks, CTR, social actions, followers gained</li>
+                <li><strong>Conversions:</strong> Website visits, content downloads, demo requests</li>
+                <li><strong>Cost Metrics:</strong> CPC, CPM, cost per send (Sponsored InMail)</li>
+                <li><strong>Audience Insights:</strong> Job function, seniority, company size, industry</li>
+                <li><strong>Content Performance:</strong> Which ad formats and messages resonate with professionals</li>
+            </ul>
+
+            <h2>Ad Formats Supported</h2>
+            <ul>
+                <li><strong>Sponsored Content:</strong> Native ads in the LinkedIn feed (single image, video, carousel)</li>
+                <li><strong>Message Ads:</strong> Direct messages to prospects' LinkedIn inbox</li>
+                <li><strong>Text Ads:</strong> Simple PPC ads on LinkedIn sidebar</li>
+                <li><strong>Dynamic Ads:</strong> Personalized ads using LinkedIn profile data</li>
+                <li><strong>Lead Gen Forms:</strong> Pre-filled forms for easy lead capture</li>
+            </ul>
+
+            <h2>Why LinkedIn Ads Matter for B2B</h2>
+            <p>LinkedIn is fundamentally different from consumer-focused platforms:</p>
+            <ul>
+                <li>Target by job title, function, seniority, and company - impossible on other platforms</li>
+                <li>Reach decision-makers when they're in a professional mindset</li>
+                <li>Higher CPCs but significantly better lead quality for B2B</li>
+                <li>Native Lead Gen Forms with auto-populated professional information</li>
+                <li>Trust and credibility from LinkedIn's professional environment</li>
+            </ul>
+
+            <h2>Easy Setup</h2>
+            <p>Connect your LinkedIn Campaign Manager:</p>
+            <ul>
+                <li>Go to Integrations in your AdsData account</li>
+                <li>Select LinkedIn Ads and log in with your LinkedIn credentials</li>
+                <li>Grant read-only access to your ad accounts</li>
+                <li>Data syncs automatically - no CSV exports needed</li>
+            </ul>
+
+            <h2>Security & Privacy</h2>
+            <p>We use LinkedIn's OAuth protocol for secure authentication. AdsData receives read-only access to your campaign metrics - we cannot create, modify, or delete campaigns. Your LinkedIn password remains private.</p>
+
+            <div class="cta-section">
+                <h3>Ready to optimize your B2B advertising?</h3>
+                <p>Connect your LinkedIn Ads account and get insights on what's working.</p>
+                <a href="/register" class="btn">Start Free Trial</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
