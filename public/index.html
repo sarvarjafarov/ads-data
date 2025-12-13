@@ -657,8 +657,98 @@
         font-size: 2.5rem;
       }
 
-      .container {
+      .container, .nav-container, .footer-container {
         padding: 0 1.5rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .footer-links {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding: 3rem 0;
+        padding-top: 6rem;
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .lead {
+        font-size: 1rem !important;
+      }
+
+      .badge {
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 1.5rem;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+      }
+
+      .stat-item {
+        padding: 1rem 0.5rem;
+      }
+
+      .stat-number {
+        font-size: 1.75rem;
+      }
+
+      .stat-label {
+        font-size: 0.625rem;
+      }
+
+      .platform-logos {
+        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      .platform-logo {
+        width: 40px;
+        height: 40px;
+        font-size: 0.625rem;
+      }
+
+      .container {
+        padding: 0 1rem;
+      }
+
+      .section h2 {
+        font-size: 2rem;
+      }
+
+      .insights-grid {
+        gap: 1rem;
       }
     }
     /* Navigation */
@@ -803,48 +893,6 @@
 
     .footer-section a:hover {
       color: #ffffff;
-    }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .hero-grid, .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 3rem;
-      }
-
-      .insights-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 3rem;
-      }
-
-      .section h2 {
-        font-size: 2.5rem;
-      }
-
-      .container, .nav-container, .footer-container {
-        padding: 0 1.5rem;
-      }
-
-      .nav-links {
-        display: none;
-      }
-
-      .mobile-menu-btn {
-        display: block;
-      }
-
-      .footer-content {
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .footer-links {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 2rem;
-      }
     }
   </style>
 </head>
