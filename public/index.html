@@ -72,6 +72,45 @@
       }
     }
 
+    @keyframes gradientMove {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(183, 250, 49, 0.3), 0 0 40px rgba(183, 250, 49, 0.1);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(183, 250, 49, 0.5), 0 0 60px rgba(183, 250, 49, 0.2);
+      }
+    }
+
+    @keyframes ticker {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
     .animate-fadeInUp {
       animation: fadeInUp 0.8s ease-out forwards;
       opacity: 0;
@@ -120,6 +159,42 @@
       align-items: center;
       padding: 5rem 0;
       padding-top: 8rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(183, 250, 49, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(183, 250, 49, 0.06) 0%, transparent 50%);
+      animation: gradientMove 15s ease infinite;
+      background-size: 200% 200%;
+      z-index: 0;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(183, 250, 49, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(183, 250, 49, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    .hero .container {
+      position: relative;
+      z-index: 1;
     }
 
     .hero-grid {
@@ -130,7 +205,7 @@
     }
 
     .hero h1 {
-      font-size: 5rem;
+      font-size: 5.5rem;
       font-weight: 900;
       line-height: 1.05;
       margin-bottom: 2rem;
@@ -138,7 +213,23 @@
     }
 
     .text-primary {
-      color: #b7fa31;
+      background: linear-gradient(135deg, #b7fa31 0%, #d4ff6a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      display: inline-block;
+    }
+
+    .text-primary::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #b7fa31, transparent);
+      border-radius: 2px;
     }
 
     .hero-buttons {
@@ -157,14 +248,15 @@
       font-size: 1rem;
       transition: all 0.2s;
       display: inline-block;
-      box-shadow: 0 4px 14px 0 rgba(183, 250, 49, 0.4);
+      box-shadow: 0 0 20px rgba(183, 250, 49, 0.3), 0 4px 14px rgba(183, 250, 49, 0.4);
       text-shadow: none;
+      animation: glow 2s ease-in-out infinite;
     }
 
     .btn-primary:hover {
       background-color: #a5e82b;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px 0 rgba(183, 250, 49, 0.5);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 30px rgba(183, 250, 49, 0.5), 0 6px 20px rgba(183, 250, 49, 0.5);
       color: #000000 !important;
     }
 
@@ -185,17 +277,77 @@
     }
 
     .card {
-      background-color: #1a1a1a;
+      background: rgba(26, 26, 26, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-radius: 1.5rem;
       padding: 2.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(183, 250, 49, 0.1);
       transition: all 0.3s;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .card:hover {
-      border-color: rgba(183, 250, 49, 0.2);
-      box-shadow: 0 8px 32px rgba(183, 250, 49, 0.1);
-      transform: translateY(-2px);
+      border-color: rgba(183, 250, 49, 0.3);
+      box-shadow: 0 8px 32px rgba(183, 250, 49, 0.15);
+      transform: translateY(-5px);
+    }
+
+    .platform-ticker {
+      margin-top: 3rem;
+      overflow: hidden;
+      position: relative;
+      padding: 1.5rem 0;
+    }
+
+    .platform-ticker::before,
+    .platform-ticker::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 100px;
+      height: 100%;
+      z-index: 2;
+    }
+
+    .platform-ticker::before {
+      left: 0;
+      background: linear-gradient(90deg, #000000 0%, transparent 100%);
+    }
+
+    .platform-ticker::after {
+      right: 0;
+      background: linear-gradient(270deg, #000000 0%, transparent 100%);
+    }
+
+    .ticker-content {
+      display: flex;
+      gap: 3rem;
+      animation: ticker 30s linear infinite;
+    }
+
+    .ticker-item {
+      flex-shrink: 0;
+      opacity: 0.4;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: opacity 0.3s;
+    }
+
+    .ticker-item:hover {
+      opacity: 0.8;
+    }
+
+    .ticker-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #b7fa31;
+      display: inline-block;
     }
 
     .badge {
@@ -660,6 +812,21 @@
             <div class="stat-item">
               <span class="stat-number">100%</span>
               <span class="stat-label">Free to Start</span>
+            </div>
+          </div>
+
+          <div class="platform-ticker animate-fadeInUp animate-delay-5">
+            <div class="ticker-content">
+              <div class="ticker-item"><span class="ticker-dot"></span> Meta Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> Google Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> TikTok Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> LinkedIn Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> Search Console</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> Meta Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> Google Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> TikTok Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> LinkedIn Ads</div>
+              <div class="ticker-item"><span class="ticker-dot"></span> Search Console</div>
             </div>
           </div>
         </div>
