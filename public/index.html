@@ -862,6 +862,81 @@
       padding: 0.5rem;
     }
 
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 80%;
+      max-width: 400px;
+      height: 100vh;
+      background-color: #000000;
+      z-index: 100;
+      transition: right 0.3s ease-in-out;
+      padding: 6rem 2rem 2rem;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .mobile-menu.active {
+      right: 0;
+    }
+
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 99;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    }
+
+    .mobile-menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-menu-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      line-height: 1;
+    }
+
+    .mobile-menu-links {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .mobile-menu-links a {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      font-size: 1.25rem;
+      font-weight: 500;
+      transition: color 0.2s;
+      padding: 0.5rem 0;
+    }
+
+    .mobile-menu-links a:hover {
+      color: #b7fa31;
+    }
+
+    .mobile-menu-links .btn-primary {
+      margin-top: 1rem;
+      text-align: center;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+    }
+
     /* Footer */
     footer {
       background-color: #000000;
@@ -950,6 +1025,19 @@
       </button>
     </div>
   </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-menu-close" id="mobileMenuClose">&times;</button>
+    <div class="mobile-menu-links">
+      <a href="/pricing">Pricing</a>
+      <a href="/admin/login">Login</a>
+      <a href="/register" class="btn-primary">Get started</a>
+    </div>
+  </div>
 
   <!-- Hero Section -->
   <section class="hero">
@@ -1216,5 +1304,43 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    // Mobile menu functionality
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
+
+    function openMobileMenu() {
+      mobileMenu.classList.add('active');
+      mobileMenuOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('active');
+      mobileMenuOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener('click', openMobileMenu);
+    }
+
+    if (mobileMenuClose) {
+      mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+
+    if (mobileMenuOverlay) {
+      mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+
+    // Close menu when clicking on a link
+    const mobileMenuLinks = document.querySelectorAll('.mobile-menu-links a');
+    mobileMenuLinks.forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+  </script>
 </body>
 </html>
