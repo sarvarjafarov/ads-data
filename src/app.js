@@ -51,6 +51,10 @@ app.get('/register', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/register.html'));
 });
 
+app.get('/register-b2c', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/register-b2c.html'));
+});
+
 app.get('/verify-email', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/verify-email.html'));
 });
