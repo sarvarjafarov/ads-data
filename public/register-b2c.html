@@ -314,7 +314,7 @@
 
                         // Redirect to verification info page after 2 seconds
                         setTimeout(() => {
-                            window.location.href = '/verify-email.html?email=' + encodeURIComponent(email);
+                            window.location.href = '/verify-email?email=' + encodeURIComponent(email);
                         }, 2000);
                     } else {
                         showError(data.message || 'Registration failed. Please try again.');

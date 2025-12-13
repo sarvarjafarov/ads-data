@@ -253,6 +253,21 @@
                 <p class="subtitle">Please wait while we verify your email address...</p>
             </div>
 
+            <!-- Check Email State (After Registration) -->
+            <div id="checkEmailState" class="message-container">
+                <div class="status-icon success">📧</div>
+                <h1>Check Your Email</h1>
+                <p class="message-text">We've sent a verification link to <strong id="userEmail"></strong>. Please check your inbox and click the link to verify your account.</p>
+                <p class="subtitle" style="margin-top: 1rem;">Didn't receive the email? Check your spam folder or request a new one below.</p>
+                <a href="/admin/login" class="btn btn-secondary" style="margin-top: 1rem;">Back to Login</a>
+
+                <!-- Resend from check email state -->
+                <div id="resendFromCheckEmail" class="resend-section show">
+                    <p>Need a new verification link?</p>
+                    <button id="resendFromEmailBtn" class="btn btn-primary">Resend Verification Email</button>
+                </div>
+            </div>
+
             <!-- Success State -->
             <div id="successState" class="message-container">
                 <div class="status-icon success">✓</div>
