@@ -449,6 +449,69 @@
             flex-wrap: wrap;
         }
 
+        /* Footer */
+        footer {
+            background-color: #000000;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4rem 0;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 4rem;
+        }
+
+        .footer-brand {
+            flex: 1;
+        }
+
+        .footer-brand p {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 1.5rem;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+            flex: 2;
+        }
+
+        .footer-section h3 {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: #ffffff;
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .pricing-grid {
@@ -465,6 +528,16 @@
             .table-row {
                 grid-template-columns: 1.5fr 1fr 1fr 1fr;
                 font-size: 0.75rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .footer-links {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
             }
         }
 
@@ -484,6 +557,10 @@
             .table-header,
             .table-row {
                 min-width: 600px;
+            }
+
+            .footer-links {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -841,6 +918,56 @@
             </div>
         </div>
     </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-content">
+                <!-- Brand -->
+                <div class="footer-brand">
+                    <a href="/" class="logo" style="display: inline-flex; margin-bottom: 1.5rem;">
+                        <div class="logo-icon">AD</div>
+                        <span class="logo-text">AdsData</span>
+                    </a>
+                    <p>&copy; 2025 AdsData. All rights reserved.</p>
+                </div>
+
+                <!-- Links Grid -->
+                <div class="footer-links">
+                    <!-- Product -->
+                    <div class="footer-section">
+                        <h3>Product</h3>
+                        <ul>
+                            <li><a href="/pricing">Pricing</a></li>
+                            <li><a href="/register">Sign up</a></li>
+                            <li><a href="/admin/login">Login</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Platforms -->
+                    <div class="footer-section">
+                        <h3>Supported Platforms</h3>
+                        <ul>
+                            <li><a href="#">Meta Ads</a></li>
+                            <li><a href="#">Google Ads</a></li>
+                            <li><a href="#">TikTok Ads</a></li>
+                            <li><a href="#">LinkedIn Ads</a></li>
+                            <li><a href="#">Search Console</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Legal -->
+                    <div class="footer-section">
+                        <h3>Legal</h3>
+                        <ul>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
         let isYearly = false;
