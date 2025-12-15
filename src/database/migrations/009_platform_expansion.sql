@@ -173,21 +173,52 @@ CREATE INDEX IF NOT EXISTS idx_cache_metadata_key ON cache_metadata(cache_key);
 CREATE INDEX IF NOT EXISTS idx_cache_metadata_expires ON cache_metadata(expires_at);
 CREATE INDEX IF NOT EXISTS idx_platform_sync_history_workspace ON platform_sync_history(workspace_id, platform, started_at DESC);
 
--- Add performance indexes to existing tables
-CREATE INDEX IF NOT EXISTS idx_google_ads_metrics_workspace_date ON google_ads_metrics(workspace_id, date DESC);
-CREATE INDEX IF NOT EXISTS idx_facebook_ads_metrics_workspace_date ON facebook_ads_metrics(workspace_id, date DESC);
-CREATE INDEX IF NOT EXISTS idx_saved_filters_workspace_type ON saved_filters(workspace_id, filter_type);
-CREATE INDEX IF NOT EXISTS idx_campaign_goals_workspace_status ON campaign_goals(workspace_id, status);
-CREATE INDEX IF NOT EXISTS idx_comments_entity ON comments(entity_type, entity_id);
-CREATE INDEX IF NOT EXISTS idx_custom_alert_rules_workspace_active ON custom_alert_rules(workspace_id, is_active);
+-- Add performance indexes to existing tables (only if tables exist)
+DO $$
+BEGIN
+  -- Index for google_ads_metrics (if table exists)
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'google_ads_metrics') THEN
+    CREATE INDEX IF NOT EXISTS idx_google_ads_metrics_workspace_date ON google_ads_metrics(workspace_id, date DESC);
+  END IF;
 
--- Grant permissions
-GRANT ALL PRIVILEGES ON TABLE platform_credentials TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE tiktok_campaigns TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE linkedin_campaigns TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE unified_campaigns TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE api_rate_limits TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE error_logs TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE system_health_metrics TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE cache_metadata TO ads_data_user;
-GRANT ALL PRIVILEGES ON TABLE platform_sync_history TO ads_data_user;
+  -- Index for facebook_ads_metrics (if table exists)
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'facebook_ads_metrics') THEN
+    CREATE INDEX IF NOT EXISTS idx_facebook_ads_metrics_workspace_date ON facebook_ads_metrics(workspace_id, date DESC);
+  END IF;
+
+  -- Index for saved_filters (if table exists)
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'saved_filters') THEN
+    CREATE INDEX IF NOT EXISTS idx_saved_filters_workspace_type ON saved_filters(workspace_id, filter_type);
+  END IF;
+
+  -- Index for campaign_goals (if table exists)
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'campaign_goals') THEN
+    CREATE INDEX IF NOT EXISTS idx_campaign_goals_workspace_status ON campaign_goals(workspace_id, status);
+  END IF;
+
+  -- Index for comments (if table exists)
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'comments') THEN
+    CREATE INDEX IF NOT EXISTS idx_comments_entity ON comments(entity_type, entity_id);
+  END IF;
+
+  -- Index for custom_alert_rules (if table exists)
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'custom_alert_rules') THEN
+    CREATE INDEX IF NOT EXISTS idx_custom_alert_rules_workspace_active ON custom_alert_rules(workspace_id, is_active);
+  END IF;
+END $$;
+
+-- Grant permissions (only if ads_data_user exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'ads_data_user') THEN
+    GRANT ALL PRIVILEGES ON TABLE platform_credentials TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE tiktok_campaigns TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE linkedin_campaigns TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE unified_campaigns TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE api_rate_limits TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE error_logs TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE system_health_metrics TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE cache_metadata TO ads_data_user;
+    GRANT ALL PRIVILEGES ON TABLE platform_sync_history TO ads_data_user;
+  END IF;
+END $$;
