@@ -1,0 +1,119 @@
+{
+  "name": "AdsData - Analytics Platform",
+  "description": "Unified analytics platform for advertising data across Meta, Google Ads, TikTok, LinkedIn, and custom data sources",
+  "repository": "https://github.com/sarvarjafarov/ads-data",
+  "logo": "https://yourdomain.com/logo.png",
+  "keywords": ["analytics", "advertising", "dashboard", "api"],
+  "stack": "heroku-20",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini",
+      "as": "DATABASE"
+    },
+    {
+      "plan": "heroku-redis:mini",
+      "as": "REDIS"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production",
+      "required": true
+    },
+    "JWT_SECRET": {
+      "description": "Secret key for JWT token generation",
+      "generator": "secret",
+      "required": true
+    },
+    "ANTHROPIC_API_KEY": {
+      "description": "Anthropic API key for AI features (Claude)",
+      "required": true
+    },
+    "GOOGLE_OAUTH_CLIENT_ID": {
+      "description": "Google OAuth Client ID for Sheets integration",
+      "required": true
+    },
+    "GOOGLE_OAUTH_CLIENT_SECRET": {
+      "description": "Google OAuth Client Secret",
+      "required": true
+    },
+    "GOOGLE_OAUTH_REDIRECT_URI": {
+      "description": "OAuth redirect URI (will be your-app.herokuapp.com/api/oauth/google-sheets/callback)",
+      "required": true
+    },
+    "META_APP_ID": {
+      "description": "Meta (Facebook) App ID",
+      "required": false
+    },
+    "META_APP_SECRET": {
+      "description": "Meta App Secret",
+      "required": false
+    },
+    "GOOGLE_ADS_CLIENT_ID": {
+      "description": "Google Ads OAuth Client ID",
+      "required": false
+    },
+    "GOOGLE_ADS_CLIENT_SECRET": {
+      "description": "Google Ads OAuth Client Secret",
+      "required": false
+    },
+    "TIKTOK_APP_ID": {
+      "description": "TikTok App ID",
+      "required": false
+    },
+    "TIKTOK_APP_SECRET": {
+      "description": "TikTok App Secret",
+      "required": false
+    },
+    "LINKEDIN_CLIENT_ID": {
+      "description": "LinkedIn OAuth Client ID",
+      "required": false
+    },
+    "LINKEDIN_CLIENT_SECRET": {
+      "description": "LinkedIn OAuth Client Secret",
+      "required": false
+    },
+    "CORS_ORIGIN": {
+      "description": "Allowed CORS origins (comma-separated)",
+      "value": "*",
+      "required": false
+    },
+    "SMTP_HOST": {
+      "description": "SMTP server hostname for email",
+      "required": false
+    },
+    "SMTP_PORT": {
+      "description": "SMTP server port",
+      "value": "587",
+      "required": false
+    },
+    "SMTP_USER": {
+      "description": "SMTP username",
+      "required": false
+    },
+    "SMTP_PASS": {
+      "description": "SMTP password",
+      "required": false
+    },
+    "EMAIL_FROM": {
+      "description": "From email address",
+      "value": "noreply@adsdata.com",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "scripts": {
+    "postdeploy": "echo 'Deployment complete! Visit your app to get started.'"
+  }
+}

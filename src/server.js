@@ -1,12 +1,28 @@
 const app = require('./app');
 const config = require('./config/config');
 const reportScheduler = require('./services/reportScheduler');
+const customDataSyncScheduler = require('./jobs/customDataSyncScheduler');
+const { initRedis } = require('./config/redis');
 
-const server = app.listen(config.port, () => {
+// Store scheduler instances
+let syncSchedulerInstance = null;
+
+const server = app.listen(config.port, async () => {
   console.log(`Server running in ${config.nodeEnv} mode on port ${config.port}`);
+
+  // Initialize Redis cache
+  try {
+    await initRedis();
+    console.log('✅ Redis cache initialized successfully');
+  } catch (error) {
+    console.warn('⚠️  Redis initialization failed, running without cache:', error.message);
+  }
 
   // Start the report scheduler
   reportScheduler.start();
+
+  // Start the custom data sync scheduler
+  syncSchedulerInstance = customDataSyncScheduler.startScheduler();
 });
 
 // Handle unhandled promise rejections
@@ -21,6 +37,11 @@ process.on('SIGTERM', () => {
 
   // Stop the report scheduler
   reportScheduler.stop();
+
+  // Stop the custom data sync scheduler
+  if (syncSchedulerInstance) {
+    syncSchedulerInstance.stop();
+  }
 
   server.close(() => {
     console.log('Process terminated');

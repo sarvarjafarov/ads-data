@@ -10,6 +10,8 @@ const {
   handleLinkedInCallback,
   initiateSearchConsoleOAuth,
   handleSearchConsoleCallback,
+  initiateGoogleSheetsOAuth,
+  handleGoogleSheetsCallback,
   getConnectedAccounts,
   disconnectAccount,
   getSupportedPlatforms,
@@ -40,6 +42,10 @@ router.get('/linkedin/callback', handleLinkedInCallback);
 // Google Search Console OAuth flow
 router.get('/search-console', authenticate, initiateSearchConsoleOAuth);
 router.get('/search-console/callback', handleSearchConsoleCallback);
+
+// Google Sheets OAuth flow (for custom data import)
+router.get('/google-sheets/initiate', authenticate, initiateGoogleSheetsOAuth);
+router.get('/google-sheets/callback', handleGoogleSheetsCallback);
 
 // Account management
 router.get('/accounts/:workspaceId', authenticate, getConnectedAccounts);

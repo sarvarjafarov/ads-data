@@ -8,6 +8,7 @@ const GoogleAdsService = require('./googleAds');
 const TikTokAdsService = require('./tiktokAds');
 const LinkedInAdsService = require('./linkedinAds');
 const SearchConsoleService = require('./searchConsole');
+const GoogleSheetsService = require('./googleSheets');
 
 const platformServices = {
   meta: MetaAdsService,
@@ -15,6 +16,7 @@ const platformServices = {
   tiktok: TikTokAdsService,
   linkedin: LinkedInAdsService,
   search_console: SearchConsoleService,
+  google_sheets: GoogleSheetsService,
 };
 
 /**
@@ -75,6 +77,12 @@ function getPlatformInfo(platform) {
       description: 'Connect your Search Console for organic search analytics',
       color: '#34A853',
     },
+    google_sheets: {
+      name: 'Google Sheets',
+      icon: '📊',
+      description: 'Import custom data from Google Sheets',
+      color: '#0F9D58',
+    },
   };
 
   return info[platform] || { name: platform, icon: '📊', description: '', color: '#666666' };
@@ -89,4 +97,5 @@ module.exports = {
   TikTokAdsService,
   LinkedInAdsService,
   SearchConsoleService,
+  GoogleSheetsService,
 };

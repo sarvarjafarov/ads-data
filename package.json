@@ -23,22 +23,29 @@
     "url": "https://github.com/sarvarjafarov/ads-data/issues"
   },
   "homepage": "https://github.com/sarvarjafarov/ads-data#readme",
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "express-validator": "^7.3.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
+    "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.10",
     "pg": "^8.16.3",
-    "redis": "^5.10.0"
+    "redis": "^5.10.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",

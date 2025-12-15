@@ -1,6 +1,10 @@
 const axios = require('axios');
 const config = require('../config/config');
 const { query } = require('../config/database');
+const { GoogleSheetsService } = require('../services/platforms');
+const CustomDataSource = require('../models/CustomDataSource');
+const CustomDataParser = require('../services/customDataParser');
+const AICustomData = require('../services/aiCustomData');
 
 /**
  * Initiate Meta OAuth flow
@@ -602,6 +606,251 @@ async function storeAdAccounts(userId, workspaceId, platform, accounts) {
   console.log(`Stored ${accounts.length} ${platform} ad accounts for workspace ${workspaceId}`);
 }
 
+/**
+ * Initiate Google Sheets OAuth flow
+ * GET /api/oauth/google-sheets/initiate
+ */
+const initiateGoogleSheetsOAuth = (req, res) => {
+  try {
+    const { workspaceId, googleSheetUrl } = req.query;
+
+    if (!workspaceId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Workspace ID is required',
+      });
+    }
+
+    if (!googleSheetUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google Sheet URL is required',
+      });
+    }
+
+    if (!config.google?.clientId) {
+      return res.status(500).json({
+        success: false,
+        message: 'Google OAuth is not configured. Please set GOOGLE_CLIENT_ID in environment variables.',
+      });
+    }
+
+    // Validate and extract spreadsheet ID
+    let spreadsheetId;
+    try {
+      spreadsheetId = GoogleSheetsService.extractSpreadsheetId(googleSheetUrl);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Google Sheets URL',
+        error: error.message,
+      });
+    }
+
+    // Store workspace ID and spreadsheet info in state for callback
+    const state = Buffer.from(JSON.stringify({
+      workspaceId,
+      userId: req.user.id,
+      spreadsheetId,
+      googleSheetUrl,
+      timestamp: Date.now(),
+    })).toString('base64');
+
+    // Build Google Sheets OAuth URL
+    const authUrl = GoogleSheetsService.buildAuthUrl(config, state);
+
+    res.json({
+      success: true,
+      authUrl,
+      spreadsheetId,
+    });
+  } catch (error) {
+    console.error('Google Sheets OAuth initiation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to initiate Google Sheets OAuth',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Handle Google Sheets OAuth callback
+ * GET /api/oauth/google-sheets/callback
+ */
+const handleGoogleSheetsCallback = async (req, res) => {
+  try {
+    const { code, state, error, error_description } = req.query;
+
+    // Handle OAuth errors
+    if (error) {
+      console.error('Google Sheets OAuth error:', error, error_description);
+      return res.redirect(`/dashboard?oauth=error&message=${encodeURIComponent(error_description || error)}`);
+    }
+
+    if (!code || !state) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing authorization code or state',
+      });
+    }
+
+    // Decode and validate state
+    let stateData;
+    try {
+      stateData = JSON.parse(Buffer.from(state, 'base64').toString());
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid state parameter',
+      });
+    }
+
+    const { workspaceId, userId, spreadsheetId, googleSheetUrl } = stateData;
+
+    // Exchange code for access token
+    const tokenData = await GoogleSheetsService.exchangeCodeForToken(config, code);
+    const { accessToken, refreshToken, expiresIn } = tokenData;
+
+    // Calculate expiration date
+    const expiresAt = new Date();
+    expiresAt.setSeconds(expiresAt.getSeconds() + expiresIn);
+
+    // Store OAuth token
+    const tokenResult = await query(
+      `INSERT INTO oauth_tokens (user_id, workspace_id, platform, access_token, refresh_token, token_type, expires_at, scope)
+       VALUES ($1, $2, 'google_sheets', $3, $4, 'Bearer', $5, $6)
+       RETURNING id`,
+      [userId, workspaceId, accessToken, refreshToken, expiresAt, 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly']
+    );
+
+    const oauthTokenId = tokenResult.rows[0].id;
+
+    // Fetch spreadsheet metadata
+    const metadata = await GoogleSheetsService.fetchSpreadsheetMetadata(spreadsheetId, accessToken);
+
+    // Fetch data from first sheet
+    const firstSheet = metadata.sheets[0];
+    const sheetRange = `${firstSheet.title}`;
+    const sheetData = await GoogleSheetsService.fetchSheetData(spreadsheetId, sheetRange, accessToken);
+
+    // Get sample data for AI analysis
+    const sampleData = sheetData.rows.slice(0, 10);
+
+    // Basic type detection
+    const basicDetection = CustomDataParser.detectColumnTypes(sampleData);
+
+    // AI-powered schema detection
+    let aiSchemaResult = null;
+    let aiVisualizationSuggestions = null;
+
+    try {
+      aiSchemaResult = await AICustomData.detectSchema(
+        sampleData,
+        metadata.title,
+        basicDetection
+      );
+
+      if (aiSchemaResult.success) {
+        aiVisualizationSuggestions = await AICustomData.suggestVisualizations(
+          aiSchemaResult.schema,
+          sampleData,
+          `Google Sheet: ${metadata.title}`
+        );
+      }
+    } catch (aiError) {
+      console.error('AI schema detection failed:', aiError);
+    }
+
+    const detectedSchema = aiSchemaResult?.success
+      ? aiSchemaResult.schema
+      : {
+          columns: basicDetection.columns,
+          confidence: basicDetection.confidence,
+          primaryDateColumn: null,
+          warnings: [],
+          suggestions: []
+        };
+
+    // Extract column information
+    const dateColumn = detectedSchema.primaryDateColumn || null;
+    const metricColumns = detectedSchema.columns
+      .filter(col => col.role === 'metric')
+      .map(col => col.name);
+    const dimensionColumns = detectedSchema.columns
+      .filter(col => col.role === 'dimension')
+      .map(col => col.name);
+
+    // Create custom data source
+    const source = await CustomDataSource.create({
+      workspaceId,
+      userId,
+      sourceType: 'google_sheets',
+      sourceName: metadata.title,
+      description: `Google Sheet imported from ${firstSheet.title}`,
+      googleSheetId: spreadsheetId,
+      googleSheetUrl,
+      oauthTokenId,
+      sheetRange: firstSheet.title,
+      detectedSchema,
+      columnMappings: {},
+      sampleData: sampleData,
+      syncEnabled: true,
+      syncFrequency: 'hourly',
+      dateColumn,
+      metricColumns,
+      dimensionColumns,
+      aiSuggestions: aiVisualizationSuggestions?.recommendations || {},
+      recommendedVisualizations: aiVisualizationSuggestions?.recommendations?.recommendedWidgets || []
+    });
+
+    // Transform and insert all rows
+    const records = CustomDataParser.transformRowsToRecords(
+      sheetData.rows,
+      detectedSchema,
+      source.id
+    );
+
+    // Bulk insert in batches
+    const batchSize = 1000;
+    let insertedCount = 0;
+
+    for (let i = 0; i < records.length; i += batchSize) {
+      const batch = records.slice(i, i + batchSize);
+      try {
+        await CustomDataSource.bulkInsertRecords(batch);
+        insertedCount += batch.length;
+      } catch (batchError) {
+        console.error(`Batch insert failed:`, batchError);
+      }
+    }
+
+    // Update row count
+    await CustomDataSource.updateRowCount(source.id, insertedCount);
+
+    // Create sync job
+    const syncJob = await CustomDataSource.createSyncJob({
+      sourceId: source.id,
+      jobType: 'initial_import',
+      totalRows: sheetData.totalRows
+    });
+
+    await CustomDataSource.updateSyncJob(syncJob.id, {
+      status: 'completed',
+      processedRows: insertedCount,
+      newRows: insertedCount,
+    });
+
+    console.log(`✅ Successfully imported ${insertedCount} rows from Google Sheet: ${metadata.title}`);
+
+    // Redirect to success page
+    res.redirect(`/dashboard?oauth=success&platform=google_sheets&sourceId=${source.id}&rows=${insertedCount}`);
+  } catch (error) {
+    console.error('Google Sheets OAuth callback error:', error);
+    res.redirect(`/dashboard?oauth=error&message=${encodeURIComponent(error.message)}`);
+  }
+};
+
 module.exports = {
   initiateMetaOAuth,
   handleMetaCallback,
@@ -613,6 +862,8 @@ module.exports = {
   handleLinkedInCallback,
   initiateSearchConsoleOAuth,
   handleSearchConsoleCallback,
+  initiateGoogleSheetsOAuth,
+  handleGoogleSheetsCallback,
   getConnectedAccounts,
   disconnectAccount,
   getSupportedPlatforms,

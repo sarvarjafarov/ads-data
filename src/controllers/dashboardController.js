@@ -601,7 +601,7 @@ const createFromTemplate = async (req, res) => {
 // Generate dashboard from AI prompt
 const generateAIDashboard = async (req, res) => {
   try {
-    const { prompt, workspaceId, adAccountId, createDashboard: shouldCreate } = req.body;
+    const { prompt, workspaceId, adAccountId, customSourceIds = [], createDashboard: shouldCreate } = req.body;
 
     if (!prompt || !workspaceId) {
       return res.status(400).json({
@@ -625,6 +625,7 @@ const generateAIDashboard = async (req, res) => {
     const result = await generateDashboardFromPrompt(prompt, {
       adAccountId,
       workspaceId,
+      customSourceIds, // Include custom data sources for AI
     });
 
     // If shouldCreate is true, create the actual dashboard

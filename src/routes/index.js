@@ -20,6 +20,8 @@ const commentRoutes = require('./commentRoutes');
 const tiktokRoutes = require('./tiktokRoutes');
 const linkedinRoutes = require('./linkedinRoutes');
 const unifiedReportingRoutes = require('./unifiedReportingRoutes');
+const customDataRoutes = require('./customDataRoutes');
+const webhookRoutes = require('./webhookRoutes');
 
 const router = express.Router();
 
@@ -44,5 +46,7 @@ router.use('/comments', commentRoutes);
 router.use('/tiktok', tiktokRoutes);
 router.use('/linkedin', linkedinRoutes);
 router.use('/unified', unifiedReportingRoutes);
+router.use('/api', customDataRoutes);
+router.use('/webhooks', webhookRoutes);
 
 module.exports = router;

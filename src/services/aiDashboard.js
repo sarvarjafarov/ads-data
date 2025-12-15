@@ -5,6 +5,7 @@
 
 const Anthropic = require('@anthropic-ai/sdk');
 const config = require('../config/config');
+const CustomDataSource = require('../models/CustomDataSource');
 
 // Available widget types and metrics for context
 const AVAILABLE_WIDGETS = [
@@ -48,15 +49,52 @@ const AVAILABLE_METRICS = [
  * Generate dashboard configuration from user prompt
  */
 async function generateDashboardFromPrompt(prompt, options = {}) {
-  const { adAccountId, workspaceId, platform = 'meta' } = options;
+  const { adAccountId, workspaceId, platform = 'meta', customSourceIds = [] } = options;
 
   if (!config.anthropic?.apiKey) {
     throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY in environment variables.');
   }
 
+  // Fetch custom data sources if provided
+  const customSources = [];
+  if (customSourceIds.length > 0) {
+    for (const sourceId of customSourceIds) {
+      try {
+        const source = await CustomDataSource.findById(sourceId);
+        if (source) {
+          customSources.push({
+            id: source.id,
+            name: source.source_name,
+            type: source.source_type,
+            metrics: source.metric_columns || [],
+            dimensions: source.dimension_columns || [],
+            dateColumn: source.date_column,
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to load custom source ${sourceId}:`, error);
+      }
+    }
+  }
+
   const anthropic = new Anthropic({
     apiKey: config.anthropic.apiKey,
   });
+
+  // Build custom metrics list
+  const customMetrics = customSources.flatMap(source =>
+    source.metrics.map(metric => ({
+      id: `custom_${source.id}_${metric}`,
+      name: `${source.name} - ${metric}`,
+      description: `${metric} from custom data source: ${source.name}`,
+      category: 'custom',
+      sourceId: source.id,
+      sourceName: source.name,
+      metricName: metric,
+    }))
+  );
+
+  const allMetrics = [...AVAILABLE_METRICS, ...customMetrics];
 
   const systemPrompt = `You are an expert advertising analytics dashboard designer. Your task is to create comprehensive, insightful dashboards based on user requirements.
 
@@ -64,7 +102,19 @@ Available widget types:
 ${AVAILABLE_WIDGETS.map(w => `- ${w}`).join('\n')}
 
 Available metrics:
-${AVAILABLE_METRICS.map(m => `- ${m.id}: ${m.name} - ${m.description}`).join('\n')}
+${allMetrics.map(m => `- ${m.id}: ${m.name} - ${m.description}`).join('\n')}
+
+${customSources.length > 0 ? `\nCustom Data Sources Available:
+${customSources.map(s => `- ${s.name} (${s.type}): ${s.metrics.join(', ')}`).join('\n')}
+
+When using custom data sources, set the widget's dataSource to:
+{
+  "type": "custom_data",
+  "customSourceId": "source_id",
+  "metric": "metric_name",
+  "aggregation": "sum|avg|count"
+}
+` : ''}
 
 Dashboard grid is 12 columns wide. Widgets have positions: { x: 0-11, y: row, w: width (1-12), h: height (typically 4-8) }
 
@@ -137,7 +187,7 @@ Respond ONLY with valid JSON in this exact format:
  * Validate and enhance the AI-generated configuration
  */
 function validateAndEnhanceConfig(config, options) {
-  const { adAccountId } = options;
+  const { adAccountId, customSourceIds = [] } = options;
 
   // Ensure required fields
   if (!config.name) config.name = 'AI Generated Dashboard';
@@ -152,10 +202,68 @@ function validateAndEnhanceConfig(config, options) {
       widget.widgetType = 'kpi_card';
     }
 
-    // Ensure valid metric
-    const validMetric = AVAILABLE_METRICS.find(m => m.id === widget.metric);
-    if (!validMetric) {
-      widget.metric = 'spend';
+    // Check if this is a custom data widget
+    const isCustomMetric = widget.metric?.startsWith('custom_');
+
+    // Handle data source configuration
+    if (widget.dataSource?.type === 'custom_data' || isCustomMetric) {
+      // Custom data source widget
+      let customSourceId = widget.dataSource?.customSourceId;
+      let metricName = widget.dataSource?.metric;
+
+      // Extract from metric ID if not explicitly provided
+      if (isCustomMetric && !customSourceId) {
+        const parts = widget.metric.split('_');
+        if (parts.length >= 3) {
+          customSourceId = parts[1]; // custom_<sourceId>_<metric>
+          metricName = parts.slice(2).join('_');
+        }
+      }
+
+      // Validate custom source exists in provided sources
+      if (customSourceId && customSourceIds.includes(customSourceId)) {
+        widget.dataSource = {
+          type: 'custom_data',
+          customSourceId,
+          metric: metricName || widget.metric,
+          aggregation: widget.dataSource?.aggregation || 'sum',
+          filters: widget.dataSource?.filters || {},
+          groupBy: widget.dataSource?.groupBy || [],
+          dateRange: widget.dataSource?.dateRange || 'last_30_days',
+        };
+      } else {
+        // Fallback to first custom source or platform data
+        if (customSourceIds.length > 0) {
+          widget.dataSource = {
+            type: 'custom_data',
+            customSourceId: customSourceIds[0],
+            metric: metricName || 'spend',
+            aggregation: 'sum',
+            dateRange: 'last_30_days',
+          };
+        } else {
+          // No custom sources available, use platform data
+          widget.dataSource = {
+            type: 'platform',
+            adAccountId: adAccountId || null,
+            metric: 'spend',
+            dateRange: 'last_30_days',
+          };
+        }
+      }
+    } else {
+      // Platform data source widget
+      const validMetric = AVAILABLE_METRICS.find(m => m.id === widget.metric);
+      if (!validMetric) {
+        widget.metric = 'spend';
+      }
+
+      widget.dataSource = {
+        type: 'platform',
+        adAccountId: adAccountId || null,
+        metric: widget.metric,
+        dateRange: 'last_30_days',
+      };
     }
 
     // Ensure valid position
@@ -173,13 +281,6 @@ function validateAndEnhanceConfig(config, options) {
     widget.position.y = Math.max(0, widget.position.y || 0);
     widget.position.w = Math.max(1, Math.min(12, widget.position.w || 4));
     widget.position.h = Math.max(2, Math.min(12, widget.position.h || 4));
-
-    // Add data source configuration
-    widget.dataSource = {
-      adAccountId: adAccountId || null,
-      metric: widget.metric,
-      dateRange: 'last_30_days',
-    };
 
     return widget;
   });
