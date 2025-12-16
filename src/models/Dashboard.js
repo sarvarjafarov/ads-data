@@ -162,6 +162,17 @@ class Dashboard {
     return result.rows[0];
   }
 
+  static async getWidget(widgetId) {
+    const result = await query(
+      `SELECT id, dashboard_id, widget_type, title, description, position, data_source, chart_config, filters, created_at, updated_at
+       FROM dashboard_widgets
+       WHERE id = $1`,
+      [widgetId]
+    );
+
+    return result.rows[0];
+  }
+
   // Share management methods
   static async createShareLink(dashboardId, createdBy, options = {}) {
     const crypto = require('crypto');
