@@ -968,6 +968,7 @@
     <nav class="nav-menu">
       <a href="/dashboard" class="nav-link active">Dashboard</a>
       <a href="/campaigns" class="nav-link">Campaign Explorer</a>
+      <a href="/custom-data.html" class="nav-link">📊 Custom Data</a>
     </nav>
     <div class="user-info">
       <span class="user-email" id="userEmail">Loading...</span>
@@ -1023,6 +1024,14 @@
           <div class="platform-name">Search Console</div>
           <div class="connection-status" id="searchConsoleStatus">Not connected</div>
           <button class="btn btn-primary" onclick="connectSearchConsole()" id="searchConsoleConnectBtn">Connect Search Console</button>
+        </div>
+
+        <!-- Custom Data Upload -->
+        <div class="connection-card" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border: 2px solid rgba(103, 126, 234, 0.3);">
+          <div class="platform-icon">📊</div>
+          <div class="platform-name">Custom Data</div>
+          <div class="connection-status" style="color: #b7fa31;">Import Excel/CSV</div>
+          <button class="btn btn-primary" onclick="window.location.href='/custom-data.html'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Upload Data</button>
         </div>
       </div>
     </div>
@@ -1242,7 +1251,7 @@
           return;
         }
 
-        accountsList.innerHTML = accounts.map(account => `
+        let htmlContent = accounts.map(account => `
           <div class="account-item">
             <div class="account-info">
               <div class="account-name">${account.platform.toUpperCase()}: ${account.account_name}</div>
@@ -1254,6 +1263,37 @@
             </div>
           </div>
         `).join('');
+
+        // Load custom data sources
+        try {
+          const customDataResponse = await fetch(`/api/workspaces/${selectedWorkspaceId}/custom-data/sources`, {
+            credentials: 'include'
+          });
+
+          if (customDataResponse.ok) {
+            const customData = await customDataResponse.json();
+            const sources = customData.data || customData.sources || [];
+
+            if (sources.length > 0) {
+              htmlContent += sources.map(source => `
+                <div class="account-item" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-left: 3px solid #667eea;">
+                  <div class="account-info">
+                    <div class="account-name">📊 CUSTOM DATA: ${source.source_name}</div>
+                    <div class="account-id">Type: ${source.source_type.toUpperCase()} | Rows: ${source.row_count || 0}</div>
+                  </div>
+                  <div class="account-actions">
+                    <span class="account-status connected" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">imported</span>
+                    <button class="btn btn-danger" onclick="deleteCustomData('${source.id}')">Delete</button>
+                  </div>
+                </div>
+              `).join('');
+            }
+          }
+        } catch (error) {
+          console.error('Error loading custom data sources:', error);
+        }
+
+        accountsList.innerHTML = htmlContent;
 
         // Update Meta status
         const metaAccounts = accounts.filter(a => a.platform === 'meta');
@@ -1382,6 +1422,29 @@
       } catch (error) {
         console.error('Error disconnecting account:', error);
         showAlert('Failed to disconnect account', 'error');
+      }
+    }
+
+    async function deleteCustomData(sourceId) {
+      if (!confirm('Are you sure you want to delete this custom data source? All data will be permanently removed.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/workspaces/${selectedWorkspaceId}/custom-data/sources/${sourceId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete custom data source');
+        }
+
+        showAlert('Custom data source deleted successfully', 'success');
+        await loadAccounts();
+      } catch (error) {
+        console.error('Error deleting custom data source:', error);
+        showAlert('Failed to delete custom data source', 'error');
       }
     }
 
