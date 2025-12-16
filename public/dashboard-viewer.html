@@ -2031,6 +2031,226 @@
         padding: 0.5rem 0.375rem;
       }
     }
+
+    /* AI Analysis Modal */
+    .ai-analysis-modal {
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .analysis-widget-info {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analysis-widget-info h4 {
+      margin: 0 0 5px 0;
+      color: #ffffff;
+      font-size: 1rem;
+    }
+
+    .analysis-widget-info p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+
+    /* AI Loading State */
+    .ai-loading {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .ai-loading .spinner {
+      border: 4px solid rgba(183, 250, 49, 0.1);
+      border-top: 4px solid #b7fa31;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    .ai-loading p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Analysis Sections */
+    .analysis-section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analysis-section h4 {
+      margin: 0 0 15px 0;
+      color: #b7fa31;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Status Badge */
+    .status-section {
+      text-align: center;
+      border: 2px solid rgba(183, 250, 49, 0.2);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .status-badge.status-excellent {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 2px solid #22c55e;
+    }
+
+    .status-badge.status-good {
+      background: rgba(183, 250, 49, 0.2);
+      color: #b7fa31;
+      border: 2px solid #b7fa31;
+    }
+
+    .status-badge.status-concerning {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      border: 2px solid #fbbf24;
+    }
+
+    .status-badge.status-critical {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 2px solid #ef4444;
+    }
+
+    #performanceStatusText {
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.6;
+      margin: 10px 0 0 0;
+    }
+
+    /* Insights List */
+    .insight-item, .risk-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      background: rgba(183, 250, 49, 0.05);
+      border-left: 3px solid #b7fa31;
+      border-radius: 4px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.5;
+    }
+
+    .risk-item {
+      background: rgba(239, 68, 68, 0.1);
+      border-left-color: #ef4444;
+    }
+
+    #criticalInsightsList, #riskAlertsList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Recommendations */
+    .recommendation-card {
+      padding: 15px;
+      margin-bottom: 15px;
+      background: rgba(183, 250, 49, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(183, 250, 49, 0.2);
+    }
+
+    .recommendation-card.priority-high {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .recommendation-card.priority-medium {
+      border-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.05);
+    }
+
+    .rec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .rec-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #b7fa31 0%, #7fd858 100%);
+      color: #000000;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .rec-priority {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .recommendation-card h5 {
+      margin: 0 0 8px 0;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .recommendation-card p {
+      margin: 0 0 10px 0;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+    }
+
+    .rec-impact {
+      font-size: 0.85rem;
+      color: #b7fa31;
+      font-weight: 500;
+    }
+
+    /* Trend Section */
+    .trend-section p {
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Widget Action Button for AI */
+    .widget-action-btn {
+      font-size: 1.1rem;
+      transition: all 0.3s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+      opacity: 0.7;
+    }
+
+    .widget-action-btn:hover {
+      transform: scale(1.15);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -2329,6 +2549,70 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Widget Analysis Modal -->
+  <div id="aiAnalysisModal" class="modal">
+    <div class="modal-content ai-analysis-modal">
+      <div class="modal-header">
+        <h3>🤖 AI Performance Analysis</h3>
+        <button class="close-btn" onclick="closeAIAnalysisModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Widget Title -->
+        <div class="analysis-widget-info">
+          <h4 id="analysisWidgetTitle"></h4>
+          <p id="analysisWidgetMetric"></p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="aiAnalysisLoading" class="ai-loading">
+          <div class="spinner"></div>
+          <p>AI is analyzing your widget data...</p>
+        </div>
+
+        <!-- Analysis Results -->
+        <div id="aiAnalysisResults" style="display: none;">
+          <!-- Performance Status -->
+          <div class="analysis-section status-section">
+            <div class="status-badge" id="performanceStatus"></div>
+            <p id="performanceStatusText"></p>
+          </div>
+
+          <!-- Critical Insights -->
+          <div class="analysis-section insights-section">
+            <h4>💡 Critical Insights</h4>
+            <ul id="criticalInsightsList"></ul>
+          </div>
+
+          <!-- Risk Alerts (if any) -->
+          <div class="analysis-section risk-section" id="riskSection" style="display: none;">
+            <h4>⚠️ Risk Alerts</h4>
+            <ul id="riskAlertsList"></ul>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="analysis-section recommendations-section">
+            <h4>🎯 Recommended Actions</h4>
+            <div id="recommendationsList"></div>
+          </div>
+
+          <!-- Trend Analysis -->
+          <div class="analysis-section trend-section">
+            <h4>📈 Trend Analysis</h4>
+            <p id="trendAnalysisText"></p>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="aiAnalysisError" class="error-message" style="display: none;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeAIAnalysisModal()">Close</button>
       </div>
     </div>
   </div>
@@ -2900,6 +3184,7 @@
               <span class="widget-timestamp" id="timestamp-${widget.id}"></span>
             </div>
             <div class="widget-actions">
+              <button class="widget-action-btn" onclick="analyzeWidgetWithAI('${widget.id}')" title="AI Analysis">🤖</button>
               <button class="widget-refresh-btn" onclick="refreshSingleWidget('${widget.id}')" title="Refresh">↻</button>
               <span class="widget-action" onclick="editWidget('${widget.id}')" title="Edit">✏️</span>
               <span class="widget-action delete" onclick="deleteWidget('${widget.id}')" title="Delete">🗑️</span>
@@ -4712,6 +4997,120 @@
         "'": '&#039;'
       };
       return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // AI Widget Analysis Functions
+    let currentAnalysisWidgetId = null;
+
+    async function analyzeWidgetWithAI(widgetId) {
+      currentAnalysisWidgetId = widgetId;
+
+      // Find widget
+      const widget = dashboard.widgets.find(w => w.id === widgetId);
+      if (!widget) {
+        showAlert('Widget not found', 'error');
+        return;
+      }
+
+      // Open modal
+      document.getElementById('aiAnalysisModal').classList.add('show');
+      document.getElementById('analysisWidgetTitle').textContent = widget.title;
+      const dataSource = widget.data_source || {};
+      document.getElementById('analysisWidgetMetric').textContent =
+        `Metric: ${dataSource.metric || 'N/A'} | ${dataSource.dateRange || 'N/A'}`;
+
+      // Show loading
+      document.getElementById('aiAnalysisLoading').style.display = 'block';
+      document.getElementById('aiAnalysisResults').style.display = 'none';
+      document.getElementById('aiAnalysisError').style.display = 'none';
+
+      try {
+        // Call API
+        const response = await fetch(`/api/dashboards/widgets/${widgetId}/analyze`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            includeHistorical: true
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Analysis failed');
+        }
+
+        const data = await response.json();
+
+        // Hide loading
+        document.getElementById('aiAnalysisLoading').style.display = 'none';
+
+        // Display results
+        displayAIAnalysisResults(data.analysis);
+
+      } catch (error) {
+        console.error('AI analysis error:', error);
+        document.getElementById('aiAnalysisLoading').style.display = 'none';
+        document.getElementById('aiAnalysisError').textContent =
+          error.message || 'Failed to analyze widget. Please try again.';
+        document.getElementById('aiAnalysisError').style.display = 'block';
+      }
+    }
+
+    function displayAIAnalysisResults(analysis) {
+      // Show results container
+      document.getElementById('aiAnalysisResults').style.display = 'block';
+
+      // Performance Status
+      const statusBadge = document.getElementById('performanceStatus');
+      statusBadge.textContent = analysis.status.toUpperCase();
+      statusBadge.className = `status-badge status-${analysis.status}`;
+      document.getElementById('performanceStatusText').textContent =
+        analysis.statusDescription;
+
+      // Critical Insights
+      const insightsList = document.getElementById('criticalInsightsList');
+      insightsList.innerHTML = analysis.criticalInsights
+        .map(insight => `<li class="insight-item">${escapeHtml(insight)}</li>`)
+        .join('');
+
+      // Risk Alerts
+      if (analysis.riskAlerts && analysis.riskAlerts.length > 0) {
+        document.getElementById('riskSection').style.display = 'block';
+        const riskList = document.getElementById('riskAlertsList');
+        riskList.innerHTML = analysis.riskAlerts
+          .map(risk => `<li class="risk-item">${escapeHtml(risk)}</li>`)
+          .join('');
+      } else {
+        document.getElementById('riskSection').style.display = 'none';
+      }
+
+      // Recommendations
+      const recommendationsList = document.getElementById('recommendationsList');
+      recommendationsList.innerHTML = analysis.recommendations
+        .map((rec, idx) => `
+          <div class="recommendation-card priority-${rec.priority}">
+            <div class="rec-header">
+              <span class="rec-number">${idx + 1}</span>
+              <span class="rec-priority">${rec.priority.toUpperCase()} PRIORITY</span>
+            </div>
+            <h5>${escapeHtml(rec.title)}</h5>
+            <p>${escapeHtml(rec.description)}</p>
+            <div class="rec-impact">Expected Impact: ${escapeHtml(rec.expectedImpact)}</div>
+          </div>
+        `)
+        .join('');
+
+      // Trend Analysis
+      document.getElementById('trendAnalysisText').textContent =
+        analysis.trendAssessment;
+    }
+
+    function closeAIAnalysisModal() {
+      document.getElementById('aiAnalysisModal').classList.remove('show');
+      currentAnalysisWidgetId = null;
     }
 
     // Load notifications periodically

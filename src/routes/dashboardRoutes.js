@@ -19,6 +19,7 @@ const {
   getAIRecommendations,
   getAIImprovements,
   getAIOptions,
+  analyzeWidgetWithAI,
 } = require('../controllers/dashboardController');
 const authenticate = require('../middleware/auth');
 
@@ -41,6 +42,9 @@ router.delete('/:id', deleteDashboard);
 router.post('/:dashboardId/widgets', addWidget);
 router.put('/widgets/:widgetId', updateWidget);
 router.delete('/widgets/:widgetId', deleteWidget);
+
+// AI Widget Analysis
+router.post('/widgets/:widgetId/analyze', analyzeWidgetWithAI);
 
 // Share link management
 router.post('/:dashboardId/share', createShareLink);

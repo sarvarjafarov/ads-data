@@ -1,5 +1,7 @@
 const Dashboard = require('../models/Dashboard');
 const Workspace = require('../models/Workspace');
+const widgetDataService = require('../services/widgetDataService');
+const aiWidgetAnalysis = require('../services/aiWidgetAnalysis');
 
 // Get all dashboards for a workspace
 const getWorkspaceDashboards = async (req, res) => {
@@ -794,6 +796,79 @@ const getAIOptions = async (req, res) => {
   });
 };
 
+// Analyze widget with AI
+const analyzeWidgetWithAI = async (req, res) => {
+  try {
+    const { widgetId } = req.params;
+    const { includeHistorical = false } = req.body;
+
+    // Get widget
+    const widget = await Dashboard.getWidget(widgetId);
+
+    if (!widget) {
+      return res.status(404).json({
+        success: false,
+        message: 'Widget not found',
+      });
+    }
+
+    // Get dashboard to verify access
+    const dashboard = await Dashboard.findById(widget.dashboard_id);
+
+    if (!dashboard) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dashboard not found',
+      });
+    }
+
+    // Verify user has access to workspace
+    const workspaces = await Workspace.findByUserId(req.user.id);
+    const hasAccess = workspaces.some(w => w.id === dashboard.workspace_id);
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied to this widget',
+      });
+    }
+
+    // Fetch current metrics data
+    const metricsData = await widgetDataService.fetchWidgetData(
+      widget,
+      widget.data_source?.dateRange || 'last_30_days'
+    );
+
+    if (!metricsData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unable to fetch widget data. Please ensure the widget is configured correctly.',
+      });
+    }
+
+    // Call AI analysis service
+    const analysis = await aiWidgetAnalysis.analyzeWidget(
+      widget,
+      metricsData,
+      { includeHistorical }
+    );
+
+    res.json({
+      success: true,
+      analysis,
+      tokensUsed: analysis.tokensUsed,
+    });
+
+  } catch (error) {
+    console.error('Widget AI analysis error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to analyze widget',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getWorkspaceDashboards,
   getDashboard,
@@ -814,4 +889,5 @@ module.exports = {
   getAIRecommendations,
   getAIImprovements,
   getAIOptions,
+  analyzeWidgetWithAI,
 };
