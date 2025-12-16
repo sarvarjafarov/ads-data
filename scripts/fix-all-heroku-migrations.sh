@@ -85,6 +85,13 @@ DELETE FROM schema_migrations WHERE migration_name = '011_custom_data_sources.sq
 SELECT '✅ Migration 011 prepared for re-run' as status;
 
 -- ==============================================
+-- FIX 5: Remove migration 013 so it can be re-run with fixes
+-- ==============================================
+DELETE FROM schema_migrations WHERE migration_name = '013_cache_metadata.sql';
+
+SELECT '✅ Migration 013 prepared for re-run' as status;
+
+-- ==============================================
 -- Verify fixes
 -- ==============================================
 SELECT '📊 Current migration status:' as info;
@@ -111,7 +118,8 @@ echo "   1. Migrations 001-008 will be skipped (already applied)"
 echo "   2. Migration 009 will run with fixes (handles missing tables)"
 echo "   3. Migration 010 will run successfully"
 echo "   4. Migration 011 will run with fixes (IF NOT EXISTS on indexes)"
-echo "   5. Migrations 012-013 will run successfully"
+echo "   5. Migration 012 will run successfully"
+echo "   6. Migration 013 will run with fixes (IF NOT EXISTS on indexes)"
 echo ""
 echo "🔍 Monitor the deployment:"
 echo "   heroku logs --tail -a $APP_NAME"

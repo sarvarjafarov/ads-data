@@ -21,10 +21,10 @@ CREATE TABLE IF NOT EXISTS cache_metadata (
 );
 
 -- Indexes
-CREATE INDEX idx_cache_metadata_key ON cache_metadata(cache_key);
-CREATE INDEX idx_cache_metadata_expires ON cache_metadata(expires_at) WHERE expires_at IS NOT NULL;
-CREATE INDEX idx_cache_metadata_accessed ON cache_metadata(last_accessed_at DESC);
-CREATE INDEX idx_cache_metadata_source ON cache_metadata(related_source_id) WHERE related_source_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_cache_metadata_key ON cache_metadata(cache_key);
+CREATE INDEX IF NOT EXISTS idx_cache_metadata_expires ON cache_metadata(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_cache_metadata_accessed ON cache_metadata(last_accessed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cache_metadata_source ON cache_metadata(related_source_id) WHERE related_source_id IS NOT NULL;
 
 -- Function to clean up expired cache metadata
 CREATE OR REPLACE FUNCTION cleanup_expired_cache_metadata()
