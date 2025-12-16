@@ -152,11 +152,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_custom_data_sources_updated_at ON custom_data_sources;
 CREATE TRIGGER update_custom_data_sources_updated_at
   BEFORE UPDATE ON custom_data_sources
   FOR EACH ROW
   EXECUTE FUNCTION update_custom_data_updated_at();
 
+DROP TRIGGER IF EXISTS update_custom_data_records_updated_at ON custom_data_records;
 CREATE TRIGGER update_custom_data_records_updated_at
   BEFORE UPDATE ON custom_data_records
   FOR EACH ROW

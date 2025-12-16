@@ -5,20 +5,60 @@
 
 BEGIN;
 
--- Create cache_metadata table
+-- Create cache_metadata table if it doesn't exist
 CREATE TABLE IF NOT EXISTS cache_metadata (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   cache_key VARCHAR(512) NOT NULL UNIQUE,
   hit_count INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  expires_at TIMESTAMP WITH TIME ZONE,
-  cache_size_bytes INTEGER,
-  data_type VARCHAR(50), -- 'widget_data', 'query_result', 'metrics', etc.
-  related_source_id UUID, -- Link to custom_data_sources if applicable
-  CONSTRAINT fk_cache_related_source FOREIGN KEY (related_source_id)
-    REFERENCES custom_data_sources(id) ON DELETE CASCADE
+  expires_at TIMESTAMP WITH TIME ZONE
 );
+
+-- Add missing columns if they don't exist (for existing tables from migration 009)
+DO $$
+BEGIN
+  -- Add cache_size_bytes if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'cache_metadata' AND column_name = 'cache_size_bytes'
+  ) THEN
+    ALTER TABLE cache_metadata ADD COLUMN cache_size_bytes INTEGER;
+  END IF;
+
+  -- Add data_type if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'cache_metadata' AND column_name = 'data_type'
+  ) THEN
+    ALTER TABLE cache_metadata ADD COLUMN data_type VARCHAR(50);
+  END IF;
+
+  -- Add related_source_id if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'cache_metadata' AND column_name = 'related_source_id'
+  ) THEN
+    ALTER TABLE cache_metadata ADD COLUMN related_source_id UUID;
+  END IF;
+END $$;
+
+-- Add foreign key constraint if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'fk_cache_related_source' AND table_name = 'cache_metadata'
+  ) THEN
+    ALTER TABLE cache_metadata
+    ADD CONSTRAINT fk_cache_related_source
+    FOREIGN KEY (related_source_id) REFERENCES custom_data_sources(id) ON DELETE CASCADE;
+  END IF;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- If custom_data_sources doesn't exist yet, skip the constraint
+    RAISE NOTICE 'Could not add foreign key constraint: %', SQLERRM;
+END $$;
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_cache_metadata_key ON cache_metadata(cache_key);
