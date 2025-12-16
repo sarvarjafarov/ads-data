@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Data Import - AdsData</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8eaff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            background: #f0f2ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .preview-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .actions {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .actions button {
+            margin: 0 10px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+        <div class="header">
+            <h1>📊 Custom Data Import</h1>
+            <p>Upload your Excel or CSV files for AI-powered analysis</p>
+        </div>
+
+        <div class="card">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <h3>Drop your file here or click to browse</h3>
+                <p>Supported formats: Excel (.xlsx, .xls) and CSV (.csv)</p>
+                <p>Maximum size: 50MB | Maximum rows: 100,000</p>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">
+                    Choose File
+                </button>
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing your file...</p>
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+
+            <div class="file-info" id="fileInfo">
+                <h4>File Preview</h4>
+                <p><strong>File:</strong> <span id="fileName"></span></p>
+                <p><strong>Size:</strong> <span id="fileSize"></span></p>
+                <p><strong>Rows:</strong> <span id="rowCount"></span></p>
+
+                <div style="overflow-x: auto;">
+                    <table class="preview-table" id="previewTable"></table>
+                </div>
+
+                <div class="actions">
+                    <button class="btn" onclick="confirmImport()">✓ Confirm Import</button>
+                    <button class="btn" onclick="cancelImport()" style="background: #999;">✕ Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentFile = null;
+        let previewData = null;
+
+        // Get workspace ID from localStorage or URL
+        const workspaceId = localStorage.getItem('currentWorkspaceId') || 'default';
+
+        // Setup drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            currentFile = file;
+
+            // Validate file
+            const validTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'text/csv'
+            ];
+
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+                showError('Invalid file type. Please upload an Excel (.xlsx, .xls) or CSV file.');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showError('File too large. Maximum size is 50MB.');
+                return;
+            }
+
+            // Upload file for preview
+            await uploadFile(file);
+        }
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading(true);
+            hideError();
+            hideSuccess();
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/api/workspaces/${workspaceId}/custom-data/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
+                previewData = data;
+                displayPreview(data);
+                showLoading(false);
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                showError(error.message || 'Failed to upload file');
+                showLoading(false);
+            }
+        }
+
+        function displayPreview(data) {
+            document.getElementById('fileName').textContent = currentFile.name;
+            document.getElementById('fileSize').textContent = formatBytes(currentFile.size);
+            document.getElementById('rowCount').textContent = data.rowCount || 'Unknown';
+
+            // Display preview table
+            const table = document.getElementById('previewTable');
+            table.innerHTML = '';
+
+            if (data.preview && data.preview.length > 0) {
+                // Headers
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                Object.keys(data.preview[0]).forEach(key => {
+                    const th = document.createElement('th');
+                    th.textContent = key;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                // Rows
+                const tbody = document.createElement('tbody');
+                data.preview.forEach(row => {
+                    const tr = document.createElement('tr');
+                    Object.values(row).forEach(value => {
+                        const td = document.createElement('td');
+                        td.textContent = value;
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+            }
+
+            document.getElementById('fileInfo').classList.add('show');
+        }
+
+        async function confirmImport() {
+            if (!previewData) return;
+
+            showLoading(true);
+            hideError();
+            hideSuccess();
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/api/workspaces/${workspaceId}/custom-data/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fileName: currentFile.name,
+                        detectedSchema: previewData.detectedSchema,
+                        previewData: previewData.preview
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Import failed');
+                }
+
+                showSuccess('File imported successfully! Your data is now available for dashboards.');
+                showLoading(false);
+
+                // Redirect to dashboard after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Import error:', error);
+                showError(error.message || 'Failed to import file');
+                showLoading(false);
+            }
+        }
+
+        function cancelImport() {
+            document.getElementById('fileInfo').classList.remove('show');
+            fileInput.value = '';
+            currentFile = null;
+            previewData = null;
+            hideError();
+            hideSuccess();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('success');
+            successEl.textContent = message;
+            successEl.classList.add('show');
+        }
+
+        function hideSuccess() {
+            document.getElementById('success').classList.remove('show');
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
