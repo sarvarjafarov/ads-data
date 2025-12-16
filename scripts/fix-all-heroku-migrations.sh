@@ -24,8 +24,10 @@ echo ""
 echo "🔧 Fixing all migration issues..."
 echo ""
 
-heroku pg:psql -a $APP_NAME << 'EOF'
+# Create temporary SQL file
+TMP_SQL=$(mktemp)
 
+cat > "$TMP_SQL" << 'EOF'
 -- ==============================================
 -- FIX 1: Update platform constraints (migration 003)
 -- ==============================================
@@ -90,8 +92,13 @@ SELECT migration_name, applied_at
 FROM schema_migrations
 ORDER BY applied_at DESC
 LIMIT 10;
-
 EOF
+
+# Run the SQL file
+heroku pg:psql -a $APP_NAME < "$TMP_SQL"
+
+# Clean up
+rm -f "$TMP_SQL"
 
 echo ""
 echo "✅ All migration fixes applied!"
