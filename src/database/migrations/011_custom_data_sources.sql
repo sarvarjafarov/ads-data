@@ -57,11 +57,11 @@ CREATE TABLE IF NOT EXISTS custom_data_sources (
 );
 
 -- Indexes for custom_data_sources
-CREATE INDEX idx_custom_sources_workspace ON custom_data_sources(workspace_id);
-CREATE INDEX idx_custom_sources_type ON custom_data_sources(source_type);
-CREATE INDEX idx_custom_sources_user ON custom_data_sources(user_id);
-CREATE INDEX idx_custom_sources_sync ON custom_data_sources(sync_enabled, next_sync_at) WHERE sync_enabled = true;
-CREATE INDEX idx_custom_sources_status ON custom_data_sources(sync_status);
+CREATE INDEX IF NOT EXISTS idx_custom_sources_workspace ON custom_data_sources(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_custom_sources_type ON custom_data_sources(source_type);
+CREATE INDEX IF NOT EXISTS idx_custom_sources_user ON custom_data_sources(user_id);
+CREATE INDEX IF NOT EXISTS idx_custom_sources_sync ON custom_data_sources(sync_enabled, next_sync_at) WHERE sync_enabled = true;
+CREATE INDEX IF NOT EXISTS idx_custom_sources_status ON custom_data_sources(sync_status);
 
 -- Custom Data Records Table
 -- Time-series optimized storage for imported data
@@ -89,12 +89,12 @@ CREATE TABLE IF NOT EXISTS custom_data_records (
 );
 
 -- Indexes for custom_data_records (optimized for time-series queries)
-CREATE INDEX idx_custom_records_source_date ON custom_data_records(source_id, record_date DESC);
-CREATE INDEX idx_custom_records_date ON custom_data_records(record_date DESC);
-CREATE INDEX idx_custom_records_metrics ON custom_data_records USING GIN(metrics);
-CREATE INDEX idx_custom_records_dimensions ON custom_data_records USING GIN(dimensions);
-CREATE INDEX idx_custom_records_metric_keys ON custom_data_records USING GIN(metric_keys);
-CREATE INDEX idx_custom_records_hash ON custom_data_records(hash_key);
+CREATE INDEX IF NOT EXISTS idx_custom_records_source_date ON custom_data_records(source_id, record_date DESC);
+CREATE INDEX IF NOT EXISTS idx_custom_records_date ON custom_data_records(record_date DESC);
+CREATE INDEX IF NOT EXISTS idx_custom_records_metrics ON custom_data_records USING GIN(metrics);
+CREATE INDEX IF NOT EXISTS idx_custom_records_dimensions ON custom_data_records USING GIN(dimensions);
+CREATE INDEX IF NOT EXISTS idx_custom_records_metric_keys ON custom_data_records USING GIN(metric_keys);
+CREATE INDEX IF NOT EXISTS idx_custom_records_hash ON custom_data_records(hash_key);
 
 -- Custom Data Sync Jobs Table
 -- Track sync operations for monitoring and debugging
@@ -123,10 +123,10 @@ CREATE TABLE IF NOT EXISTS custom_data_sync_jobs (
 );
 
 -- Indexes for custom_data_sync_jobs
-CREATE INDEX idx_sync_jobs_source ON custom_data_sync_jobs(source_id);
-CREATE INDEX idx_sync_jobs_status ON custom_data_sync_jobs(status);
-CREATE INDEX idx_sync_jobs_type ON custom_data_sync_jobs(job_type);
-CREATE INDEX idx_sync_jobs_created ON custom_data_sync_jobs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_source ON custom_data_sync_jobs(source_id);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_status ON custom_data_sync_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_type ON custom_data_sync_jobs(job_type);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_created ON custom_data_sync_jobs(created_at DESC);
 
 -- Update oauth_tokens table to support google_sheets platform
 DO $$
