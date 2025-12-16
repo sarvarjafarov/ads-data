@@ -95,7 +95,7 @@ LIMIT 10;
 EOF
 
 # Run the SQL file
-heroku pg:psql -a $APP_NAME < "$TMP_SQL"
+cat "$TMP_SQL" | heroku pg:psql -a $APP_NAME
 
 # Clean up
 rm -f "$TMP_SQL"
