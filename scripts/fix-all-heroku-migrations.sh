@@ -94,8 +94,8 @@ ORDER BY applied_at DESC
 LIMIT 10;
 EOF
 
-# Run the SQL file
-cat "$TMP_SQL" | heroku pg:psql -a $APP_NAME
+# Get database connection and run SQL
+heroku pg:psql -a $APP_NAME -f "$TMP_SQL"
 
 # Clean up
 rm -f "$TMP_SQL"
