@@ -969,6 +969,7 @@
       <a href="/dashboard" class="nav-link active">Dashboard</a>
       <a href="/campaigns" class="nav-link">Campaign Explorer</a>
       <a href="/custom-data.html" class="nav-link">📊 Custom Data</a>
+      <a href="#" class="nav-link" onclick="navigateToAudit(); return false;">🔍 Website Audit</a>
     </nav>
     <div class="user-info">
       <span class="user-email" id="userEmail">Loading...</span>
@@ -1811,6 +1812,16 @@
         createButton.disabled = false;
         tryAgainButton.disabled = false;
         createButton.innerHTML = originalText;
+      }
+    }
+
+    // Navigate to Website Audit page
+    function navigateToAudit() {
+      const selectedWorkspaceId = localStorage.getItem('selectedWorkspaceId');
+      if (selectedWorkspaceId) {
+        window.location.href = `/workspaces/${selectedWorkspaceId}/audit`;
+      } else {
+        alert('Please select a workspace first');
       }
     }
 

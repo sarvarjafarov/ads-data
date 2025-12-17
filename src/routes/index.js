@@ -22,6 +22,7 @@ const linkedinRoutes = require('./linkedinRoutes');
 const unifiedReportingRoutes = require('./unifiedReportingRoutes');
 const customDataRoutes = require('./customDataRoutes');
 const webhookRoutes = require('./webhookRoutes');
+const websiteAuditRoutes = require('./websiteAuditRoutes');
 
 const router = express.Router();
 
@@ -48,5 +49,6 @@ router.use('/linkedin', linkedinRoutes);
 router.use('/unified', unifiedReportingRoutes);
 router.use('/api', customDataRoutes);
 router.use('/webhooks', webhookRoutes);
+router.use('/website-audit', websiteAuditRoutes);
 
 module.exports = router;
