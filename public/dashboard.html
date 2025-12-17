@@ -1819,12 +1819,7 @@
 
     // Navigate to Website Audit page
     function navigateToAudit() {
-      const selectedWorkspaceId = localStorage.getItem('selectedWorkspaceId');
-      if (selectedWorkspaceId) {
-        window.location.href = `/workspaces/${selectedWorkspaceId}/audit`;
-      } else {
-        alert('Please select a workspace first');
-      }
+      window.location.href = '/website-audit.html';
     }
 
     async function logout() {
