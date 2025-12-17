@@ -17,9 +17,9 @@ const puppeteer = require('puppeteer');
  */
 class WebsiteAuditService {
   constructor() {
-    this.timeout = 30000; // 30 second hard limit
-    this.pageLoadTimeout = 20000; // 20 second page load
-    this.waitAfterLoad = 5000; // Wait 5s for dynamic events
+    this.timeout = 25000; // 25 second hard limit (give buffer before Heroku timeout)
+    this.pageLoadTimeout = 15000; // 15 second page load
+    this.waitAfterLoad = 2000; // Wait 2s for dynamic events (reduced from 5s)
   }
 
   /**
@@ -43,20 +43,28 @@ class WebsiteAuditService {
 
       // Launch browser
       const launchOptions = {
-        headless: true,
+        headless: 'new',
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
           '--disable-accelerated-2d-canvas',
-          '--disable-gpu'
+          '--disable-gpu',
+          '--disable-extensions',
+          '--disable-background-networking',
+          '--disable-default-apps',
+          '--disable-sync',
+          '--metrics-recording-only',
+          '--no-first-run',
+          '--disable-features=TranslateUI',
+          '--disable-component-extensions-with-background-pages'
         ],
         timeout: this.timeout
       };
 
       // On Heroku, use the Chrome binary provided by buildpack
-      if (process.env.CHROME_BIN) {
-        launchOptions.executablePath = process.env.CHROME_BIN;
+      if (process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN) {
+        launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN;
       }
 
       browser = await puppeteer.launch(launchOptions);
@@ -103,9 +111,9 @@ class WebsiteAuditService {
         });
       });
 
-      // Navigate to page
+      // Navigate to page (use domcontentloaded instead of networkidle2 for speed)
       await page.goto(validatedUrl, {
-        waitUntil: 'networkidle2',
+        waitUntil: 'domcontentloaded',
         timeout: this.pageLoadTimeout
       });
 
