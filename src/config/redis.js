@@ -12,16 +12,24 @@ let isRedisAvailable = false;
  * Initialize Redis client
  */
 const initRedis = async () => {
+  // Skip Redis initialization if REDIS_URL is not set (optional on Heroku)
+  if (!process.env.REDIS_URL) {
+    console.log('⚠️  REDIS_URL not set, running without cache');
+    isRedisAvailable = false;
+    return null;
+  }
+
   try {
     redisClient = redis.createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      url: process.env.REDIS_URL,
       socket: {
         connectTimeout: 5000,
+        reconnectStrategy: false, // Don't retry connections - fail fast
       },
     });
 
     redisClient.on('error', (err) => {
-      console.error('Redis client error:', err);
+      console.error('Redis client error:', err.message);
       isRedisAvailable = false;
     });
 
@@ -43,8 +51,17 @@ const initRedis = async () => {
     await redisClient.connect();
     return redisClient;
   } catch (error) {
-    console.error('Failed to initialize Redis:', error);
+    console.error('Failed to initialize Redis:', error.message);
     isRedisAvailable = false;
+    // Clean up the client to prevent background retries
+    if (redisClient) {
+      try {
+        await redisClient.quit();
+      } catch (quitError) {
+        // Ignore quit errors
+      }
+      redisClient = null;
+    }
     return null;
   }
 };
