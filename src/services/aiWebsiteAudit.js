@@ -40,7 +40,7 @@ class AIWebsiteAuditService {
       // Call Claude API
       const message = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 8192,
+        max_tokens: 16384, // Increased to ensure full JSON response with all platforms and recommendations
         system: this.getSystemPrompt(),
         messages: [
           {
@@ -337,8 +337,10 @@ Return your analysis as valid JSON following the specified structure.`;
       return analysis;
 
     } catch (error) {
-      console.error('Failed to parse AI response:', error);
-      console.error('Response text (first 500 chars):', responseText.substring(0, 500));
+      console.error('Failed to parse AI response:', error.message);
+      console.error('Response length:', responseText.length);
+      console.error('Response first 1000 chars:', responseText.substring(0, 1000));
+      console.error('Response last 500 chars:', responseText.substring(Math.max(0, responseText.length - 500)));
 
       // Return error structure
       throw new Error('Failed to parse AI analysis response');
