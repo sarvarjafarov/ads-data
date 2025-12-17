@@ -46,7 +46,7 @@ class WebsiteAuditService {
       let domContent = '';
 
       // Launch browser
-      browser = await puppeteer.launch({
+      const launchOptions = {
         headless: true,
         args: [
           '--no-sandbox',
@@ -56,7 +56,14 @@ class WebsiteAuditService {
           '--disable-gpu'
         ],
         timeout: this.timeout
-      });
+      };
+
+      // On Heroku, use the Chrome binary provided by buildpack
+      if (process.env.CHROME_BIN) {
+        launchOptions.executablePath = process.env.CHROME_BIN;
+      }
+
+      browser = await puppeteer.launch(launchOptions);
 
       const page = await browser.newPage();
 
