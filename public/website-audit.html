@@ -256,19 +256,42 @@
     .priority-low { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: #3b82f6; }
 
     .technical-details {
-      display: none;
       margin-top: 1rem;
       padding: 1rem;
       background: rgba(0, 0, 0, 0.3);
       border-radius: 8px;
-      font-family: monospace;
-      font-size: 0.8125rem;
+      font-family: 'Inter', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
       white-space: pre-wrap;
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .technical-details.show {
-      display: block;
+    details {
+      margin-top: 0.75rem;
+    }
+
+    summary {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.5rem 0;
+      user-select: none;
+      transition: color 0.2s ease;
+    }
+
+    summary:hover {
+      color: #b7fa31;
+    }
+
+    summary::marker {
+      color: #b7fa31;
+    }
+
+    details[open] summary {
+      color: #b7fa31;
+      margin-bottom: 0.5rem;
     }
 
     .progress-bar {
@@ -705,9 +728,9 @@
                   <p style="color: #667eea; font-size: 0.875rem; font-weight: 600;">Expected Impact: ${item.estimatedImpact}</p>
                 </div>
               ` : ''}
-              <details style="margin-top: 0.75rem;">
-                <summary style="color: rgba(255,255,255,0.8); font-size: 0.875rem; font-weight: 600; cursor: pointer;">View Technical Details →</summary>
-                <div class="technical-details show">${item.technicalDetails}</div>
+              <details>
+                <summary>▶ View Technical Details</summary>
+                <div class="technical-details">${item.technicalDetails}</div>
               </details>
             </div>
           </div>

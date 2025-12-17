@@ -163,7 +163,26 @@ QUALITY STANDARDS:
 - Only flag risks that genuinely impact business performance
 - Quantify impact whenever possible (percentages, dollar ranges)
 
-Remember: Your analysis directly affects business decisions. Be thorough, be critical, be actionable.`;
+CRITICAL REQUIREMENT FOR ACTION CHECKLIST:
+- ALL tasks must be DIRECTLY based on the technical findings from THIS specific website audit
+- Use the ACTUAL pixel IDs, measurement IDs, and data found in the audit results
+- If Meta Pixel ID 123456789 was detected, reference it specifically in recommendations
+- If GA4 measurement ID G-XXXXXXXXX was found, include it in implementation examples
+- DO NOT include generic compliance tasks (GDPR, banking regulations, etc.) unless directly related to tracking implementation
+- Focus ONLY on fixing detected technical issues: missing pixels, missing events, missing CAPI, poor event matching, etc.
+- Every task in actionChecklist must solve a specific problem found in platformResults or criticalIssues
+
+Examples of GOOD tasks (based on actual findings):
+- "Add Purchase event to Meta Pixel 123456789" (if pixel found but Purchase event missing)
+- "Implement Meta CAPI for Pixel 123456789 to recover iOS attribution" (if pixel exists without CAPI)
+- "Add conversion tracking to Google Ads using existing GA4 G-XXXXXXXXX" (if GA4 exists but Google Ads doesn't)
+
+Examples of BAD tasks (generic, not based on findings):
+- "Audit data collection for Azerbaijan banking regulations" (not related to tracking implementation)
+- "Review GDPR compliance" (unless specific PII collection issue found)
+- "General privacy policy review" (not a tracking technical issue)
+
+Remember: Your analysis directly affects business decisions. Be thorough, be critical, be actionable. Every recommendation must fix a REAL issue found in THIS website's audit.`;
   }
 
   /**
