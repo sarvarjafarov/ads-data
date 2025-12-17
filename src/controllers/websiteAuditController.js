@@ -31,7 +31,7 @@ const auditWebsite = async (req, res) => {
 
     // Validate workspace access
     const workspaceCheck = await query(
-      `SELECT id FROM workspaces WHERE id = $1 AND user_id = $2`,
+      `SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2`,
       [workspaceId, userId]
     );
 
@@ -188,7 +188,7 @@ const getAuditHistory = async (req, res) => {
 
     // Validate workspace access
     const workspaceCheck = await query(
-      `SELECT id FROM workspaces WHERE id = $1 AND user_id = $2`,
+      `SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2`,
       [workspaceId, userId]
     );
 
@@ -252,7 +252,7 @@ const getAuditStats = async (req, res) => {
 
     // Validate workspace access
     const workspaceCheck = await query(
-      `SELECT id FROM workspaces WHERE id = $1 AND user_id = $2`,
+      `SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2`,
       [workspaceId, userId]
     );
 
