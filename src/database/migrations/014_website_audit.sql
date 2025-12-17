@@ -66,6 +66,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function to get audit statistics for a workspace
+-- Drop existing function if it has different signature
+DROP FUNCTION IF EXISTS get_audit_statistics(UUID);
+
 CREATE OR REPLACE FUNCTION get_audit_statistics(p_workspace_id UUID)
 RETURNS TABLE (
   total_audits BIGINT,
