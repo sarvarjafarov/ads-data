@@ -1203,6 +1203,7 @@
         // Select first workspace by default
         selectedWorkspaceId = workspaces[0].id;
         select.value = selectedWorkspaceId;
+        localStorage.setItem('selectedWorkspaceId', selectedWorkspaceId);
         document.getElementById('currentWorkspaceName').textContent = workspaces[0].name;
 
         await loadAccounts();
@@ -1216,6 +1217,7 @@
     async function handleWorkspaceChange() {
       const select = document.getElementById('workspaceSelect');
       selectedWorkspaceId = select.value;
+      localStorage.setItem('selectedWorkspaceId', selectedWorkspaceId);
 
       // Update workspace name display
       const selectedWorkspace = workspaces.find(w => w.id === selectedWorkspaceId);
