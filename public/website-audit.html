@@ -379,9 +379,17 @@
         }
 
         if (data.success) {
-          auditResult = data.data;
-          checklist = data.data.businessAnalysis.actionChecklist || [];
-          renderResults();
+          // Check if this is cached data (immediate result)
+          if (data.cached && data.data) {
+            auditResult = data.data;
+            checklist = data.data.businessAnalysis.actionChecklist || [];
+            renderResults();
+          } else if (data.jobId) {
+            // This is an async job, poll for results
+            await pollJobStatus(data.jobId);
+          } else {
+            throw new Error('Unexpected response format');
+          }
         } else {
           throw new Error(data.error || 'Audit failed');
         }
@@ -390,11 +398,73 @@
         const errorEl = document.getElementById('errorState');
         errorEl.textContent = `Error: ${error.message}`;
         errorEl.classList.remove('hidden');
-      } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Audit Website';
       }
     });
+
+    async function pollJobStatus(jobId) {
+      const maxAttempts = 60; // Poll for up to 5 minutes (60 * 5s = 300s)
+      let attempts = 0;
+
+      const poll = async () => {
+        attempts++;
+
+        try {
+          const response = await fetch(`/api/website-audit/jobs/${jobId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to check job status');
+          }
+
+          if (data.status === 'completed' && data.data) {
+            // Job completed successfully
+            document.getElementById('loadingState').classList.add('hidden');
+            auditResult = data.data;
+            checklist = data.data.businessAnalysis.actionChecklist || [];
+            renderResults();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Audit Website';
+            return;
+          } else if (data.status === 'failed') {
+            // Job failed
+            throw new Error(data.error || 'Audit failed');
+          } else if (data.status === 'processing' || data.status === 'pending') {
+            // Still processing, update message
+            const loadingEl = document.querySelector('#loadingState p:last-child');
+            const elapsed = Math.round(attempts * 5);
+            loadingEl.textContent = `Analysis in progress (${elapsed}s elapsed). This may take up to 3 minutes for complex websites.`;
+
+            // Continue polling
+            if (attempts < maxAttempts) {
+              setTimeout(poll, 5000); // Poll every 5 seconds
+            } else {
+              throw new Error('Audit timed out. Please try again.');
+            }
+          }
+        } catch (error) {
+          document.getElementById('loadingState').classList.add('hidden');
+          const errorEl = document.getElementById('errorState');
+          errorEl.textContent = `Error: ${error.message}`;
+          errorEl.classList.remove('hidden');
+
+          const submitBtn = document.getElementById('submitBtn');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Audit Website';
+        }
+      };
+
+      // Start polling
+      poll();
+    }
 
     function renderResults() {
       document.getElementById('loadingState').classList.add('hidden');

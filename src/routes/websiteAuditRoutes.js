@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   auditWebsite,
+  getJobStatus,
   getAuditHistory,
   getAuditStats
 } = require('../controllers/websiteAuditController');
@@ -12,7 +13,7 @@ const router = express.Router();
 router.use(authenticate);
 
 /**
- * Audit a website for tracking pixels and events
+ * Audit a website for tracking pixels and events (Async)
  * POST /api/website-audit/workspaces/:workspaceId/audit
  *
  * Request body:
@@ -23,18 +24,28 @@ router.use(authenticate);
  * Response:
  * {
  *   "success": true,
- *   "data": {
- *     "websiteUrl": "https://example.com",
- *     "technicalFindings": {...},
- *     "businessAnalysis": {...},
- *     "metadata": {...}
- *   },
- *   "cached": false
+ *   "jobId": "uuid",
+ *   "status": "pending",
+ *   "pollUrl": "/api/website-audit/jobs/{jobId}"
  * }
  *
  * Rate limit: 5 audits per hour per workspace
  */
 router.post('/workspaces/:workspaceId/audit', auditWebsite);
+
+/**
+ * Get audit job status
+ * GET /api/website-audit/jobs/:jobId
+ *
+ * Response:
+ * {
+ *   "success": true,
+ *   "jobId": "uuid",
+ *   "status": "completed|pending|processing|failed",
+ *   "data": {...}  // Only when status is 'completed'
+ * }
+ */
+router.get('/jobs/:jobId', getJobStatus);
 
 /**
  * Get audit history for a workspace

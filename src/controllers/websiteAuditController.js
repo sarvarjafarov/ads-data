@@ -10,12 +10,12 @@ const { query } = require('../config/database');
  */
 
 /**
- * Audit a website for tracking pixels and events
+ * Audit a website for tracking pixels and events (Async)
  * POST /api/website-audit/workspaces/:workspaceId/audit
+ *
+ * Returns a job ID immediately and processes audit in background
  */
 const auditWebsite = async (req, res) => {
-  const startTime = Date.now();
-
   try {
     const { workspaceId } = req.params;
     const { url } = req.body;
@@ -62,28 +62,10 @@ const auditWebsite = async (req, res) => {
     const normalizedUrl = url.trim().toLowerCase();
     const cacheKey = `website_audit:${normalizedUrl}`;
 
-    // Check cache
+    // Check cache first
     const cachedResult = await getCache(cacheKey);
     if (cachedResult) {
       console.log('Returning cached audit result for:', normalizedUrl);
-
-      // Log the cached audit access
-      await query(
-        `INSERT INTO website_audit_logs (workspace_id, user_id, website_url, audit_duration_ms, platforms_analyzed, overall_score, critical_issues_count, ip_address, user_agent)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [
-          workspaceId,
-          userId,
-          normalizedUrl,
-          0, // Cached, so 0ms
-          JSON.stringify(Object.keys(cachedResult.technicalFindings?.platforms || {})),
-          cachedResult.businessAnalysis?.overallScore || null,
-          cachedResult.businessAnalysis?.criticalIssues?.length || 0,
-          req.ip || req.connection.remoteAddress,
-          req.get('user-agent')
-        ]
-      );
-
       return res.json({
         success: true,
         data: cachedResult,
@@ -92,12 +74,61 @@ const auditWebsite = async (req, res) => {
       });
     }
 
+    // Create audit job
+    const jobResult = await query(
+      `INSERT INTO audit_jobs (workspace_id, user_id, website_url, status)
+       VALUES ($1, $2, $3, 'pending')
+       RETURNING id, status, created_at`,
+      [workspaceId, userId, url]
+    );
+
+    const job = jobResult.rows[0];
+
+    // Process audit in background (don't await)
+    processAuditJob(job.id, workspaceId, userId, url, req.ip, req.get('user-agent')).catch(err => {
+      console.error('Background audit processing error:', err);
+    });
+
+    // Return job ID immediately
+    res.json({
+      success: true,
+      jobId: job.id,
+      status: 'pending',
+      message: 'Audit started. Use the job ID to check status.',
+      pollUrl: `/api/website-audit/jobs/${job.id}`
+    });
+
+  } catch (error) {
+    console.error('Website audit error:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Failed to start audit',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * Background job processor for website audits
+ */
+async function processAuditJob(jobId, workspaceId, userId, url, ipAddress, userAgent) {
+  const startTime = Date.now();
+
+  try {
+    // Update status to processing
+    await query(
+      `UPDATE audit_jobs SET status = 'processing', started_at = NOW() WHERE id = $1`,
+      [jobId]
+    );
+
+    console.log(`[Job ${jobId}] Starting technical audit for:`, url);
+
     // Perform technical audit
-    console.log('Starting technical audit for:', url);
     const technicalFindings = await websiteAuditService.auditWebsite(url);
 
     // Perform AI business impact analysis
-    console.log('Starting AI business analysis for:', url);
+    console.log(`[Job ${jobId}] Starting AI business analysis for:`, url);
     const businessAnalysis = await aiWebsiteAuditService.analyzeBusinessImpact(
       technicalFindings,
       url
@@ -117,7 +148,16 @@ const auditWebsite = async (req, res) => {
     };
 
     // Cache for 1 hour
+    const cacheKey = `website_audit:${url.trim().toLowerCase()}`;
     await setCache(cacheKey, auditResult, 3600);
+
+    // Update job with result
+    await query(
+      `UPDATE audit_jobs
+       SET status = 'completed', result = $1, completed_at = NOW()
+       WHERE id = $2`,
+      [JSON.stringify(auditResult), jobId]
+    );
 
     // Log audit metadata
     await query(
@@ -131,47 +171,85 @@ const auditWebsite = async (req, res) => {
         JSON.stringify(Object.keys(technicalFindings.platforms)),
         businessAnalysis.overallScore || null,
         businessAnalysis.criticalIssues?.length || 0,
-        req.ip || req.connection.remoteAddress,
-        req.get('user-agent')
+        ipAddress,
+        userAgent
       ]
     );
 
-    console.log(`Audit completed in ${auditDuration}ms for:`, url);
-
-    res.json({
-      success: true,
-      data: auditResult,
-      cached: false
-    });
+    console.log(`[Job ${jobId}] Audit completed in ${auditDuration}ms for:`, url);
 
   } catch (error) {
-    console.error('Website audit error:', error);
+    console.error(`[Job ${jobId}] Audit error:`, error);
 
-    const auditDuration = Date.now() - startTime;
+    // Update job with error
+    await query(
+      `UPDATE audit_jobs
+       SET status = 'failed', error_message = $1, completed_at = NOW()
+       WHERE id = $2`,
+      [error.message, jobId]
+    );
+  }
+}
 
-    // Determine appropriate error response
-    let statusCode = 500;
-    let errorMessage = 'Failed to audit website';
+/**
+ * Get audit job status
+ * GET /api/website-audit/jobs/:jobId
+ */
+const getJobStatus = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.user.id;
 
-    if (error.message.includes('Invalid URL')) {
-      statusCode = 400;
-      errorMessage = error.message;
-    } else if (error.message.includes('Cannot audit localhost')) {
-      statusCode = 400;
-      errorMessage = error.message;
-    } else if (error.message.includes('timeout') || error.message.includes('took too long')) {
-      statusCode = 504;
-      errorMessage = 'Website took too long to load. Please try again or contact the website owner.';
-    } else if (error.message.includes('navigation')) {
-      statusCode = 502;
-      errorMessage = 'Could not connect to website. Please verify the URL is correct and the site is accessible.';
+    // Get job with workspace validation
+    const jobResult = await query(
+      `SELECT aj.*, w.owner_id
+       FROM audit_jobs aj
+       JOIN workspaces w ON w.id = aj.workspace_id
+       WHERE aj.id = $1`,
+      [jobId]
+    );
+
+    if (jobResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Job not found'
+      });
     }
 
-    res.status(statusCode).json({
+    const job = jobResult.rows[0];
+
+    // Verify user has access to this workspace
+    if (job.owner_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
+      });
+    }
+
+    // Return job status
+    const response = {
+      success: true,
+      jobId: job.id,
+      status: job.status,
+      websiteUrl: job.website_url,
+      createdAt: job.created_at,
+      startedAt: job.started_at,
+      completedAt: job.completed_at
+    };
+
+    if (job.status === 'completed' && job.result) {
+      response.data = job.result;
+    } else if (job.status === 'failed' && job.error_message) {
+      response.error = job.error_message;
+    }
+
+    res.json(response);
+
+  } catch (error) {
+    console.error('Get job status error:', error);
+    res.status(500).json({
       success: false,
-      error: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      auditDuration
+      error: 'Failed to retrieve job status'
     });
   }
 };
@@ -297,6 +375,7 @@ const getAuditStats = async (req, res) => {
 
 module.exports = {
   auditWebsite,
+  getJobStatus,
   getAuditHistory,
   getAuditStats
 };
