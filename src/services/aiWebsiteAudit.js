@@ -281,10 +281,18 @@ Return your analysis as valid JSON following the specified structure.`;
   parseAnalysisResponse(responseText) {
     try {
       // Try to extract JSON from markdown code blocks
-      let jsonStr = responseText;
-      const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1];
+      let jsonStr = responseText.trim();
+
+      // Remove markdown code block markers if present
+      if (jsonStr.startsWith('```')) {
+        const lines = jsonStr.split('\n');
+        // Remove first line (```json or ```)
+        lines.shift();
+        // Remove last line if it's just ```
+        if (lines[lines.length - 1].trim() === '```') {
+          lines.pop();
+        }
+        jsonStr = lines.join('\n');
       }
 
       const analysis = JSON.parse(jsonStr.trim());
@@ -311,7 +319,7 @@ Return your analysis as valid JSON following the specified structure.`;
 
     } catch (error) {
       console.error('Failed to parse AI response:', error);
-      console.error('Response text:', responseText);
+      console.error('Response text (first 500 chars):', responseText.substring(0, 500));
 
       // Return error structure
       throw new Error('Failed to parse AI analysis response');
