@@ -3378,43 +3378,19 @@
           options: getChartOptions(metric, currency)
         };
       } else if (widgetType === 'pie_chart') {
-        // For pie chart, create categorical breakdown
-        const pieLabels = ['Segment A', 'Segment B', 'Segment C', 'Segment D'];
-        const pieData = [value * 0.4, value * 0.25, value * 0.2, value * 0.15];
-        const pieColors = ['#b7fa31', '#8bc924', '#5e9617', '#32630a'];
-
-        chartConfig = {
-          type: 'doughnut',
-          data: {
-            labels: pieLabels,
-            datasets: [{
-              data: pieData,
-              backgroundColor: pieColors,
-              borderWidth: 0
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  font: { size: 10 },
-                  padding: 10
-                }
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return formatMetricValue(context.raw, metric, currency);
-                  }
-                }
-              }
-            }
-          }
-        };
+        // Pie charts should use table-type data (handled in renderPieChartFromTable)
+        // If we reach here, it means no breakdown data is available
+        canvas.parentElement.innerHTML = `
+          <div class="no-data-state" style="padding: 2rem; text-align: center;">
+            <div class="no-data-icon">📊</div>
+            <div class="no-data-message">No breakdown data available</div>
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem;">
+              This widget requires breakdown by device, country, or campaign.<br>
+              Please configure the data source in widget settings.
+            </div>
+          </div>
+        `;
+        return;
       }
 
       chartInstances[widget.id] = new Chart(ctx, chartConfig);

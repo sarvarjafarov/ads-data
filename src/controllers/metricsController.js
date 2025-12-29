@@ -148,16 +148,60 @@ const getWidgetMetrics = async (req, res) => {
     // Calculate date range
     const { since, until } = getDateRange(dataSource.dateRange || 'last_30_days');
 
+    // Determine widget title to check if it needs breakdown data
+    const widgetTitle = widget.title?.toLowerCase() || '';
+    const widgetType = widget.widget_type || 'kpi_card';
+
     // Fetch metrics based on platform
     let metricsData;
     if (account.platform === 'meta') {
-      metricsData = await fetchMetaAdsMetrics(
-        account.account_id,
-        account.access_token,
-        dataSource.metric || 'spend',
-        since,
-        until
-      );
+      // Check if this is a pie chart that needs breakdown data
+      if (widgetType === 'pie_chart' || widgetTitle.includes('breakdown') || widgetTitle.includes('device') || widgetTitle.includes('country') || widgetTitle.includes('geographic')) {
+        // Return breakdown data for pie charts
+        if (widgetTitle.includes('device')) {
+          metricsData = await fetchMetaAdsDeviceBreakdown(
+            account.account_id,
+            account.access_token,
+            dataSource.metric || 'clicks',
+            since,
+            until
+          );
+        } else if (widgetTitle.includes('country') || widgetTitle.includes('geographic')) {
+          metricsData = await fetchMetaAdsCountryBreakdown(
+            account.account_id,
+            account.access_token,
+            dataSource.metric || 'clicks',
+            since,
+            until
+          );
+        } else if (widgetTitle.includes('campaign')) {
+          metricsData = await fetchMetaAdsCampaignBreakdown(
+            account.account_id,
+            account.access_token,
+            dataSource.metric || 'spend',
+            since,
+            until
+          );
+        } else {
+          // Default breakdown for generic pie charts
+          metricsData = await fetchMetaAdsDeviceBreakdown(
+            account.account_id,
+            account.access_token,
+            dataSource.metric || 'clicks',
+            since,
+            until
+          );
+        }
+      } else {
+        // Regular time-series metrics
+        metricsData = await fetchMetaAdsMetrics(
+          account.account_id,
+          account.access_token,
+          dataSource.metric || 'spend',
+          since,
+          until
+        );
+      }
     } else if (account.platform === 'google') {
       const GoogleAdsService = getPlatformService('google');
       metricsData = await GoogleAdsService.fetchMetrics(
@@ -506,6 +550,219 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
       value: 0,
       label: metric,
       error: error.message,
+    };
+  }
+}
+
+// Fetch device breakdown from Meta Ads API
+async function fetchMetaAdsDeviceBreakdown(accountId, accessToken, metric, since, until) {
+  const baseUrl = 'https://graph.facebook.com/v18.0';
+
+  const metricFieldMap = {
+    spend: 'spend',
+    impressions: 'impressions',
+    clicks: 'clicks',
+    reach: 'reach',
+    conversions: 'actions'
+  };
+
+  const field = metricFieldMap[metric] || 'clicks';
+
+  try {
+    const url = `${baseUrl}/act_${accountId}/insights?fields=${field}&breakdowns=impression_device&time_range={"since":"${since}","until":"${until}"}&access_token=${accessToken}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Meta API error:', data.error);
+      return {
+        type: 'table',
+        columns: ['Device', 'Value'],
+        data: [],
+        _demoData: true
+      };
+    }
+
+    const devices = {};
+    if (data.data && data.data.length > 0) {
+      for (const item of data.data) {
+        const device = item.impression_device || 'Unknown';
+        const deviceName = device === 'desktop' ? 'Desktop' :
+                          device === 'mobile_app' || device === 'mobile_web' ? 'Mobile' :
+                          device === 'ig_android_app' || device === 'ig_ios_app' ? 'Instagram Mobile' :
+                          device.charAt(0).toUpperCase() + device.slice(1);
+
+        let value = item[field] || 0;
+        if (metric === 'conversions' && item.actions) {
+          value = item.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
+        }
+
+        if (!devices[deviceName]) {
+          devices[deviceName] = 0;
+        }
+        devices[deviceName] += parseFloat(value);
+      }
+    }
+
+    const deviceData = Object.keys(devices).map(device => ({
+      device: device,
+      value: devices[device]
+    })).sort((a, b) => b.value - a.value);
+
+    return {
+      type: 'table',
+      columns: ['Device', 'Clicks'],
+      data: deviceData.map(d => ({
+        device: d.device,
+        clicks: Math.round(d.value)
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching Meta device breakdown:', error);
+    return {
+      type: 'table',
+      columns: ['Device', 'Clicks'],
+      data: [],
+      _demoData: true
+    };
+  }
+}
+
+// Fetch country breakdown from Meta Ads API
+async function fetchMetaAdsCountryBreakdown(accountId, accessToken, metric, since, until) {
+  const baseUrl = 'https://graph.facebook.com/v18.0';
+
+  const metricFieldMap = {
+    spend: 'spend',
+    impressions: 'impressions',
+    clicks: 'clicks',
+    reach: 'reach',
+    conversions: 'actions'
+  };
+
+  const field = metricFieldMap[metric] || 'clicks';
+
+  try {
+    const url = `${baseUrl}/act_${accountId}/insights?fields=${field}&breakdowns=country&time_range={"since":"${since}","until":"${until}"}&access_token=${accessToken}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Meta API error:', data.error);
+      return {
+        type: 'table',
+        columns: ['Country', 'Value'],
+        data: [],
+        _demoData: true
+      };
+    }
+
+    const countries = {};
+    if (data.data && data.data.length > 0) {
+      for (const item of data.data) {
+        const country = item.country || 'Unknown';
+
+        let value = item[field] || 0;
+        if (metric === 'conversions' && item.actions) {
+          value = item.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
+        }
+
+        if (!countries[country]) {
+          countries[country] = 0;
+        }
+        countries[country] += parseFloat(value);
+      }
+    }
+
+    const countryData = Object.keys(countries).map(country => ({
+      country: country,
+      value: countries[country]
+    })).sort((a, b) => b.value - a.value).slice(0, 10); // Top 10 countries
+
+    return {
+      type: 'table',
+      columns: ['Country', 'Clicks'],
+      data: countryData.map(c => ({
+        country: c.country,
+        clicks: Math.round(c.value)
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching Meta country breakdown:', error);
+    return {
+      type: 'table',
+      columns: ['Country', 'Clicks'],
+      data: [],
+      _demoData: true
+    };
+  }
+}
+
+// Fetch campaign breakdown from Meta Ads API
+async function fetchMetaAdsCampaignBreakdown(accountId, accessToken, metric, since, until) {
+  const baseUrl = 'https://graph.facebook.com/v18.0';
+
+  const metricFieldMap = {
+    spend: 'spend',
+    impressions: 'impressions',
+    clicks: 'clicks',
+    reach: 'reach',
+    conversions: 'actions'
+  };
+
+  const field = metricFieldMap[metric] || 'spend';
+
+  try {
+    const url = `${baseUrl}/act_${accountId}/campaigns?fields=name,insights.time_range({"since":"${since}","until":"${until}"}){${field}}&access_token=${accessToken}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Meta API error:', data.error);
+      return {
+        type: 'table',
+        columns: ['Campaign', 'Spend'],
+        data: [],
+        _demoData: true
+      };
+    }
+
+    const campaigns = [];
+    if (data.data && data.data.length > 0) {
+      for (const campaign of data.data) {
+        if (campaign.insights && campaign.insights.data && campaign.insights.data.length > 0) {
+          const insight = campaign.insights.data[0];
+          let value = insight[field] || 0;
+
+          if (metric === 'conversions' && insight.actions) {
+            value = insight.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
+          }
+
+          campaigns.push({
+            campaign: campaign.name,
+            value: parseFloat(value)
+          });
+        }
+      }
+    }
+
+    campaigns.sort((a, b) => b.value - a.value);
+
+    return {
+      type: 'table',
+      columns: ['Campaign', metric === 'spend' ? 'Spend' : 'Clicks'],
+      data: campaigns.slice(0, 10).map(c => ({
+        campaign: c.campaign,
+        [metric === 'spend' ? 'spend' : 'clicks']: metric === 'spend' ? c.value.toFixed(2) : Math.round(c.value)
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching Meta campaign breakdown:', error);
+    return {
+      type: 'table',
+      columns: ['Campaign', 'Spend'],
+      data: [],
+      _demoData: true
     };
   }
 }
