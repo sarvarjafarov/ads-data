@@ -484,8 +484,10 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
       // Handle special cases
       if (metric === 'roas') {
         // Try Meta's built-in purchase_roas first
+        let hasConversionTracking = false;
         if (insights.purchase_roas && insights.purchase_roas.length > 0) {
           value = parseFloat(insights.purchase_roas[0].value || 0);
+          hasConversionTracking = true;
         } else {
           // Fallback: Calculate manually as (purchase value) / spend
           let purchaseValue = 0;
@@ -496,9 +498,15 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
               av.action_type === 'offsite_conversion.fb_pixel_purchase'
             );
             purchaseValue = purchases.reduce((sum, p) => sum + parseFloat(p.value || 0), 0);
+            if (purchaseValue > 0) hasConversionTracking = true;
           }
           const spend = parseFloat(insights.spend || 0);
           value = spend > 0 ? purchaseValue / spend : 0;
+        }
+
+        // Store warning if no conversion tracking detected
+        if (!hasConversionTracking || value === 0) {
+          currency = 'SETUP_REQUIRED';
         }
       } else if (metric === 'conversions' && insights.actions) {
         value = insights.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);

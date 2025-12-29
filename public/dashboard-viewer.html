@@ -3267,8 +3267,21 @@
             // Update KPI card widgets
             const metricElement = document.getElementById(`metric-${widget.id}`);
             if (metricElement && result.data) {
-              let formattedValue = formatMetricValue(value, metric, currency);
-              metricElement.textContent = formattedValue;
+              // Check for ROAS setup requirement
+              if (currency === 'SETUP_REQUIRED' && metric === 'roas') {
+                metricElement.innerHTML = `
+                  <div style="font-size: 1.5rem; color: #F5A623; margin-bottom: 0.5rem;">Setup Required</div>
+                  <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.4;">
+                    ⚠️ Conversion tracking not configured<br>
+                    <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline; font-size: 0.7rem;">
+                      Set up Facebook Pixel →
+                    </a>
+                  </div>
+                `;
+              } else {
+                let formattedValue = formatMetricValue(value, metric, currency);
+                metricElement.textContent = formattedValue;
+              }
             }
             renderSparkline(widget.id, timeSeries, metric);
             updateTrendIndicator(widget.id, changePercent, metric);
@@ -4033,6 +4046,29 @@
       const statusText = document.getElementById(`gauge-status-text-${widgetId}`);
 
       if (!gaugeFill || !gaugeValue) return;
+
+      // Check if conversion tracking is not set up for ROAS
+      if (currency === 'SETUP_REQUIRED' && metric === 'roas') {
+        if (actualValue) {
+          actualValue.innerHTML = '<span style="color: #F5A623;">Setup Required</span>';
+        }
+        if (statusIcon) statusIcon.textContent = '⚠️';
+        if (statusText) {
+          statusText.innerHTML = `
+            <span style="color: #F5A623; font-weight: 600;">Conversion tracking not configured</span><br>
+            <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem; display: block;">
+              To calculate ROAS, you need to set up Facebook Pixel with Purchase events.
+              <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline;">Configure in Events Manager →</a>
+            </span>
+          `;
+        }
+
+        // Show disabled gauge
+        gaugeValue.textContent = '--';
+        gaugeFill.className = 'gauge-fill warning';
+        gaugeFill.style.clipPath = 'polygon(50% 100%, 50% 100%, 50% 100%)';
+        return;
+      }
 
       // Calculate progress (0-180 degrees for semi-circle)
       const progress = Math.min((value / target) * 100, 100);
