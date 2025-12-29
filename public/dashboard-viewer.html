@@ -3453,16 +3453,16 @@
         return typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : parseFloat(value);
       });
 
-      // Use different colors for pie segments
+      // Use distinct, professional colors for pie segments
       const pieColors = [
-        '#b7fa31', // Bright lime green
-        '#8bc924', // Medium lime green
-        '#5e9617', // Dark lime green
-        '#32630a', // Very dark lime green
-        '#45a049', // Forest green
-        '#7cb342', // Light green
-        '#9ccc65', // Lighter green
-        '#c5e1a5'  // Very light green
+        '#b7fa31', // Bright lime (primary brand color)
+        '#4A90E2', // Professional blue
+        '#F5A623', // Warm orange
+        '#7B68EE', // Medium purple
+        '#50C878', // Emerald green
+        '#FF6B6B', // Coral red
+        '#FFD93D', // Golden yellow
+        '#95E1D3'  // Mint green
       ];
 
       const formattedMetric = formatMetricLabel(valueColumn);
@@ -3474,7 +3474,8 @@
           datasets: [{
             data: pieData,
             backgroundColor: pieColors.slice(0, pieLabels.length),
-            borderWidth: 0
+            borderColor: '#1a1a1a',
+            borderWidth: 2
           }]
         },
         options: {
@@ -3484,9 +3485,11 @@
             legend: {
               position: 'bottom',
               labels: {
-                color: 'rgba(255, 255, 255, 0.7)',
-                font: { size: 11 },
-                padding: 12,
+                color: 'rgba(255, 255, 255, 0.85)',
+                font: { size: 12, weight: '500' },
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle',
                 generateLabels: function(chart) {
                   const data = chart.data;
                   if (data.labels.length && data.datasets.length) {
@@ -3494,8 +3497,11 @@
                       const value = data.datasets[0].data[i];
                       const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
                       const percentage = ((value / total) * 100).toFixed(1);
+                      const formattedValue = value >= 1000
+                        ? (value / 1000).toFixed(1) + 'K'
+                        : value.toLocaleString();
                       return {
-                        text: `${label}: ${percentage}%`,
+                        text: `${label}: ${formattedValue} (${percentage}%)`,
                         fillStyle: data.datasets[0].backgroundColor[i],
                         hidden: false,
                         index: i

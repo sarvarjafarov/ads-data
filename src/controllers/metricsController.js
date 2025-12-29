@@ -587,10 +587,24 @@ async function fetchMetaAdsDeviceBreakdown(accountId, accessToken, metric, since
     if (data.data && data.data.length > 0) {
       for (const item of data.data) {
         const device = item.impression_device || 'Unknown';
-        const deviceName = device === 'desktop' ? 'Desktop' :
-                          device === 'mobile_app' || device === 'mobile_web' ? 'Mobile' :
-                          device === 'ig_android_app' || device === 'ig_ios_app' ? 'Instagram Mobile' :
-                          device.charAt(0).toUpperCase() + device.slice(1);
+
+        // Clean and standardize device names
+        let deviceName;
+        if (device === 'desktop') {
+          deviceName = 'Desktop';
+        } else if (device === 'mobile_app' || device === 'mobile_web' || device === 'android_smartphone') {
+          deviceName = 'Mobile';
+        } else if (device === 'iphone') {
+          deviceName = 'iPhone';
+        } else if (device === 'ipad' || device === 'android_tablet') {
+          deviceName = 'Tablet';
+        } else if (device === 'ig_android_app' || device === 'ig_ios_app') {
+          deviceName = 'Instagram';
+        } else if (device === 'ipod') {
+          deviceName = 'iPod';
+        } else {
+          deviceName = device.charAt(0).toUpperCase() + device.slice(1).replace(/_/g, ' ');
+        }
 
         let value = item[field] || 0;
         if (metric === 'conversions' && item.actions) {
@@ -604,15 +618,44 @@ async function fetchMetaAdsDeviceBreakdown(accountId, accessToken, metric, since
       }
     }
 
-    const deviceData = Object.keys(devices).map(device => ({
-      device: device,
-      value: devices[device]
-    })).sort((a, b) => b.value - a.value);
+    // Sort by value and filter out zero/tiny values
+    const deviceData = Object.keys(devices)
+      .map(device => ({
+        device: device,
+        value: devices[device]
+      }))
+      .filter(d => d.value > 0) // Remove 0% items
+      .sort((a, b) => b.value - a.value);
+
+    // Calculate total for percentage calculation
+    const total = deviceData.reduce((sum, d) => sum + d.value, 0);
+
+    // Group small segments (< 2%) into "Other"
+    const threshold = total * 0.02; // 2% threshold
+    const mainDevices = [];
+    let otherTotal = 0;
+
+    for (const device of deviceData) {
+      if (device.value >= threshold || mainDevices.length < 3) {
+        // Keep top 3 devices and any device > 2%
+        mainDevices.push(device);
+      } else {
+        otherTotal += device.value;
+      }
+    }
+
+    // Add "Other" category if we grouped anything
+    if (otherTotal > 0) {
+      mainDevices.push({
+        device: 'Other',
+        value: otherTotal
+      });
+    }
 
     return {
       type: 'table',
       columns: ['Device', 'Clicks'],
-      data: deviceData.map(d => ({
+      data: mainDevices.map(d => ({
         device: d.device,
         clicks: Math.round(d.value)
       }))
