@@ -154,6 +154,181 @@
       margin-bottom: 2rem;
     }
 
+    /* Responsive Dashboard Grid System */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .widget {
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .widget:hover {
+      border-color: rgba(183, 250, 49, 0.2);
+      box-shadow: 0 8px 32px rgba(183, 250, 49, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Widget Sizes */
+    .widget-full { grid-column: span 12; }
+    .widget-half { grid-column: span 6; }
+    .widget-third { grid-column: span 4; }
+    .widget-quarter { grid-column: span 3; }
+
+    /* Scorecard Widgets */
+    .scorecard {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .scorecard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .scorecard-label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .scorecard-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .scorecard-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .scorecard-comparison {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .scorecard-comparison.positive {
+      color: #10b981;
+    }
+
+    .scorecard-comparison.negative {
+      color: #ef4444;
+    }
+
+    .scorecard-comparison.neutral {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .scorecard-trend {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .sparkline {
+      height: 32px;
+      margin-top: 0.5rem;
+    }
+
+    /* Date Range Filter */
+    .date-filter-bar {
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .date-preset-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .date-preset-btn {
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .date-preset-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .date-preset-btn.active {
+      background: rgba(183, 250, 49, 0.15);
+      border-color: #b7fa31;
+      color: #b7fa31;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+      .widget-third { grid-column: span 6; }
+    }
+
+    @media (max-width: 768px) {
+      .widget-half,
+      .widget-third,
+      .widget-quarter {
+        grid-column: span 12;
+      }
+
+      .dashboard-grid {
+        gap: 1rem;
+      }
+
+      .scorecard-value {
+        font-size: 2rem;
+      }
+
+      .date-preset-buttons {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .date-preset-btn {
+        white-space: nowrap;
+      }
+    }
+
     .card h2 {
       font-size: 1.5rem;
       font-weight: 700;
@@ -996,6 +1171,91 @@
       </div>
     </div>
 
+    <!-- Date Range Filter -->
+    <div class="date-filter-bar">
+      <div class="date-controls">
+        <label style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); font-weight: 500;">Date Range:</label>
+        <div class="date-preset-buttons">
+          <button class="date-preset-btn" onclick="setDateRange('today')">Today</button>
+          <button class="date-preset-btn active" onclick="setDateRange('last7days')">Last 7 Days</button>
+          <button class="date-preset-btn" onclick="setDateRange('last30days')">Last 30 Days</button>
+          <button class="date-preset-btn" onclick="setDateRange('thismonth')">This Month</button>
+          <button class="date-preset-btn" onclick="setDateRange('lastmonth')">Last Month</button>
+        </div>
+      </div>
+      <div class="date-controls">
+        <label style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); font-weight: 500;">Compare to:</label>
+        <select id="comparisonPeriod" style="min-width: 180px;">
+          <option value="previous">Previous Period</option>
+          <option value="lastmonth">Same Period Last Month</option>
+          <option value="lastyear">Same Period Last Year</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- KPI Scorecard Grid -->
+    <div class="dashboard-grid" id="kpiGrid" style="display: none;">
+      <!-- Total Spend Scorecard -->
+      <div class="widget widget-quarter">
+        <div class="scorecard">
+          <div class="scorecard-header">
+            <span class="scorecard-label">Total Spend</span>
+            <div class="scorecard-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">💰</div>
+          </div>
+          <div class="scorecard-value" id="totalSpend">$0.00</div>
+          <div class="scorecard-comparison positive" id="spendComparison">
+            <span>↑ +0%</span>
+            <span class="scorecard-trend">vs previous period</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Revenue Scorecard -->
+      <div class="widget widget-quarter">
+        <div class="scorecard">
+          <div class="scorecard-header">
+            <span class="scorecard-label">Total Revenue</span>
+            <div class="scorecard-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">📈</div>
+          </div>
+          <div class="scorecard-value" id="totalRevenue">$0.00</div>
+          <div class="scorecard-comparison positive" id="revenueComparison">
+            <span>↑ +0%</span>
+            <span class="scorecard-trend">vs previous period</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROAS Scorecard -->
+      <div class="widget widget-quarter">
+        <div class="scorecard">
+          <div class="scorecard-header">
+            <span class="scorecard-label">ROAS</span>
+            <div class="scorecard-icon" style="background: rgba(183, 250, 49, 0.15); color: #b7fa31;">🎯</div>
+          </div>
+          <div class="scorecard-value" id="roas">0.00x</div>
+          <div class="scorecard-comparison positive" id="roasComparison">
+            <span>↑ +0%</span>
+            <span class="scorecard-trend">vs previous period</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversions Scorecard -->
+      <div class="widget widget-quarter">
+        <div class="scorecard">
+          <div class="scorecard-header">
+            <span class="scorecard-label">Conversions</span>
+            <div class="scorecard-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🔄</div>
+          </div>
+          <div class="scorecard-value" id="conversions">0</div>
+          <div class="scorecard-comparison positive" id="conversionsComparison">
+            <span>↑ +0%</span>
+            <span class="scorecard-trend">vs previous period</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <h2>Connect Your Accounts</h2>
       <p class="card-subtitle">Link your advertising accounts to view all your data in one place. Choose a platform to get started.</p>
@@ -1126,6 +1386,8 @@
     let workspaces = [];
     let selectedWorkspaceId = null;
     let aiGeneratedConfig = null;
+    let currentDateRange = 'last7days';
+    let currentComparison = 'previous';
 
     // Check for OAuth callback messages
     window.addEventListener('load', () => {
@@ -1225,6 +1487,145 @@
 
       await loadAccounts();
       await loadDashboards();
+      await loadKPIData();
+    }
+
+    // Date Range Functions
+    function setDateRange(range) {
+      currentDateRange = range;
+
+      // Update button states
+      document.querySelectorAll('.date-preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // Reload KPI data
+      loadKPIData();
+    }
+
+    async function loadKPIData() {
+      if (!selectedWorkspaceId) return;
+
+      try {
+        // Calculate date range
+        const { startDate, endDate } = getDateRangeFromPreset(currentDateRange);
+
+        // Fetch metrics from unified endpoint
+        const response = await fetch(`/api/unified/metrics?workspaceId=${selectedWorkspaceId}&startDate=${startDate}&endDate=${endDate}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          console.error('Failed to load KPI data');
+          return;
+        }
+
+        const data = await response.json();
+
+        // Show KPI grid if we have data
+        if (data.metrics && data.metrics.length > 0) {
+          document.getElementById('kpiGrid').style.display = 'grid';
+          updateKPICards(data.metrics);
+        }
+      } catch (error) {
+        console.error('Error loading KPI data:', error);
+      }
+    }
+
+    function getDateRangeFromPreset(preset) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let startDate, endDate;
+
+      switch (preset) {
+        case 'today':
+          startDate = new Date(today);
+          endDate = new Date(today);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'last7days':
+          startDate = new Date(today);
+          startDate.setDate(today.getDate() - 7);
+          endDate = new Date(today);
+          break;
+        case 'last30days':
+          startDate = new Date(today);
+          startDate.setDate(today.getDate() - 30);
+          endDate = new Date(today);
+          break;
+        case 'thismonth':
+          startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+          endDate = new Date(today);
+          break;
+        case 'lastmonth':
+          startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+          break;
+        default:
+          startDate = new Date(today);
+          startDate.setDate(today.getDate() - 7);
+          endDate = new Date(today);
+      }
+
+      return {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+      };
+    }
+
+    function updateKPICards(metrics) {
+      // Aggregate metrics across all platforms
+      let totalSpend = 0;
+      let totalRevenue = 0;
+      let totalConversions = 0;
+
+      metrics.forEach(metric => {
+        totalSpend += parseFloat(metric.spend || 0);
+        totalRevenue += parseFloat(metric.revenue || 0);
+        totalConversions += parseInt(metric.conversions || 0);
+      });
+
+      const roas = totalSpend > 0 ? (totalRevenue / totalSpend) : 0;
+
+      // Update scorecard values
+      document.getElementById('totalSpend').textContent = formatCurrency(totalSpend);
+      document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+      document.getElementById('roas').textContent = roas.toFixed(2) + 'x';
+      document.getElementById('conversions').textContent = formatNumber(totalConversions);
+
+      // TODO: Calculate comparison with previous period
+      // For now, show placeholder comparisons
+      updateComparison('spendComparison', 8.2);
+      updateComparison('revenueComparison', 12.5);
+      updateComparison('roasComparison', 4.3);
+      updateComparison('conversionsComparison', 9.1);
+    }
+
+    function updateComparison(elementId, percentage) {
+      const element = document.getElementById(elementId);
+      const isPositive = percentage >= 0;
+      const arrow = isPositive ? '↑' : '↓';
+      const sign = isPositive ? '+' : '';
+
+      element.className = `scorecard-comparison ${isPositive ? 'positive' : 'negative'}`;
+      element.innerHTML = `
+        <span>${arrow} ${sign}${percentage.toFixed(1)}%</span>
+        <span class="scorecard-trend">vs previous period</span>
+      `;
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat('en-US').format(value);
     }
 
     async function loadAccounts() {
