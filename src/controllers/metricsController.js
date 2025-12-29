@@ -628,6 +628,125 @@ async function fetchMetaAdsDeviceBreakdown(accountId, accessToken, metric, since
   }
 }
 
+// Country code to name mapping
+const countryCodeMap = {
+  'US': 'United States',
+  'GB': 'United Kingdom',
+  'CA': 'Canada',
+  'AU': 'Australia',
+  'DE': 'Germany',
+  'FR': 'France',
+  'IT': 'Italy',
+  'ES': 'Spain',
+  'NL': 'Netherlands',
+  'BE': 'Belgium',
+  'CH': 'Switzerland',
+  'AT': 'Austria',
+  'SE': 'Sweden',
+  'NO': 'Norway',
+  'DK': 'Denmark',
+  'FI': 'Finland',
+  'IE': 'Ireland',
+  'PT': 'Portugal',
+  'PL': 'Poland',
+  'CZ': 'Czech Republic',
+  'RO': 'Romania',
+  'GR': 'Greece',
+  'HU': 'Hungary',
+  'BG': 'Bulgaria',
+  'SK': 'Slovakia',
+  'SI': 'Slovenia',
+  'HR': 'Croatia',
+  'LT': 'Lithuania',
+  'LV': 'Latvia',
+  'EE': 'Estonia',
+  'TR': 'Turkey',
+  'RU': 'Russia',
+  'UA': 'Ukraine',
+  'BY': 'Belarus',
+  'RS': 'Serbia',
+  'BA': 'Bosnia',
+  'MK': 'North Macedonia',
+  'AL': 'Albania',
+  'ME': 'Montenegro',
+  'IS': 'Iceland',
+  'BR': 'Brazil',
+  'MX': 'Mexico',
+  'AR': 'Argentina',
+  'CO': 'Colombia',
+  'CL': 'Chile',
+  'PE': 'Peru',
+  'VE': 'Venezuela',
+  'EC': 'Ecuador',
+  'BO': 'Bolivia',
+  'PY': 'Paraguay',
+  'UY': 'Uruguay',
+  'CN': 'China',
+  'JP': 'Japan',
+  'KR': 'South Korea',
+  'IN': 'India',
+  'ID': 'Indonesia',
+  'TH': 'Thailand',
+  'MY': 'Malaysia',
+  'SG': 'Singapore',
+  'PH': 'Philippines',
+  'VN': 'Vietnam',
+  'PK': 'Pakistan',
+  'BD': 'Bangladesh',
+  'LK': 'Sri Lanka',
+  'NP': 'Nepal',
+  'MM': 'Myanmar',
+  'KH': 'Cambodia',
+  'LA': 'Laos',
+  'HK': 'Hong Kong',
+  'TW': 'Taiwan',
+  'MO': 'Macau',
+  'AE': 'UAE',
+  'SA': 'Saudi Arabia',
+  'IL': 'Israel',
+  'EG': 'Egypt',
+  'ZA': 'South Africa',
+  'NG': 'Nigeria',
+  'KE': 'Kenya',
+  'GH': 'Ghana',
+  'MA': 'Morocco',
+  'DZ': 'Algeria',
+  'TN': 'Tunisia',
+  'LY': 'Libya',
+  'SD': 'Sudan',
+  'ET': 'Ethiopia',
+  'UG': 'Uganda',
+  'TZ': 'Tanzania',
+  'AO': 'Angola',
+  'MZ': 'Mozambique',
+  'ZW': 'Zimbabwe',
+  'ZM': 'Zambia',
+  'BW': 'Botswana',
+  'NA': 'Namibia',
+  'SN': 'Senegal',
+  'CI': 'Ivory Coast',
+  'CM': 'Cameroon',
+  'NZ': 'New Zealand',
+  'AZ': 'Azerbaijan',
+  'GE': 'Georgia',
+  'AM': 'Armenia',
+  'KZ': 'Kazakhstan',
+  'UZ': 'Uzbekistan',
+  'KG': 'Kyrgyzstan',
+  'TJ': 'Tajikistan',
+  'TM': 'Turkmenistan',
+  'IQ': 'Iraq',
+  'IR': 'Iran',
+  'SY': 'Syria',
+  'JO': 'Jordan',
+  'LB': 'Lebanon',
+  'KW': 'Kuwait',
+  'OM': 'Oman',
+  'QA': 'Qatar',
+  'BH': 'Bahrain',
+  'YE': 'Yemen'
+};
+
 // Fetch country breakdown from Meta Ads API
 async function fetchMetaAdsCountryBreakdown(accountId, accessToken, metric, since, until) {
   const baseUrl = 'https://graph.facebook.com/v18.0';
@@ -660,31 +779,41 @@ async function fetchMetaAdsCountryBreakdown(accountId, accessToken, metric, sinc
     const countries = {};
     if (data.data && data.data.length > 0) {
       for (const item of data.data) {
-        const country = item.country || 'Unknown';
+        const countryCode = item.country || 'Unknown';
 
         let value = item[field] || 0;
         if (metric === 'conversions' && item.actions) {
           value = item.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
         }
 
-        if (!countries[country]) {
-          countries[country] = 0;
+        if (!countries[countryCode]) {
+          countries[countryCode] = 0;
         }
-        countries[country] += parseFloat(value);
+        countries[countryCode] += parseFloat(value);
       }
     }
 
-    const countryData = Object.keys(countries).map(country => ({
-      country: country,
-      value: countries[country]
-    })).sort((a, b) => b.value - a.value).slice(0, 10); // Top 10 countries
+    const countryData = Object.keys(countries).map(countryCode => {
+      // Convert country code to full name, fallback to code if not found
+      const countryName = countryCodeMap[countryCode] || countryCode;
+
+      return {
+        country: countryName,
+        countryCode: countryCode,
+        value: countries[countryCode]
+      };
+    }).sort((a, b) => b.value - a.value).slice(0, 10); // Top 10 countries
+
+    // If only one country, add a note
+    const isSingleCountry = countryData.length === 1;
 
     return {
       type: 'table',
-      columns: ['Country', 'Clicks'],
+      columns: ['Country', 'Clicks', 'Code'],
       data: countryData.map(c => ({
-        country: c.country,
-        clicks: Math.round(c.value)
+        country: isSingleCountry ? `${c.country} (Only market)` : c.country,
+        clicks: Math.round(c.value),
+        code: c.countryCode
       }))
     };
   } catch (error) {
