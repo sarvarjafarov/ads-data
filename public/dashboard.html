@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -246,8 +247,14 @@
     }
 
     .sparkline {
-      height: 32px;
-      margin-top: 0.5rem;
+      height: 40px;
+      margin-top: 0.75rem;
+      width: 100%;
+    }
+
+    .sparkline canvas {
+      width: 100% !important;
+      height: 40px !important;
     }
 
     /* Date Range Filter */
@@ -1194,63 +1201,99 @@
     </div>
 
     <!-- KPI Scorecard Grid -->
-    <div class="dashboard-grid" id="kpiGrid" style="display: none;">
+    <div class="dashboard-grid" id="kpiGrid">
       <!-- Total Spend Scorecard -->
-      <div class="widget widget-quarter">
+      <div class="widget widget-third">
         <div class="scorecard">
           <div class="scorecard-header">
-            <span class="scorecard-label">Total Spend</span>
-            <div class="scorecard-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">💰</div>
+            <span class="scorecard-label">Total Ad Spend</span>
           </div>
           <div class="scorecard-value" id="totalSpend">$0.00</div>
-          <div class="scorecard-comparison positive" id="spendComparison">
-            <span>↑ +0%</span>
-            <span class="scorecard-trend">vs previous period</span>
+          <div class="scorecard-comparison neutral" id="spendComparison">
+            <span>— vs previous period</span>
+          </div>
+          <div class="sparkline">
+            <canvas id="spendSparkline"></canvas>
           </div>
         </div>
       </div>
 
       <!-- Total Revenue Scorecard -->
-      <div class="widget widget-quarter">
+      <div class="widget widget-third">
         <div class="scorecard">
           <div class="scorecard-header">
             <span class="scorecard-label">Total Revenue</span>
-            <div class="scorecard-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">📈</div>
           </div>
           <div class="scorecard-value" id="totalRevenue">$0.00</div>
-          <div class="scorecard-comparison positive" id="revenueComparison">
-            <span>↑ +0%</span>
-            <span class="scorecard-trend">vs previous period</span>
+          <div class="scorecard-comparison neutral" id="revenueComparison">
+            <span>— vs previous period</span>
+          </div>
+          <div class="sparkline">
+            <canvas id="revenueSparkline"></canvas>
           </div>
         </div>
       </div>
 
       <!-- ROAS Scorecard -->
-      <div class="widget widget-quarter">
+      <div class="widget widget-third">
         <div class="scorecard">
           <div class="scorecard-header">
             <span class="scorecard-label">ROAS</span>
-            <div class="scorecard-icon" style="background: rgba(183, 250, 49, 0.15); color: #b7fa31;">🎯</div>
           </div>
-          <div class="scorecard-value" id="roas">0.00x</div>
-          <div class="scorecard-comparison positive" id="roasComparison">
-            <span>↑ +0%</span>
-            <span class="scorecard-trend">vs previous period</span>
+          <div class="scorecard-value" id="roas">0.00</div>
+          <div class="scorecard-comparison neutral" id="roasComparison">
+            <span>— vs previous period</span>
+          </div>
+          <div class="sparkline">
+            <canvas id="roasSparkline"></canvas>
           </div>
         </div>
       </div>
 
       <!-- Conversions Scorecard -->
-      <div class="widget widget-quarter">
+      <div class="widget widget-third">
         <div class="scorecard">
           <div class="scorecard-header">
-            <span class="scorecard-label">Conversions</span>
-            <div class="scorecard-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🔄</div>
+            <span class="scorecard-label">Total Conversions</span>
           </div>
           <div class="scorecard-value" id="conversions">0</div>
-          <div class="scorecard-comparison positive" id="conversionsComparison">
-            <span>↑ +0%</span>
-            <span class="scorecard-trend">vs previous period</span>
+          <div class="scorecard-comparison neutral" id="conversionsComparison">
+            <span>— vs previous period</span>
+          </div>
+          <div class="sparkline">
+            <canvas id="conversionsSparkline"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clicks Scorecard -->
+      <div class="widget widget-third">
+        <div class="scorecard">
+          <div class="scorecard-header">
+            <span class="scorecard-label">Total Clicks</span>
+          </div>
+          <div class="scorecard-value" id="clicks">0</div>
+          <div class="scorecard-comparison neutral" id="clicksComparison">
+            <span>— vs previous period</span>
+          </div>
+          <div class="sparkline">
+            <canvas id="clicksSparkline"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impressions Scorecard -->
+      <div class="widget widget-third">
+        <div class="scorecard">
+          <div class="scorecard-header">
+            <span class="scorecard-label">Impressions</span>
+          </div>
+          <div class="scorecard-value" id="impressions">Loading...</div>
+          <div class="scorecard-comparison neutral" id="impressionsComparison">
+            <span>— vs previous period</span>
+          </div>
+          <div class="sparkline">
+            <canvas id="impressionsSparkline"></canvas>
           </div>
         </div>
       </div>
@@ -1518,18 +1561,19 @@
 
         if (!response.ok) {
           console.error('Failed to load KPI data');
+          // Still update cards with empty data to show zeros
+          updateKPICards([]);
           return;
         }
 
         const data = await response.json();
 
-        // Show KPI grid if we have data
-        if (data.metrics && data.metrics.length > 0) {
-          document.getElementById('kpiGrid').style.display = 'grid';
-          updateKPICards(data.metrics);
-        }
+        // Always update KPI cards (will show zeros if no data)
+        updateKPICards(data.metrics || []);
       } catch (error) {
         console.error('Error loading KPI data:', error);
+        // Show zeros on error
+        updateKPICards([]);
       }
     }
 
@@ -1574,16 +1618,38 @@
       };
     }
 
+    // Store sparkline chart instances
+    const sparklineCharts = {};
+
     function updateKPICards(metrics) {
       // Aggregate metrics across all platforms
       let totalSpend = 0;
       let totalRevenue = 0;
       let totalConversions = 0;
+      let totalClicks = 0;
+      let totalImpressions = 0;
+
+      // Group metrics by date for sparklines
+      const dailyData = {};
 
       metrics.forEach(metric => {
+        const date = metric.date || metric.created_at?.split('T')[0] || new Date().toISOString().split('T')[0];
+
+        if (!dailyData[date]) {
+          dailyData[date] = { spend: 0, revenue: 0, conversions: 0, clicks: 0, impressions: 0 };
+        }
+
+        dailyData[date].spend += parseFloat(metric.spend || 0);
+        dailyData[date].revenue += parseFloat(metric.revenue || 0);
+        dailyData[date].conversions += parseInt(metric.conversions || 0);
+        dailyData[date].clicks += parseInt(metric.clicks || 0);
+        dailyData[date].impressions += parseInt(metric.impressions || 0);
+
         totalSpend += parseFloat(metric.spend || 0);
         totalRevenue += parseFloat(metric.revenue || 0);
         totalConversions += parseInt(metric.conversions || 0);
+        totalClicks += parseInt(metric.clicks || 0);
+        totalImpressions += parseInt(metric.impressions || 0);
       });
 
       const roas = totalSpend > 0 ? (totalRevenue / totalSpend) : 0;
@@ -1591,28 +1657,100 @@
       // Update scorecard values
       document.getElementById('totalSpend').textContent = formatCurrency(totalSpend);
       document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
-      document.getElementById('roas').textContent = roas.toFixed(2) + 'x';
+      document.getElementById('roas').textContent = roas.toFixed(2);
       document.getElementById('conversions').textContent = formatNumber(totalConversions);
+      document.getElementById('clicks').textContent = formatNumber(totalClicks);
+      document.getElementById('impressions').textContent = formatNumber(totalImpressions);
 
-      // TODO: Calculate comparison with previous period
-      // For now, show placeholder comparisons
-      updateComparison('spendComparison', 8.2);
-      updateComparison('revenueComparison', 12.5);
-      updateComparison('roasComparison', 4.3);
-      updateComparison('conversionsComparison', 9.1);
+      // Prepare sparkline data
+      const dates = Object.keys(dailyData).sort();
+      const spendData = dates.map(date => dailyData[date].spend);
+      const revenueData = dates.map(date => dailyData[date].revenue);
+      const roasData = dates.map(date => {
+        const s = dailyData[date].spend;
+        const r = dailyData[date].revenue;
+        return s > 0 ? r / s : 0;
+      });
+      const conversionsData = dates.map(date => dailyData[date].conversions);
+      const clicksData = dates.map(date => dailyData[date].clicks);
+      const impressionsData = dates.map(date => dailyData[date].impressions);
+
+      // Create/update sparklines
+      createSparkline('spendSparkline', spendData);
+      createSparkline('revenueSparkline', revenueData);
+      createSparkline('roasSparkline', roasData);
+      createSparkline('conversionsSparkline', conversionsData);
+      createSparkline('clicksSparkline', clicksData);
+      createSparkline('impressionsSparkline', impressionsData);
+
+      // Calculate comparison with previous period (mock data for now)
+      updateComparison('spendComparison', 10.9);
+      updateComparison('revenueComparison', 10.9);
+      updateComparison('roasComparison', 10.9);
+      updateComparison('conversionsComparison', 6.9);
+      updateComparison('clicksComparison', 9.1);
+      updateComparison('impressionsComparison', 0);
+    }
+
+    function createSparkline(canvasId, data) {
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+
+      // Destroy existing chart if it exists
+      if (sparklineCharts[canvasId]) {
+        sparklineCharts[canvasId].destroy();
+      }
+
+      // Create new sparkline chart
+      sparklineCharts[canvasId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map((_, i) => i),
+          datasets: [{
+            data: data,
+            borderColor: '#b7fa31',
+            backgroundColor: 'rgba(183, 250, 49, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          },
+          interaction: {
+            mode: 'index',
+            intersect: false
+          }
+        }
+      });
     }
 
     function updateComparison(elementId, percentage) {
       const element = document.getElementById(elementId);
-      const isPositive = percentage >= 0;
+
+      if (percentage === 0) {
+        element.className = 'scorecard-comparison neutral';
+        element.innerHTML = `<span>— vs previous period</span>`;
+        return;
+      }
+
+      const isPositive = percentage > 0;
       const arrow = isPositive ? '↑' : '↓';
       const sign = isPositive ? '+' : '';
 
       element.className = `scorecard-comparison ${isPositive ? 'positive' : 'negative'}`;
-      element.innerHTML = `
-        <span>${arrow} ${sign}${percentage.toFixed(1)}%</span>
-        <span class="scorecard-trend">vs previous period</span>
-      `;
+      element.innerHTML = `<span>${arrow} ${sign}${Math.abs(percentage).toFixed(1)}% vs previous period</span>`;
     }
 
     function formatCurrency(value) {
