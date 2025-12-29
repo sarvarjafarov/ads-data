@@ -11,7 +11,7 @@ const alertRoutes = require('./alertRoutes');
 const searchConsoleRoutes = require('./searchConsoleRoutes');
 const budgetRoutes = require('./budgetRoutes');
 const anomalyRoutes = require('./anomalyRoutes');
-const campaignRoutes = require('./campaignRoutes');
+// const campaignRoutes = require('./campaignRoutes');
 const reportRoutes = require('./reportRoutes');
 const filterRoutes = require('./filterRoutes');
 const goalRoutes = require('./goalRoutes');
@@ -22,7 +22,7 @@ const linkedinRoutes = require('./linkedinRoutes');
 const unifiedReportingRoutes = require('./unifiedReportingRoutes');
 const customDataRoutes = require('./customDataRoutes');
 const webhookRoutes = require('./webhookRoutes');
-const websiteAuditRoutes = require('./websiteAuditRoutes');
+// const websiteAuditRoutes = require('./websiteAuditRoutes');
 
 const router = express.Router();
 
@@ -38,7 +38,7 @@ router.use('/alerts', alertRoutes);
 router.use('/search-console', searchConsoleRoutes);
 router.use('/budget', budgetRoutes);
 router.use('/anomalies', anomalyRoutes);
-router.use('/campaigns', campaignRoutes);
+// router.use('/campaigns', campaignRoutes);
 router.use('/reports', reportRoutes);
 router.use('/filters', filterRoutes);
 router.use('/goals', goalRoutes);
@@ -49,6 +49,6 @@ router.use('/linkedin', linkedinRoutes);
 router.use('/unified', unifiedReportingRoutes);
 router.use('/api', customDataRoutes);
 router.use('/webhooks', webhookRoutes);
-router.use('/website-audit', websiteAuditRoutes);
+// router.use('/website-audit', websiteAuditRoutes);
 
 module.exports = router;
