@@ -3113,6 +3113,24 @@
         const target = dataSource.target || 100;
         contentHTML = `
           <div class="gauge-widget">
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div>
+                  <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Current</div>
+                  <div style="font-size: 2rem; font-weight: 700; color: #b7fa31;" id="gauge-actual-value-${widget.id}">--</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Target</div>
+                  <div style="font-size: 1.25rem; font-weight: 600; color: rgba(255,255,255,0.6);" id="gauge-target-value-${widget.id}">${formatMetricValue(target, metricName)}</div>
+                </div>
+              </div>
+              <div style="padding: 0.5rem 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 4px;">
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7);">
+                  <span id="gauge-status-icon-${widget.id}">⏳</span>
+                  <span id="gauge-status-text-${widget.id}">Loading...</span>
+                </div>
+              </div>
+            </div>
             <div class="gauge-container">
               <div class="gauge-background"></div>
               <div class="gauge-fill excellent" id="gauge-fill-${widget.id}" style="clip-path: polygon(0 100%, 50% 100%, 50% 0, 0 0);"></div>
@@ -4010,6 +4028,9 @@
 
       const gaugeFill = document.getElementById(`gauge-fill-${widgetId}`);
       const gaugeValue = document.getElementById(`gauge-value-${widgetId}`);
+      const actualValue = document.getElementById(`gauge-actual-value-${widgetId}`);
+      const statusIcon = document.getElementById(`gauge-status-icon-${widgetId}`);
+      const statusText = document.getElementById(`gauge-status-text-${widgetId}`);
 
       if (!gaugeFill || !gaugeValue) return;
 
@@ -4017,19 +4038,36 @@
       const progress = Math.min((value / target) * 100, 100);
       const rotation = (progress / 100) * 180;
 
-      // Determine color class
-      let colorClass;
+      // Determine color class and status
+      let colorClass, icon, status;
       if (progress >= 100) {
         colorClass = 'excellent';
+        icon = '🎯';
+        status = `<span style="color: #b7fa31; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Exceeding target!`;
       } else if (progress >= 75) {
         colorClass = 'good';
+        icon = '✅';
+        status = `<span style="color: #50C878; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - On track to meet target`;
       } else if (progress >= 50) {
         colorClass = 'warning';
+        icon = '⚠️';
+        status = `<span style="color: #F5A623; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Below target, needs improvement`;
       } else {
         colorClass = 'danger';
+        icon = '🚨';
+        status = `<span style="color: #FF6B6B; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Critical: Far below target`;
       }
 
-      // Update gauge
+      // Update actual value display
+      if (actualValue) {
+        actualValue.textContent = formatMetricValue(value, metric, currency);
+      }
+
+      // Update status
+      if (statusIcon) statusIcon.textContent = icon;
+      if (statusText) statusText.innerHTML = status;
+
+      // Update gauge percentage display
       gaugeValue.textContent = `${progress.toFixed(0)}%`;
       gaugeFill.className = `gauge-fill ${colorClass}`;
 
