@@ -3263,8 +3263,13 @@
             // Render comparison widget with real data
             renderComparisonWidget(widget.id, value, previousValue, changePercent, metric, currency);
           } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
-            // Render chart widgets with real time-series data
-            renderChart(widget, timeSeries, value, metric, currency);
+            // Check if this is table-type data (for pie charts showing breakdown by device, country, etc.)
+            if (widgetType === 'pie_chart' && result.data?.type === 'table') {
+              renderPieChartFromTable(widget, result.data, metric, currency);
+            } else {
+              // Render chart widgets with real time-series data
+              renderChart(widget, timeSeries, value, metric, currency, result.data);
+            }
           } else if (widgetType === 'kpi_tracker') {
             // Render KPI tracker widget
             renderKpiTracker(widget, value, changePercent, metric, currency);
@@ -3298,7 +3303,7 @@
       updateLastUpdatedTime();
     }
 
-    function renderChart(widget, timeSeries, value, metric, currency) {
+    function renderChart(widget, timeSeries, value, metric, currency, fullData) {
       const canvas = document.getElementById(`chart-${widget.id}`);
       if (!canvas) return;
 
@@ -3310,14 +3315,28 @@
         chartInstances[widget.id].destroy();
       }
 
-      // Use real time-series data or fallback to generated data
+      // Use real time-series data or show empty chart
       let labels, data;
       if (timeSeries && timeSeries.length > 0) {
         labels = timeSeries.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
         data = timeSeries.map(d => d.value);
       } else {
+        // If no real data available, show message instead of fake data
+        if (!value || value === 0) {
+          canvas.parentElement.innerHTML = `
+            <div class="no-data-state" style="padding: 2rem; text-align: center;">
+              <div class="no-data-icon">📊</div>
+              <div class="no-data-message">No data available for this period</div>
+              <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem;">
+                Connect your ad accounts and ensure tracking is properly set up
+              </div>
+            </div>
+          `;
+          return;
+        }
+        // If we have a value but no time-series, show it as a flat line
         labels = generateDateLabels(widget.data_source?.dateRange || 'last_30_days');
-        data = generateSampleData(value, labels.length);
+        data = new Array(labels.length).fill(value / labels.length);
       }
 
       const formattedMetric = formatMetricLabel(metric);
@@ -3397,6 +3416,142 @@
           }
         };
       }
+
+      chartInstances[widget.id] = new Chart(ctx, chartConfig);
+    }
+
+    function renderPieChartFromTable(widget, tableData, metric, currency) {
+      const canvas = document.getElementById(`chart-${widget.id}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+
+      // Destroy existing chart if any
+      if (chartInstances[widget.id]) {
+        chartInstances[widget.id].destroy();
+      }
+
+      const columns = tableData.columns || [];
+      const data = tableData.data || [];
+
+      if (data.length === 0) {
+        // Show no data message
+        canvas.parentElement.innerHTML = `
+          <div class="no-data-state" style="padding: 2rem; text-align: center;">
+            <div class="no-data-icon">📊</div>
+            <div class="no-data-message">No breakdown data available for this period</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Extract labels and values from table data
+      // First column is typically the label (Device, Country, Query, etc.)
+      // Find the most relevant numeric column for the pie chart
+      const labelColumn = columns[0]; // e.g., "Device", "Country", "Query"
+
+      // Determine which numeric column to use (prefer Clicks, then Impressions, then first numeric column)
+      let valueColumn = 'clicks';
+      if (columns.includes('Clicks')) {
+        valueColumn = 'Clicks';
+      } else if (columns.includes('Impressions')) {
+        valueColumn = 'Impressions';
+      } else {
+        // Find first numeric-looking column
+        valueColumn = columns.find(col =>
+          !col.toLowerCase().includes('ctr') &&
+          !col.toLowerCase().includes('position') &&
+          !col.toLowerCase().includes('%')
+        ) || columns[1];
+      }
+
+      // Extract labels and values
+      const pieLabels = data.map(row => {
+        const labelKey = labelColumn.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+        return row[labelKey] || row[labelColumn] || 'Unknown';
+      });
+
+      const pieData = data.map(row => {
+        const valueKey = valueColumn.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
+        const value = row[valueKey] || row[valueColumn] || 0;
+        return typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : parseFloat(value);
+      });
+
+      // Use different colors for pie segments
+      const pieColors = [
+        '#b7fa31', // Bright lime green
+        '#8bc924', // Medium lime green
+        '#5e9617', // Dark lime green
+        '#32630a', // Very dark lime green
+        '#45a049', // Forest green
+        '#7cb342', // Light green
+        '#9ccc65', // Lighter green
+        '#c5e1a5'  // Very light green
+      ];
+
+      const formattedMetric = formatMetricLabel(valueColumn);
+
+      const chartConfig = {
+        type: 'doughnut',
+        data: {
+          labels: pieLabels,
+          datasets: [{
+            data: pieData,
+            backgroundColor: pieColors.slice(0, pieLabels.length),
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'rgba(255, 255, 255, 0.7)',
+                font: { size: 11 },
+                padding: 12,
+                generateLabels: function(chart) {
+                  const data = chart.data;
+                  if (data.labels.length && data.datasets.length) {
+                    return data.labels.map((label, i) => {
+                      const value = data.datasets[0].data[i];
+                      const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                      const percentage = ((value / total) * 100).toFixed(1);
+                      return {
+                        text: `${label}: ${percentage}%`,
+                        fillStyle: data.datasets[0].backgroundColor[i],
+                        hidden: false,
+                        index: i
+                      };
+                    });
+                  }
+                  return [];
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#1a1a1a',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  const formattedValue = value >= 1000
+                    ? (value / 1000).toFixed(1) + 'K'
+                    : value.toLocaleString();
+                  return `${label}: ${formattedValue} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      };
 
       chartInstances[widget.id] = new Chart(ctx, chartConfig);
     }
@@ -3511,18 +3666,15 @@
         sparklineInstances[widgetId].destroy();
       }
 
-      // Use real time-series data or generate fallback
+      // Use real time-series data or show empty sparkline
       let data;
       if (timeSeries && timeSeries.length > 0) {
         // Take last 7 days or all available data
         const recentData = timeSeries.slice(-7);
         data = recentData.map(d => d.value);
       } else {
-        // Fallback to generated data
-        data = [];
-        for (let i = 0; i < 7; i++) {
-          data.push(Math.random() * 100);
-        }
+        // If no real data, show zeros instead of random data
+        data = [0, 0, 0, 0, 0, 0, 0];
       }
 
       sparklineInstances[widgetId] = new Chart(ctx, {
