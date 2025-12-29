@@ -1178,8 +1178,8 @@
       </div>
     </div>
 
-    <!-- Date Range Filter -->
-    <div class="date-filter-bar">
+    <!-- Date Range Filter (hidden until accounts are connected) -->
+    <div class="date-filter-bar" id="dateFilterBar" style="display: none;">
       <div class="date-controls">
         <label style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); font-weight: 500;">Date Range:</label>
         <div class="date-preset-buttons">
@@ -1200,8 +1200,24 @@
       </div>
     </div>
 
-    <!-- KPI Scorecard Grid -->
-    <div class="dashboard-grid" id="kpiGrid">
+    <!-- No Data Message (shown when no connected accounts or no data) -->
+    <div class="card" id="noDataMessage">
+      <div style="text-align: center; padding: 3rem 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
+        <h2 style="margin-bottom: 1rem;">No Analytics Data Available</h2>
+        <p style="color: rgba(255, 255, 255, 0.6); font-size: 1rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+          To view your advertising performance metrics, please connect your advertising accounts below and ensure they have proper tracking set up.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
+          <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">✓ Connect Meta Ads</span>
+          <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">✓ Connect Google Ads</span>
+          <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.875rem;">✓ Set up conversion tracking</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Scorecard Grid (hidden until accounts are connected) -->
+    <div class="dashboard-grid" id="kpiGrid" style="display: none;">
       <!-- Total Spend Scorecard -->
       <div class="widget widget-third">
         <div class="scorecard">
@@ -1622,6 +1638,17 @@
     const sparklineCharts = {};
 
     function updateKPICards(metrics) {
+      // Check if we have any meaningful data
+      const hasData = metrics && metrics.length > 0;
+
+      if (!hasData) {
+        // Show no data message, hide KPI grid and date filter
+        document.getElementById('noDataMessage').style.display = 'block';
+        document.getElementById('kpiGrid').style.display = 'none';
+        document.getElementById('dateFilterBar').style.display = 'none';
+        return;
+      }
+
       // Aggregate metrics across all platforms
       let totalSpend = 0;
       let totalRevenue = 0;
@@ -1652,12 +1679,28 @@
         totalImpressions += parseInt(metric.impressions || 0);
       });
 
+      // Check if all values are zero (no real data)
+      const hasRealData = totalSpend > 0 || totalRevenue > 0 || totalConversions > 0 || totalClicks > 0 || totalImpressions > 0;
+
+      if (!hasRealData) {
+        // Show no data message, hide KPI grid and date filter
+        document.getElementById('noDataMessage').style.display = 'block';
+        document.getElementById('kpiGrid').style.display = 'none';
+        document.getElementById('dateFilterBar').style.display = 'none';
+        return;
+      }
+
+      // Hide no data message, show KPI grid and date filter
+      document.getElementById('noDataMessage').style.display = 'none';
+      document.getElementById('kpiGrid').style.display = 'grid';
+      document.getElementById('dateFilterBar').style.display = 'flex';
+
       const roas = totalSpend > 0 ? (totalRevenue / totalSpend) : 0;
 
       // Update scorecard values
       document.getElementById('totalSpend').textContent = formatCurrency(totalSpend);
       document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
-      document.getElementById('roas').textContent = roas.toFixed(2);
+      document.getElementById('roas').textContent = roas.toFixed(2) + 'x'; // Show as multiplier, not currency
       document.getElementById('conversions').textContent = formatNumber(totalConversions);
       document.getElementById('clicks').textContent = formatNumber(totalClicks);
       document.getElementById('impressions').textContent = formatNumber(totalImpressions);
@@ -1675,20 +1718,23 @@
       const clicksData = dates.map(date => dailyData[date].clicks);
       const impressionsData = dates.map(date => dailyData[date].impressions);
 
-      // Create/update sparklines
-      createSparkline('spendSparkline', spendData);
-      createSparkline('revenueSparkline', revenueData);
-      createSparkline('roasSparkline', roasData);
-      createSparkline('conversionsSparkline', conversionsData);
-      createSparkline('clicksSparkline', clicksData);
-      createSparkline('impressionsSparkline', impressionsData);
+      // Create/update sparklines only if we have date data
+      if (dates.length > 0) {
+        createSparkline('spendSparkline', spendData);
+        createSparkline('revenueSparkline', revenueData);
+        createSparkline('roasSparkline', roasData);
+        createSparkline('conversionsSparkline', conversionsData);
+        createSparkline('clicksSparkline', clicksData);
+        createSparkline('impressionsSparkline', impressionsData);
+      }
 
       // Calculate comparison with previous period (mock data for now)
-      updateComparison('spendComparison', 10.9);
-      updateComparison('revenueComparison', 10.9);
-      updateComparison('roasComparison', 10.9);
-      updateComparison('conversionsComparison', 6.9);
-      updateComparison('clicksComparison', 9.1);
+      // TODO: Calculate real comparison when we have previous period data
+      updateComparison('spendComparison', 0);
+      updateComparison('revenueComparison', 0);
+      updateComparison('roasComparison', 0);
+      updateComparison('conversionsComparison', 0);
+      updateComparison('clicksComparison', 0);
       updateComparison('impressionsComparison', 0);
     }
 
