@@ -3270,11 +3270,14 @@
               // Check for ROAS setup requirement
               if (currency === 'SETUP_REQUIRED' && metric === 'roas') {
                 metricElement.innerHTML = `
-                  <div style="font-size: 1.5rem; color: #F5A623; margin-bottom: 0.5rem;">Setup Required</div>
-                  <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.4;">
-                    ⚠️ Conversion tracking not configured<br>
-                    <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline; font-size: 0.7rem;">
-                      Set up Facebook Pixel →
+                  <div style="font-size: 1.5rem; color: #F5A623; margin-bottom: 0.5rem;">No Conversion Data</div>
+                  <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.5;">
+                    ⚠️ We can't calculate ROAS properly without purchase conversion data.<br>
+                    <span style="font-size: 0.65rem; display: block; margin-top: 0.3rem; color: rgba(255,255,255,0.4);">
+                      This might be due to: Pixel not tracking purchases, missing value parameter, or no purchases in this period.
+                    </span>
+                    <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline; font-size: 0.7rem; display: inline-block; margin-top: 0.3rem;">
+                      Verify setup in Events Manager →
                     </a>
                   </div>
                 `;
@@ -4055,10 +4058,15 @@
         if (statusIcon) statusIcon.textContent = '⚠️';
         if (statusText) {
           statusText.innerHTML = `
-            <span style="color: #F5A623; font-weight: 600;">Conversion tracking not configured</span><br>
-            <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem; display: block;">
-              To calculate ROAS, you need to set up Facebook Pixel with Purchase events.
-              <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline;">Configure in Events Manager →</a>
+            <span style="color: #F5A623; font-weight: 600;">No conversion data detected</span><br>
+            <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem; display: block; line-height: 1.5;">
+              We can't calculate ROAS properly without purchase conversion data. This might be due to:<br>
+              <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); display: block; margin-top: 0.3rem; margin-left: 0.5rem;">
+                • Facebook Pixel not tracking Purchase events<br>
+                • Purchase events missing the "value" parameter<br>
+                • No purchases during this time period
+              </span>
+              <a href="https://business.facebook.com/events_manager" target="_blank" style="color: #b7fa31; text-decoration: underline; display: inline-block; margin-top: 0.4rem;">Verify setup in Events Manager →</a>
             </span>
           `;
         }
