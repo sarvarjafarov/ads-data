@@ -433,18 +433,23 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
     frequency: 'frequency',
     conversions: 'actions',
     cost_per_conversion: 'cost_per_action_type',
+    roas: 'purchase_roas', // Meta's built-in ROAS for website purchases
   };
 
   const field = metricFieldMap[metric] || 'spend';
 
+  // For ROAS, we need to fetch both action_values and spend to calculate it
+  const isROAS = metric === 'roas';
+  const fieldsToFetch = isROAS ? 'spend,action_values,actions,purchase_roas' : field;
+
   try {
     // Fetch aggregate data
-    const aggregateUrl = `${baseUrl}/act_${accountId}/insights?fields=${field}&time_range={"since":"${since}","until":"${until}"}&access_token=${accessToken}`;
+    const aggregateUrl = `${baseUrl}/act_${accountId}/insights?fields=${fieldsToFetch}&time_range={"since":"${since}","until":"${until}"}&access_token=${accessToken}`;
     const aggregateResponse = await fetch(aggregateUrl);
     const aggregateData = await aggregateResponse.json();
 
     // Fetch time-series data (daily breakdown)
-    const timeSeriesUrl = `${baseUrl}/act_${accountId}/insights?fields=${field}&time_range={"since":"${since}","until":"${until}"}&time_increment=1&access_token=${accessToken}`;
+    const timeSeriesUrl = `${baseUrl}/act_${accountId}/insights?fields=${fieldsToFetch}&time_range={"since":"${since}","until":"${until}"}&time_increment=1&access_token=${accessToken}`;
     const timeSeriesResponse = await fetch(timeSeriesUrl);
     const timeSeriesData = await timeSeriesResponse.json();
 
@@ -455,7 +460,7 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
     const prevSince = new Date(prevUntil);
     prevSince.setDate(prevSince.getDate() - daysDiff);
 
-    const prevUrl = `${baseUrl}/act_${accountId}/insights?fields=${field}&time_range={"since":"${prevSince.toISOString().split('T')[0]}","until":"${prevUntil.toISOString().split('T')[0]}"}&access_token=${accessToken}`;
+    const prevUrl = `${baseUrl}/act_${accountId}/insights?fields=${fieldsToFetch}&time_range={"since":"${prevSince.toISOString().split('T')[0]}","until":"${prevUntil.toISOString().split('T')[0]}"}&access_token=${accessToken}`;
     const prevResponse = await fetch(prevUrl);
     const prevData = await prevResponse.json();
 
@@ -474,17 +479,36 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
 
     if (aggregateData.data && aggregateData.data.length > 0) {
       const insights = aggregateData.data[0];
-      value = insights[field];
       currency = insights.account_currency || 'USD';
 
       // Handle special cases
-      if (metric === 'conversions' && insights.actions) {
+      if (metric === 'roas') {
+        // Try Meta's built-in purchase_roas first
+        if (insights.purchase_roas && insights.purchase_roas.length > 0) {
+          value = parseFloat(insights.purchase_roas[0].value || 0);
+        } else {
+          // Fallback: Calculate manually as (purchase value) / spend
+          let purchaseValue = 0;
+          if (insights.action_values) {
+            const purchases = insights.action_values.filter(av =>
+              av.action_type === 'omni_purchase' ||
+              av.action_type === 'purchase' ||
+              av.action_type === 'offsite_conversion.fb_pixel_purchase'
+            );
+            purchaseValue = purchases.reduce((sum, p) => sum + parseFloat(p.value || 0), 0);
+          }
+          const spend = parseFloat(insights.spend || 0);
+          value = spend > 0 ? purchaseValue / spend : 0;
+        }
+      } else if (metric === 'conversions' && insights.actions) {
         value = insights.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
       } else if (metric === 'cost_per_conversion' && insights.cost_per_action_type) {
         const actions = insights.cost_per_action_type;
         value = actions.length > 0
           ? actions.reduce((sum, a) => sum + parseFloat(a.value || 0), 0) / actions.length
           : 0;
+      } else {
+        value = insights[field];
       }
     }
 
@@ -492,15 +516,34 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
     let previousValue = 0;
     if (prevData.data && prevData.data.length > 0) {
       const prevInsights = prevData.data[0];
-      previousValue = prevInsights[field];
 
-      if (metric === 'conversions' && prevInsights.actions) {
+      if (metric === 'roas') {
+        // Try Meta's built-in purchase_roas first
+        if (prevInsights.purchase_roas && prevInsights.purchase_roas.length > 0) {
+          previousValue = parseFloat(prevInsights.purchase_roas[0].value || 0);
+        } else {
+          // Fallback: Calculate manually as (purchase value) / spend
+          let purchaseValue = 0;
+          if (prevInsights.action_values) {
+            const purchases = prevInsights.action_values.filter(av =>
+              av.action_type === 'omni_purchase' ||
+              av.action_type === 'purchase' ||
+              av.action_type === 'offsite_conversion.fb_pixel_purchase'
+            );
+            purchaseValue = purchases.reduce((sum, p) => sum + parseFloat(p.value || 0), 0);
+          }
+          const spend = parseFloat(prevInsights.spend || 0);
+          previousValue = spend > 0 ? purchaseValue / spend : 0;
+        }
+      } else if (metric === 'conversions' && prevInsights.actions) {
         previousValue = prevInsights.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
       } else if (metric === 'cost_per_conversion' && prevInsights.cost_per_action_type) {
         const actions = prevInsights.cost_per_action_type;
         previousValue = actions.length > 0
           ? actions.reduce((sum, a) => sum + parseFloat(a.value || 0), 0) / actions.length
           : 0;
+      } else {
+        previousValue = prevInsights[field];
       }
     }
 
@@ -508,15 +551,35 @@ async function fetchMetaAdsMetrics(accountId, accessToken, metric, since, until)
     const timeSeries = [];
     if (timeSeriesData.data && timeSeriesData.data.length > 0) {
       for (const day of timeSeriesData.data) {
-        let dayValue = day[field];
+        let dayValue;
 
-        if (metric === 'conversions' && day.actions) {
+        if (metric === 'roas') {
+          // Try Meta's built-in purchase_roas first
+          if (day.purchase_roas && day.purchase_roas.length > 0) {
+            dayValue = parseFloat(day.purchase_roas[0].value || 0);
+          } else {
+            // Fallback: Calculate manually as (purchase value) / spend
+            let purchaseValue = 0;
+            if (day.action_values) {
+              const purchases = day.action_values.filter(av =>
+                av.action_type === 'omni_purchase' ||
+                av.action_type === 'purchase' ||
+                av.action_type === 'offsite_conversion.fb_pixel_purchase'
+              );
+              purchaseValue = purchases.reduce((sum, p) => sum + parseFloat(p.value || 0), 0);
+            }
+            const daySpend = parseFloat(day.spend || 0);
+            dayValue = daySpend > 0 ? purchaseValue / daySpend : 0;
+          }
+        } else if (metric === 'conversions' && day.actions) {
           dayValue = day.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
         } else if (metric === 'cost_per_conversion' && day.cost_per_action_type) {
           const actions = day.cost_per_action_type;
           dayValue = actions.length > 0
             ? actions.reduce((sum, a) => sum + parseFloat(a.value || 0), 0) / actions.length
             : 0;
+        } else {
+          dayValue = day[field];
         }
 
         timeSeries.push({
