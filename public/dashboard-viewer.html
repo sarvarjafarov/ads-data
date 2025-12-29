@@ -3030,10 +3030,13 @@
         `;
       } else if (widgetType === 'line_chart' || widgetType === 'bar_chart' || widgetType === 'pie_chart') {
         contentHTML = `
-          <div style="padding: 1rem; height: 250px;">
+          <div id="chart-summary-${widget.id}" style="padding: 0.75rem 1rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <!-- Summary stats will be populated by renderChart -->
+          </div>
+          <div style="padding: 1rem; height: 200px;">
             <canvas id="chart-${widget.id}"></canvas>
           </div>
-          <div style="text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+          <div style="text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4); padding-bottom: 0.5rem;">
             ${formattedMetric} - ${formatDateRange(dataSource.dateRange || 'last_30_days')}
           </div>
         `;
@@ -3394,6 +3397,75 @@
       }
 
       chartInstances[widget.id] = new Chart(ctx, chartConfig);
+
+      // Add summary panel for bar/line charts
+      if ((widgetType === 'bar_chart' || widgetType === 'line_chart') && timeSeries && timeSeries.length > 0) {
+        const summaryDiv = document.getElementById(`chart-summary-${widget.id}`);
+        if (summaryDiv) {
+          const values = timeSeries.map(d => d.value);
+          const total = values.reduce((a, b) => a + b, 0);
+          const average = total / values.length;
+          const max = Math.max(...values);
+          const min = Math.min(...values);
+
+          // Find peak day
+          const peakIndex = values.indexOf(max);
+          const peakDate = new Date(timeSeries[peakIndex].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+          // Calculate trend (first half vs second half)
+          const midPoint = Math.floor(values.length / 2);
+          const firstHalf = values.slice(0, midPoint).reduce((a, b) => a + b, 0) / midPoint;
+          const secondHalf = values.slice(midPoint).reduce((a, b) => a + b, 0) / (values.length - midPoint);
+          const trend = ((secondHalf - firstHalf) / firstHalf * 100).toFixed(1);
+          const trendDirection = trend > 0 ? '↑' : '↓';
+          const trendClass = trend > 0 ? 'change-positive' : 'change-negative';
+
+          // Generate insight based on metric type and trend
+          let insight = '';
+          const absChange = Math.abs(parseFloat(trend));
+
+          if (absChange > 20) {
+            if (trend > 0) {
+              insight = `<span style="color: #b7fa31;">Strong growth</span> in the second half of the period`;
+            } else {
+              insight = `<span style="color: #FF6B6B;">Significant decline</span> in the second half - investigate cause`;
+            }
+          } else if (absChange > 10) {
+            if (trend > 0) {
+              insight = `<span style="color: #50C878;">Improving</span> performance over time`;
+            } else {
+              insight = `<span style="color: #F5A623;">Declining</span> trend - monitor closely`;
+            }
+          } else {
+            insight = `<span style="color: rgba(255,255,255,0.5);">Stable</span> performance across the period`;
+          }
+
+          summaryDiv.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 0.5rem;">
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Total</div>
+                <div style="font-size: 1rem; font-weight: 700; color: #fff;">${formatMetricValue(total, metric, currency)}</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Daily Avg</div>
+                <div style="font-size: 1rem; font-weight: 700; color: #fff;">${formatMetricValue(average, metric, currency)}</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Peak</div>
+                <div style="font-size: 1rem; font-weight: 700; color: #b7fa31;">${formatMetricValue(max, metric, currency)}</div>
+                <div style="font-size: 0.6rem; color: rgba(255,255,255,0.3);">${peakDate}</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Trend</div>
+                <div class="${trendClass}" style="font-size: 1rem; font-weight: 700;">${trendDirection} ${Math.abs(trend)}%</div>
+              </div>
+            </div>
+            <div style="padding: 0.5rem 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 4px; font-size: 0.75rem;">
+              <span style="opacity: 0.6;">💡 Insight:</span> ${insight}
+            </div>
+          `;
+        }
+      }
     }
 
     function renderPieChartFromTable(widget, tableData, metric, currency) {
