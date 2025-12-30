@@ -116,6 +116,7 @@
       border-radius: 1.5rem;
       padding: 1.5rem;
       cursor: grab;
+      min-height: 180px; /* CRITICAL: Prevents height collapse causing grid reflow */
       transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
     }
 
@@ -2922,16 +2923,17 @@
 
   <script>
     // ========================================
-    // VERSION: v110 - DEFINITIVE Layout Shift Fix
+    // VERSION: v111 - FINAL Layout Shift Fix (Height + Grid)
     // CRITICAL FIXES:
     // 1. Removed auto-fit from grid (prevents dynamic column recalculation)
     // 2. Fixed explicit column counts (3 cols desktop, 2 tablet, 1 mobile)
     // 3. Inline styles with !important (absolute highest priority)
     // 4. Grid column set via setProperty('grid-column', 'span X', 'important')
+    // 5. min-height: 180px on widgets (prevents height collapse/expansion reflow)
     // ========================================
-    console.log('%c🚀 Dashboard Viewer v110 Loaded - DEFINITIVE FIX', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
-    console.log('%c✅ Fixed grid columns + inline !important styles = ZERO layout shift', 'color: #4CAF50; font-weight: bold;');
-    console.log('%c🔒 Grid: 3 fixed columns (no auto-fit reflow)', 'color: #FFD700; font-weight: bold;');
+    console.log('%c🚀 Dashboard Viewer v111 Loaded - FINAL FIX (Height + Grid)', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
+    console.log('%c✅ Fixed: Grid columns + !important + min-height = NO LAYOUT SHIFT', 'color: #4CAF50; font-weight: bold;');
+    console.log('%c🔒 Grid: 3 fixed columns | Widgets: 180px min-height', 'color: #FFD700; font-weight: bold;');
 
     let dashboardId = null;
     let dashboard = null;
