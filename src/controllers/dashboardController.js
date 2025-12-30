@@ -802,20 +802,26 @@ const analyzeWidgetWithAI = async (req, res) => {
     const { widgetId } = req.params;
     const { includeHistorical = false } = req.body;
 
+    console.log(`[AI Analysis] Starting analysis for widget ${widgetId}`);
+
     // Get widget
     const widget = await Dashboard.getWidget(widgetId);
 
     if (!widget) {
+      console.log(`[AI Analysis] Widget ${widgetId} not found`);
       return res.status(404).json({
         success: false,
         message: 'Widget not found',
       });
     }
 
+    console.log(`[AI Analysis] Widget found: ${widget.title} (${widget.widget_type})`);
+
     // Get dashboard to verify access
     const dashboard = await Dashboard.findById(widget.dashboard_id);
 
     if (!dashboard) {
+      console.log(`[AI Analysis] Dashboard ${widget.dashboard_id} not found`);
       return res.status(404).json({
         success: false,
         message: 'Dashboard not found',
@@ -827,11 +833,14 @@ const analyzeWidgetWithAI = async (req, res) => {
     const hasAccess = workspaces.some(w => w.id === dashboard.workspace_id);
 
     if (!hasAccess) {
+      console.log(`[AI Analysis] Access denied for user ${req.user.id} to workspace ${dashboard.workspace_id}`);
       return res.status(403).json({
         success: false,
         message: 'Access denied to this widget',
       });
     }
+
+    console.log(`[AI Analysis] Access verified. Fetching widget data...`);
 
     // Fetch current metrics data
     const metricsData = await widgetDataService.fetchWidgetData(
@@ -840,18 +849,24 @@ const analyzeWidgetWithAI = async (req, res) => {
     );
 
     if (!metricsData) {
+      console.log(`[AI Analysis] No metrics data returned for widget ${widgetId}`);
       return res.status(400).json({
         success: false,
         message: 'Unable to fetch widget data. Please ensure the widget is configured correctly.',
       });
     }
 
+    console.log(`[AI Analysis] Metrics data fetched. Type: ${metricsData.type || 'value'}, Has timeSeries: ${!!metricsData.timeSeries}`);
+
     // Call AI analysis service
+    console.log(`[AI Analysis] Calling AI service...`);
     const analysis = await aiWidgetAnalysis.analyzeWidget(
       widget,
       metricsData,
       { includeHistorical }
     );
+
+    console.log(`[AI Analysis] AI analysis completed successfully. Tokens used: ${analysis.tokensUsed}`);
 
     res.json({
       success: true,
@@ -860,11 +875,13 @@ const analyzeWidgetWithAI = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Widget AI analysis error:', error);
+    console.error('[AI Analysis] Error:', error);
+    console.error('[AI Analysis] Stack trace:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Failed to analyze widget',
       error: error.message,
+      errorStack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
