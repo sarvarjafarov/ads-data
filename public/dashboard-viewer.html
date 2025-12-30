@@ -1697,6 +1697,115 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Icon styles - replacing emojis with styled elements */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1em;
+      height: 1em;
+    }
+
+    .icon-ai::before {
+      content: "AI";
+      font-size: 0.65em;
+      font-weight: 700;
+      background: linear-gradient(135deg, #b7fa31 0%, #8fd417 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .icon-edit::before {
+      content: "✎";
+      font-size: 1em;
+    }
+
+    .icon-delete::before {
+      content: "×";
+      font-size: 1.4em;
+      font-weight: 300;
+    }
+
+    .icon-refresh::before {
+      content: "↻";
+      font-size: 1em;
+    }
+
+    .icon-drag::before {
+      content: "⋮⋮";
+      font-size: 0.9em;
+      letter-spacing: -2px;
+    }
+
+    .icon-warning {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: rgba(251, 191, 36, 0.15);
+      border: 2px solid rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .icon-warning::before {
+      content: "!";
+    }
+
+    .icon-chart {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 50%;
+      background: rgba(183, 250, 49, 0.1);
+      border: 2px solid rgba(183, 250, 49, 0.2);
+      color: rgba(183, 250, 49, 0.4);
+      font-size: 2rem;
+    }
+
+    .icon-chart::before {
+      content: "📊";
+      font-style: normal;
+    }
+
+    .icon-lightbulb {
+      width: 1.2em;
+      height: 1.2em;
+      border-radius: 50%;
+      background: rgba(183, 250, 49, 0.15);
+      color: #b7fa31;
+      font-size: 0.9em;
+    }
+
+    .icon-lightbulb::before {
+      content: "💡";
+      font-style: normal;
+    }
+
+    /* Loading state improvements */
+    .widget-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 1rem;
+    }
+
+    .widget-loading-spinner {
+      width: 2rem;
+      height: 2rem;
+      border: 2px solid rgba(183, 250, 49, 0.2);
+      border-top-color: #b7fa31;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .widget-loading-text {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
     /* No data state */
     .no-data-state {
       text-align: center;
@@ -2852,7 +2961,7 @@
       if (!dashboard.widgets || dashboard.widgets.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-icon"><div class="icon icon-chart"></div></div>
             <div class="empty-state-title">No Widgets Yet</div>
             <div class="empty-state-description">
               Add widgets to visualize your ad performance metrics and track your campaigns.
@@ -3015,7 +3124,12 @@
       if (widgetType === 'kpi_card') {
         contentHTML = `
           <div class="metric-card">
-            <div class="metric-value" id="metric-${widget.id}">Loading...</div>
+            <div class="metric-value" id="metric-${widget.id}">
+              <div class="widget-loading">
+                <div class="widget-loading-spinner"></div>
+                <div class="widget-loading-text">Loading...</div>
+              </div>
+            </div>
             <div class="metric-label">${formattedMetric}</div>
             <div class="metric-change neutral" id="change-${widget.id}">
               <span>—</span> vs previous period
@@ -3126,7 +3240,9 @@
               </div>
               <div style="padding: 0.5rem 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 4px;">
                 <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7);">
-                  <span id="gauge-status-icon-${widget.id}">⏳</span>
+                  <span id="gauge-status-icon-${widget.id}">
+                    <div class="widget-loading-spinner" style="width: 1em; height: 1em; border-width: 2px; display: inline-block;"></div>
+                  </span>
                   <span id="gauge-status-text-${widget.id}">Loading...</span>
                 </div>
               </div>
@@ -3200,15 +3316,15 @@
         <div class="widget" data-widget-id="${widget.id}" data-widget-type="${widgetType}" draggable="true">
           <div class="widget-header">
             <div style="display: flex; align-items: center;">
-              <span class="widget-drag-handle" title="Drag to reorder">⋮⋮</span>
+              <span class="widget-drag-handle" title="Drag to reorder"><span class="icon icon-drag"></span></span>
               <div class="widget-title">${widget.title || 'Untitled Widget'}</div>
               <span class="widget-timestamp" id="timestamp-${widget.id}"></span>
             </div>
             <div class="widget-actions">
-              <button class="widget-action-btn" onclick="analyzeWidgetWithAI('${widget.id}')" title="AI Analysis">🤖</button>
-              <button class="widget-refresh-btn" onclick="refreshSingleWidget('${widget.id}')" title="Refresh">↻</button>
-              <span class="widget-action" onclick="editWidget('${widget.id}')" title="Edit">✏️</span>
-              <span class="widget-action delete" onclick="deleteWidget('${widget.id}')" title="Delete">🗑️</span>
+              <button class="widget-action-btn" onclick="analyzeWidgetWithAI('${widget.id}')" title="AI Analysis"><span class="icon icon-ai"></span></button>
+              <button class="widget-refresh-btn" onclick="refreshSingleWidget('${widget.id}')" title="Refresh"><span class="icon icon-refresh"></span></button>
+              <span class="widget-action" onclick="editWidget('${widget.id}')" title="Edit"><span class="icon icon-edit"></span></span>
+              <span class="widget-action delete" onclick="deleteWidget('${widget.id}')" title="Delete"><span class="icon icon-delete"></span></span>
             </div>
           </div>
           ${contentHTML}
@@ -3270,9 +3386,12 @@
               // Check for ROAS setup requirement
               if (currency === 'SETUP_REQUIRED' && metric === 'roas') {
                 metricElement.innerHTML = `
-                  <div style="font-size: 1.5rem; color: #F5A623; margin-bottom: 0.5rem;">No Conversion Data</div>
+                  <div style="font-size: 1.5rem; color: #F5A623; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <div class="icon icon-warning" style="width: 1.5rem; height: 1.5rem; font-size: 1rem;"></div>
+                    <span>No Conversion Data</span>
+                  </div>
                   <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.5;">
-                    ⚠️ We can't calculate ROAS properly without purchase conversion data.<br>
+                    We can't calculate ROAS properly without purchase conversion data.<br>
                     <span style="font-size: 0.65rem; display: block; margin-top: 0.3rem; color: rgba(255,255,255,0.4);">
                       This might be due to: Pixel not tracking purchases, missing value parameter, or no purchases in this period.
                     </span>
@@ -3326,7 +3445,7 @@
             if (contentArea) {
               contentArea.parentElement.innerHTML = `
                 <div class="widget-error">
-                  <div class="widget-error-icon">⚠️</div>
+                  <div class="widget-error-icon"><div class="icon icon-warning"></div></div>
                   <div class="widget-error-message">Failed to load data</div>
                   <button class="retry-btn" onclick="refreshSingleWidget('${widget.id}')">Retry</button>
                 </div>
@@ -3495,7 +3614,7 @@
               </div>
             </div>
             <div style="padding: 0.5rem 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 4px; font-size: 0.75rem;">
-              <span style="opacity: 0.6;">💡 Insight:</span> ${insight}
+              <span style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.3rem;"><span class="icon icon-lightbulb" style="font-size: 1em;"></span> Insight:</span> ${insight}
             </div>
           `;
         }
@@ -4055,7 +4174,7 @@
         if (actualValue) {
           actualValue.innerHTML = '<span style="color: #F5A623;">Setup Required</span>';
         }
-        if (statusIcon) statusIcon.textContent = '⚠️';
+        if (statusIcon) statusIcon.innerHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-weight: 700;">!</span>';
         if (statusText) {
           statusText.innerHTML = `
             <span style="color: #F5A623; font-weight: 600;">No conversion data detected</span><br>
@@ -4083,22 +4202,22 @@
       const rotation = (progress / 100) * 180;
 
       // Determine color class and status
-      let colorClass, icon, status;
+      let colorClass, iconHTML, status;
       if (progress >= 100) {
         colorClass = 'excellent';
-        icon = '🎯';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(183, 250, 49, 0.2); color: #b7fa31; font-weight: 700;">✓</span>';
         status = `<span style="color: #b7fa31; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Exceeding target!`;
       } else if (progress >= 75) {
         colorClass = 'good';
-        icon = '✅';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(34, 197, 94, 0.2); color: #22c55e; font-weight: 700;">✓</span>';
         status = `<span style="color: #50C878; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - On track to meet target`;
       } else if (progress >= 50) {
         colorClass = 'warning';
-        icon = '⚠️';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-weight: 700;">!</span>';
         status = `<span style="color: #F5A623; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Below target, needs improvement`;
       } else {
         colorClass = 'danger';
-        icon = '🚨';
+        iconHTML = '<span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700;">!</span>';
         status = `<span style="color: #FF6B6B; font-weight: 600;">${progress.toFixed(0)}% of goal</span> - Critical: Far below target`;
       }
 
@@ -4108,7 +4227,7 @@
       }
 
       // Update status
-      if (statusIcon) statusIcon.textContent = icon;
+      if (statusIcon) statusIcon.innerHTML = iconHTML;
       if (statusText) statusText.innerHTML = status;
 
       // Update gauge percentage display
