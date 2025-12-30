@@ -2471,6 +2471,12 @@
       margin-right: 0.5rem;
       padding-right: 0.5rem;
       border-right: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .widget:hover .widget-size-controls {
+      opacity: 1;
     }
 
     .widget-size-btn {
@@ -2478,11 +2484,13 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: rgba(255, 255, 255, 0.4);
       cursor: pointer;
-      padding: 0.25rem 0.5rem;
-      font-size: 0.7rem;
+      padding: 0.2rem 0.45rem;
+      font-size: 0.65rem;
       border-radius: 0.25rem;
       transition: all 0.2s ease;
-      font-weight: 500;
+      font-weight: 600;
+      min-width: 1.5rem;
+      text-align: center;
     }
 
     .widget-size-btn:hover {
@@ -2495,6 +2503,16 @@
       background: rgba(183, 250, 49, 0.15);
       border-color: rgba(183, 250, 49, 0.3);
       color: #b7fa31;
+      opacity: 1;
+    }
+
+    /* Keep active button visible even when not hovering */
+    .widget-size-controls:has(.widget-size-btn.active) {
+      opacity: 0.5;
+    }
+
+    .widget:hover .widget-size-controls:has(.widget-size-btn.active) {
+      opacity: 1;
     }
 
     /* Improved widgets grid for column spanning */
@@ -3158,13 +3176,11 @@
       // Initialize drag and drop
       setupDragAndDrop();
 
+      // Restore widget grid sizes from localStorage (before loading metrics to prevent layout shift)
+      restoreWidgetGridSizes();
+
       // Load actual metrics for widgets
       loadWidgetMetrics();
-
-      // Restore widget grid sizes from localStorage
-      setTimeout(() => {
-        restoreWidgetGridSizes();
-      }, 100);
     }
 
     // Drag and Drop functionality
