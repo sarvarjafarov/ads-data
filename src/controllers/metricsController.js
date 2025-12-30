@@ -156,8 +156,8 @@ const getWidgetMetrics = async (req, res) => {
     let metricsData;
     if (account.platform === 'meta') {
       // Check if this is a pie chart that needs breakdown data
-      if (widgetType === 'pie_chart' || widgetTitle.includes('breakdown') || widgetTitle.includes('device') || widgetTitle.includes('country') || widgetTitle.includes('geographic')) {
-        // Return breakdown data for pie charts
+      if (widgetType === 'pie_chart' || widgetType === 'table' || widgetTitle.includes('breakdown') || widgetTitle.includes('device') || widgetTitle.includes('country') || widgetTitle.includes('geographic') || widgetTitle.includes('campaign') || widgetTitle.includes('ad set') || widgetTitle.includes('adset') || widgetTitle.includes('ads') || widgetTitle.includes('creative')) {
+        // Return breakdown data for specific widget types
         if (widgetTitle.includes('device')) {
           metricsData = await fetchMetaAdsDeviceBreakdown(
             account.account_id,
@@ -176,6 +176,30 @@ const getWidgetMetrics = async (req, res) => {
           );
         } else if (widgetTitle.includes('campaign')) {
           metricsData = await fetchMetaAdsCampaignBreakdown(
+            account.account_id,
+            account.access_token,
+            dataSource.metric || 'spend',
+            since,
+            until
+          );
+        } else if (widgetTitle.includes('ad set') || widgetTitle.includes('adset')) {
+          metricsData = await fetchMetaAdsAdSetBreakdown(
+            account.account_id,
+            account.access_token,
+            dataSource.metric || 'spend',
+            since,
+            until
+          );
+        } else if (widgetTitle.includes('ad ') || widgetTitle.includes('ads performance') || widgetTitle.includes('ads breakdown')) {
+          metricsData = await fetchMetaAdsAdsBreakdown(
+            account.account_id,
+            account.access_token,
+            dataSource.metric || 'spend',
+            since,
+            until
+          );
+        } else if (widgetTitle.includes('creative')) {
+          metricsData = await fetchMetaAdsCreativeComparison(
             account.account_id,
             account.access_token,
             dataSource.metric || 'spend',
@@ -1004,6 +1028,254 @@ async function fetchMetaAdsCampaignBreakdown(accountId, accessToken, metric, sin
     return {
       type: 'table',
       columns: ['Campaign', 'Spend'],
+      data: [],
+      _demoData: true
+    };
+  }
+}
+
+// Fetch ad sets breakdown from Meta Ads API
+async function fetchMetaAdsAdSetBreakdown(accountId, accessToken, metric, since, until) {
+  const baseUrl = 'https://graph.facebook.com/v18.0';
+
+  const metricFieldMap = {
+    spend: 'spend',
+    impressions: 'impressions',
+    clicks: 'clicks',
+    reach: 'reach',
+    conversions: 'actions',
+    ctr: 'ctr',
+    cpc: 'cpc'
+  };
+
+  const field = metricFieldMap[metric] || 'spend';
+
+  try {
+    const url = `${baseUrl}/act_${accountId}/adsets?fields=name,insights.time_range({"since":"${since}","until":"${until}"}){${field},spend,impressions,clicks,ctr,cpc}&access_token=${accessToken}&limit=100`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Meta API error:', data.error);
+      return {
+        type: 'table',
+        columns: ['Ad Set', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC'],
+        data: [],
+        _demoData: true
+      };
+    }
+
+    const adSets = [];
+    if (data.data && data.data.length > 0) {
+      for (const adSet of data.data) {
+        if (adSet.insights && adSet.insights.data && adSet.insights.data.length > 0) {
+          const insight = adSet.insights.data[0];
+
+          let value = insight[field] || 0;
+          if (metric === 'conversions' && insight.actions) {
+            value = insight.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
+          }
+
+          adSets.push({
+            name: adSet.name,
+            spend: parseFloat(insight.spend || 0),
+            impressions: parseInt(insight.impressions || 0),
+            clicks: parseInt(insight.clicks || 0),
+            ctr: parseFloat(insight.ctr || 0),
+            cpc: parseFloat(insight.cpc || 0),
+            primaryValue: parseFloat(value)
+          });
+        }
+      }
+    }
+
+    adSets.sort((a, b) => b.primaryValue - a.primaryValue);
+
+    return {
+      type: 'table',
+      columns: ['Ad Set', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC'],
+      data: adSets.slice(0, 20).map(a => ({
+        ad_set: a.name,
+        spend: a.spend.toFixed(2),
+        impressions: a.impressions.toLocaleString(),
+        clicks: a.clicks.toLocaleString(),
+        ctr: (a.ctr * 100).toFixed(2) + '%',
+        cpc: '$' + a.cpc.toFixed(2)
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching Meta ad set breakdown:', error);
+    return {
+      type: 'table',
+      columns: ['Ad Set', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC'],
+      data: [],
+      _demoData: true
+    };
+  }
+}
+
+// Fetch ads breakdown from Meta Ads API
+async function fetchMetaAdsAdsBreakdown(accountId, accessToken, metric, since, until) {
+  const baseUrl = 'https://graph.facebook.com/v18.0';
+
+  const metricFieldMap = {
+    spend: 'spend',
+    impressions: 'impressions',
+    clicks: 'clicks',
+    reach: 'reach',
+    conversions: 'actions',
+    ctr: 'ctr',
+    cpc: 'cpc'
+  };
+
+  const field = metricFieldMap[metric] || 'spend';
+
+  try {
+    const url = `${baseUrl}/act_${accountId}/ads?fields=name,insights.time_range({"since":"${since}","until":"${until}"}){${field},spend,impressions,clicks,ctr,cpc}&access_token=${accessToken}&limit=100`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Meta API error:', data.error);
+      return {
+        type: 'table',
+        columns: ['Ad', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC'],
+        data: [],
+        _demoData: true
+      };
+    }
+
+    const ads = [];
+    if (data.data && data.data.length > 0) {
+      for (const ad of data.data) {
+        if (ad.insights && ad.insights.data && ad.insights.data.length > 0) {
+          const insight = ad.insights.data[0];
+
+          let value = insight[field] || 0;
+          if (metric === 'conversions' && insight.actions) {
+            value = insight.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
+          }
+
+          ads.push({
+            name: ad.name,
+            spend: parseFloat(insight.spend || 0),
+            impressions: parseInt(insight.impressions || 0),
+            clicks: parseInt(insight.clicks || 0),
+            ctr: parseFloat(insight.ctr || 0),
+            cpc: parseFloat(insight.cpc || 0),
+            primaryValue: parseFloat(value)
+          });
+        }
+      }
+    }
+
+    ads.sort((a, b) => b.primaryValue - a.primaryValue);
+
+    return {
+      type: 'table',
+      columns: ['Ad', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC'],
+      data: ads.slice(0, 20).map(a => ({
+        ad: a.name,
+        spend: a.spend.toFixed(2),
+        impressions: a.impressions.toLocaleString(),
+        clicks: a.clicks.toLocaleString(),
+        ctr: (a.ctr * 100).toFixed(2) + '%',
+        cpc: '$' + a.cpc.toFixed(2)
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching Meta ads breakdown:', error);
+    return {
+      type: 'table',
+      columns: ['Ad', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC'],
+      data: [],
+      _demoData: true
+    };
+  }
+}
+
+// Fetch creative comparison from Meta Ads API
+async function fetchMetaAdsCreativeComparison(accountId, accessToken, metric, since, until) {
+  const baseUrl = 'https://graph.facebook.com/v18.0';
+
+  try {
+    // Fetch ads with their creative information
+    const url = `${baseUrl}/act_${accountId}/ads?fields=name,creative{object_story_spec,image_url,image_hash,video_id,thumbnail_url},insights.time_range({"since":"${since}","until":"${until}"}){spend,impressions,clicks,ctr,cpc,actions}&access_token=${accessToken}&limit=50`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Meta API error:', data.error);
+      return {
+        type: 'table',
+        columns: ['Creative', 'Type', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Conversions'],
+        data: [],
+        _demoData: true
+      };
+    }
+
+    const creatives = [];
+    if (data.data && data.data.length > 0) {
+      for (const ad of data.data) {
+        if (ad.insights && ad.insights.data && ad.insights.data.length > 0 && ad.creative) {
+          const insight = ad.insights.data[0];
+          const creative = ad.creative;
+
+          // Determine creative type
+          let creativeType = 'Unknown';
+          let creativeId = creative.image_hash || creative.video_id || ad.id;
+
+          if (creative.video_id) {
+            creativeType = 'Video';
+          } else if (creative.image_url || creative.image_hash) {
+            creativeType = 'Image';
+          } else if (creative.object_story_spec) {
+            creativeType = 'Carousel/Collection';
+          }
+
+          // Get conversions
+          let conversions = 0;
+          if (insight.actions) {
+            conversions = insight.actions.reduce((sum, action) => sum + parseFloat(action.value || 0), 0);
+          }
+
+          creatives.push({
+            name: ad.name,
+            creativeId: creativeId,
+            type: creativeType,
+            spend: parseFloat(insight.spend || 0),
+            impressions: parseInt(insight.impressions || 0),
+            clicks: parseInt(insight.clicks || 0),
+            ctr: parseFloat(insight.ctr || 0),
+            cpc: parseFloat(insight.cpc || 0),
+            conversions: conversions
+          });
+        }
+      }
+    }
+
+    // Sort by spend (highest first)
+    creatives.sort((a, b) => b.spend - a.spend);
+
+    return {
+      type: 'table',
+      columns: ['Creative', 'Type', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Conversions'],
+      data: creatives.slice(0, 15).map(c => ({
+        creative: c.name,
+        type: c.type,
+        spend: '$' + c.spend.toFixed(2),
+        impressions: c.impressions.toLocaleString(),
+        clicks: c.clicks.toLocaleString(),
+        ctr: (c.ctr * 100).toFixed(2) + '%',
+        cpc: '$' + c.cpc.toFixed(2),
+        conversions: c.conversions
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching Meta creative comparison:', error);
+    return {
+      type: 'table',
+      columns: ['Creative', 'Type', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Conversions'],
       data: [],
       _demoData: true
     };
