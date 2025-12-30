@@ -2922,11 +2922,12 @@
 
   <script>
     // ========================================
-    // VERSION: v108 - Grid Size Fix
-    // CRITICAL: Grid sizes now applied during render to prevent layout shift
+    // VERSION: v109 - Inline Style Fix for Layout Shift
+    // CRITICAL: Grid sizes now applied as INLINE STYLES during render
+    // This ensures immediate grid-column application, preventing ANY layout shift
     // ========================================
-    console.log('%c🚀 Dashboard Viewer v108 Loaded', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
-    console.log('%c✅ Grid sizes applied during initial render (no layout shift fix active)', 'color: #4CAF50; font-weight: bold;');
+    console.log('%c🚀 Dashboard Viewer v109 Loaded', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
+    console.log('%c✅ Grid sizes applied via INLINE STYLES (highest specificity - no layout shift possible)', 'color: #4CAF50; font-weight: bold;');
 
     let dashboardId = null;
     let dashboard = null;
@@ -3529,8 +3530,18 @@
       const savedSize = gridSizePrefs[widget.id] || '';
       const gridSizeAttr = savedSize ? `data-grid-size="${savedSize}"` : '';
 
+      // CRITICAL FIX: Apply inline grid-column style to prevent any layout shift
+      let gridColumnStyle = '';
+      if (savedSize === 'small') {
+        gridColumnStyle = ' style="grid-column: span 1;"';
+      } else if (savedSize === 'medium') {
+        gridColumnStyle = ' style="grid-column: span 2;"';
+      } else if (savedSize === 'large') {
+        gridColumnStyle = ' style="grid-column: span 3;"';
+      }
+
       // Debug logging
-      console.log(`[RENDER] Widget ${widget.id} (${widget.title}): savedSize=${savedSize}, gridSizeAttr=${gridSizeAttr}`);
+      console.log(`[RENDER] Widget ${widget.id} (${widget.title}): savedSize=${savedSize}, gridSizeAttr=${gridSizeAttr}, gridColumnStyle=${gridColumnStyle}`);
 
       // Determine which size button should be active
       const smallActive = savedSize === 'small' ? ' active' : '';
@@ -3538,7 +3549,7 @@
       const largeActive = savedSize === 'large' ? ' active' : '';
 
       return `
-        <div class="widget" data-widget-id="${widget.id}" data-widget-type="${widgetType}" ${gridSizeAttr} draggable="true">
+        <div class="widget" data-widget-id="${widget.id}" data-widget-type="${widgetType}" ${gridSizeAttr}${gridColumnStyle} draggable="true">
           <div class="widget-header">
             <div style="display: flex; align-items: center;">
               <span class="widget-drag-handle" title="Drag to reorder"><span class="icon icon-drag"></span></span>
@@ -5282,7 +5293,16 @@
       // Update data attribute
       widgetEl.setAttribute('data-grid-size', size);
 
-      console.log(`[SET_SIZE] New data-grid-size: ${widgetEl.getAttribute('data-grid-size')}`);
+      // CRITICAL: Also update inline style to ensure immediate visual change
+      if (size === 'small') {
+        widgetEl.style.gridColumn = 'span 1';
+      } else if (size === 'medium') {
+        widgetEl.style.gridColumn = 'span 2';
+      } else if (size === 'large') {
+        widgetEl.style.gridColumn = 'span 3';
+      }
+
+      console.log(`[SET_SIZE] New data-grid-size: ${widgetEl.getAttribute('data-grid-size')}, inline style: ${widgetEl.style.gridColumn}`);
 
       // Update active state on buttons
       const sizeButtons = widgetEl.querySelectorAll('.widget-size-btn');
