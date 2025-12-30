@@ -2921,6 +2921,13 @@
   </div>
 
   <script>
+    // ========================================
+    // VERSION: v108 - Grid Size Fix
+    // CRITICAL: Grid sizes now applied during render to prevent layout shift
+    // ========================================
+    console.log('%c🚀 Dashboard Viewer v108 Loaded', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
+    console.log('%c✅ Grid sizes applied during initial render (no layout shift fix active)', 'color: #4CAF50; font-weight: bold;');
+
     let dashboardId = null;
     let dashboard = null;
     let adAccounts = [];
@@ -5293,24 +5300,9 @@
       localStorage.setItem('widgetGridSizes', JSON.stringify(gridSizePrefs));
     }
 
-    // Restore grid sizes from localStorage
-    function restoreWidgetGridSizes() {
-      const gridSizePrefs = JSON.parse(localStorage.getItem('widgetGridSizes') || '{}');
-      Object.entries(gridSizePrefs).forEach(([widgetId, size]) => {
-        const widgetEl = document.querySelector(`[data-widget-id="${widgetId}"]`);
-        if (widgetEl) {
-          widgetEl.setAttribute('data-grid-size', size);
-
-          // Update button active state
-          const sizeButtons = widgetEl.querySelectorAll('.widget-size-btn');
-          sizeButtons.forEach(btn => {
-            if (btn.getAttribute('data-size') === size) {
-              btn.classList.add('active');
-            }
-          });
-        }
-      });
-    }
+    // REMOVED: restoreWidgetGridSizes() function - no longer needed!
+    // Grid sizes are now applied during renderWidget() (see lines 3510-3521)
+    // This prevents layout shift by applying sizes during initial HTML generation
 
     function showError(message) {
       const container = document.getElementById('widgetsContainer');
