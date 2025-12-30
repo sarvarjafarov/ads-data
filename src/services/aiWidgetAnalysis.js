@@ -47,7 +47,7 @@ class AIWidgetAnalysisService {
       // Call Claude API
       const message = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 16384, // Increased for Phase 2: seasonal patterns, forecasting, historical comparison
+        max_tokens: 8192, // Optimized for Heroku 30s timeout - Phase 2 features still included
         system: this.getSystemPrompt(),
         messages: [
           {
