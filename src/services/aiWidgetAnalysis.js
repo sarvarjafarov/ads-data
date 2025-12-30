@@ -47,7 +47,7 @@ class AIWidgetAnalysisService {
       // Call Claude API
       const message = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4096,
+        max_tokens: 8192, // Increased for detailed breakdown analysis
         system: this.getSystemPrompt(),
         messages: [
           {
@@ -78,59 +78,72 @@ class AIWidgetAnalysisService {
    * @returns {string} System prompt
    */
   getSystemPrompt() {
-    return `You are a critical advertising performance analyst with expertise in digital marketing metrics and ROI optimization.
+    return `You are an expert advertising performance analyst with deep expertise in digital marketing metrics, ROI optimization, and business strategy.
 
-Your role is to provide brutally honest, business-focused analysis of advertising performance data. You are direct, specific, and prioritize actionable insights over general observations.
+Your role is to provide brutally honest, data-driven, business-focused analysis. You identify critical patterns, waste, opportunities, and provide specific, actionable recommendations with quantified impact.
 
-ANALYSIS APPROACH:
-1. Be direct about performance issues - don't sugarcoat problems
-2. Focus on business impact (ROI, cost efficiency, wasted spend, revenue)
-3. Prioritize urgent issues that require immediate action
-4. Provide specific, quantified recommendations with expected impact
-5. Compare against industry benchmarks and best practices
-6. Identify relationships between metrics (e.g., spend increasing while conversions declining)
+CORE ANALYSIS PRINCIPLES:
+1. **Widget-Type Intelligence**: Understand context based on widget type
+   - KPI Cards: Focus on absolute performance, trend velocity, target achievement
+   - Time Series Charts: Identify patterns, anomalies, cycles, inflection points
+   - Breakdown Tables (Device/Country/Campaign): Analyze distribution, concentration risk, reallocation opportunities
+   - Comparison Widgets: Period-over-period causality analysis
 
-CRITICAL FACTORS TO CONSIDER:
-- Budget efficiency and wasted spend
-- Trend direction, velocity, and acceleration
-- Conversion funnel performance
-- Cost per acquisition vs customer lifetime value
-- ROAS and overall profitability
-- Campaign pacing and budget exhaustion
-- Competitive performance standards
-- Seasonality and market conditions
+2. **Multi-Dimensional Context**:
+   - For DEVICE breakdowns: Identify dominant device, performance gaps, concentration risk, mobile vs desktop strategy
+   - For GEOGRAPHIC breakdowns: Find top markets by ROI, underperforming regions, untapped opportunities, market expansion potential
+   - For CAMPAIGN/AD SET breakdowns: Rank by efficiency, detect budget misallocation, calculate reallocation impact
+   - For CREATIVE breakdowns: Compare performance by type (video/image/carousel), engagement patterns
+
+3. **Business Rules (CRITICAL ALERTS)**:
+   - ROAS < 2.0 = losing money (CRITICAL)
+   - Spend increasing + Conversions declining = waste (HIGH RISK)
+   - 80%+ concentration in one segment = diversification risk
+   - Declining trend for 7+ consecutive days = urgent attention
+   - CPA > $100 or 3x industry avg = efficiency problem
+   - CTR < 1% for search or < 0.5% for display = relevance issue
+
+4. **Hyper-Specific Recommendations**:
+   - Provide EXACT numbers: "Reallocate $1,200/day from Campaign A to Campaign C"
+   - Calculate impact: "Will generate additional $4,800/day revenue (+156% ROI)"
+   - Include implementation: "In Ads Manager: Reduce Campaign A to $300/day, increase Campaign C to $1,500/day"
+   - Estimate timeline: "Impact visible within 24-48 hours"
 
 OUTPUT REQUIREMENTS:
 Return ONLY valid JSON with this exact structure:
 {
   "status": "excellent" | "good" | "concerning" | "critical",
-  "statusDescription": "One-sentence summary of overall performance",
-  "trendAssessment": "Detailed analysis of trends and patterns (2-3 sentences)",
+  "statusDescription": "One-sentence summary with specific metric and context",
+  "trendAssessment": "Pattern analysis with velocity and direction (2-3 sentences)",
   "criticalInsights": [
-    "Top 3-5 most important observations with specific numbers",
-    "Focus on actionable insights, not generic statements"
+    "Top 3-5 insights with SPECIFIC numbers and percentages",
+    "Include comparison context (vs previous, vs benchmark, vs target)",
+    "For breakdowns: identify winners, losers, and reallocation opportunities"
   ],
   "riskAlerts": [
-    "Urgent issues requiring immediate attention (if any)",
-    "Only include if there are genuine risks"
+    "Urgent issues with $ impact quantification",
+    "Only include if genuinely critical (losing money, major waste, declining performance)"
   ],
   "recommendations": [
     {
       "priority": "high" | "medium" | "low",
-      "title": "Clear, action-oriented title",
-      "description": "Specific steps to take with context",
-      "expectedImpact": "Quantified expected result (e.g., 'Save $X/week', 'Improve ROAS by Y%')"
+      "title": "Specific action with exact numbers (e.g., 'Reallocate $800 from X to Y')",
+      "description": "Step-by-step implementation with rationale and supporting data",
+      "expectedImpact": "Quantified $ or % result with timeline (e.g., '+$2,400/day revenue within 48h')",
+      "implementation": "Exact steps to execute (optional but preferred for high priority)",
+      "urgency": "Hours/Days/Week timeframe for action (optional)"
     }
   ]
 }
 
 QUALITY STANDARDS:
-- Be specific with numbers and percentages
-- Avoid vague statements like "performance could be better"
-- Prioritize high-impact recommendations first
-- Include expected outcomes for recommendations
-- Only flag risks if they're genuinely concerning
-- Keep insights focused on what matters most to the business`;
+- Use EXACT numbers, not ranges or approximations
+- For breakdown data: always provide reallocation recommendations with $ impact
+- Identify concentration risks (>70% in one segment)
+- Calculate opportunity cost (underinvesting in high performers)
+- Include industry benchmarks when relevant
+- Prioritize recommendations by $ impact, not % improvement
+- Be direct about waste and inefficiency`;
   }
 
   /**
@@ -143,10 +156,11 @@ QUALITY STANDARDS:
    */
   buildAnalysisPrompt(widget, metricsData, options = {}) {
     const { widgetType, title, dataSource } = widget;
-    const { value, previousValue, changePercent, timeSeries, currency } = metricsData;
+    const { value, previousValue, changePercent, timeSeries, currency, type, data, columns } = metricsData;
 
     const metric = dataSource?.metric || 'unknown';
     const dateRange = dataSource?.dateRange || 'unknown';
+    const widgetTitle = (title || '').toLowerCase();
 
     let prompt = `Analyze the performance of this advertising widget:
 
@@ -155,36 +169,33 @@ WIDGET INFORMATION:
 - Title: ${title}
 - Metric: ${metric}
 - Date Range: ${dateRange}
+- Context: ${this.getWidgetContextDescription(widgetType, widgetTitle)}`;
 
-CURRENT PERFORMANCE:
+    // BREAKDOWN TABLE ANALYSIS (Device, Country, Campaign, Ad Sets, Creatives)
+    if (type === 'table' && data && Array.isArray(data) && data.length > 0) {
+      prompt += this.buildBreakdownAnalysis(widgetTitle, data, columns, metric);
+    }
+    // TIME SERIES ANALYSIS (KPI Cards, Line Charts, Bar Charts)
+    else if (timeSeries && Array.isArray(timeSeries) && timeSeries.length > 0) {
+      prompt += this.buildTimeSeriesAnalysis(timeSeries, value, previousValue, changePercent, metric, currency);
+    }
+    // SINGLE VALUE ANALYSIS (KPI Cards without time series)
+    else {
+      prompt += `\n\nCURRENT PERFORMANCE:
 - Current Value: ${this.formatMetricValue(metric, value, currency)}
 - Previous Period: ${this.formatMetricValue(metric, previousValue, currency)}
-- Change: ${changePercent !== undefined ? `${changePercent > 0 ? '+' : ''}${changePercent}%` : 'N/A'}`;
-
-    // Add time series data if available
-    if (timeSeries && Array.isArray(timeSeries) && timeSeries.length > 0) {
-      const trendDirection = this.analyzeTrendDirection(timeSeries);
-      prompt += `\n\nTIME SERIES TREND:
-- Data Points: ${timeSeries.length} days
-- Trend Direction: ${trendDirection.direction}
-- Average Daily Value: ${this.formatMetricValue(metric, trendDirection.average, currency)}
-- Volatility: ${trendDirection.volatility}`;
-
-      // Add recent performance
-      if (timeSeries.length >= 7) {
-        const last7Days = timeSeries.slice(-7);
-        const avg7Days = last7Days.reduce((sum, d) => sum + (d.value || 0), 0) / 7;
-        prompt += `\n- Last 7 Days Average: ${this.formatMetricValue(metric, avg7Days, currency)}`;
-      }
+- Change: ${changePercent !== undefined ? `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%` : 'N/A'}`;
     }
 
     // Add target/goal if applicable
     if (dataSource?.target) {
       const targetProgress = (value / dataSource.target) * 100;
-      prompt += `\n\nTARGET/GOAL:
+      const gap = dataSource.target - value;
+      prompt += `\n\nTARGET/GOAL TRACKING:
 - Target: ${this.formatMetricValue(metric, dataSource.target, currency)}
-- Progress: ${targetProgress.toFixed(1)}%
-- Gap: ${this.formatMetricValue(metric, dataSource.target - value, currency)}`;
+- Current Progress: ${targetProgress.toFixed(1)}%
+- Gap to Target: ${this.formatMetricValue(metric, gap, currency)}
+- Status: ${targetProgress >= 100 ? '✓ Target Achieved' : targetProgress >= 80 ? '⚠ Close to Target' : '✗ Behind Target'}`;
     }
 
     // Add metric-specific context
@@ -192,17 +203,164 @@ CURRENT PERFORMANCE:
 
     // Add analysis instructions
     prompt += `\n\nPROVIDE CRITICAL ANALYSIS:
-1. What is the overall performance status?
-2. What are the most critical insights from this data?
-3. Are there any urgent risks or issues?
-4. What specific actions should be taken to optimize performance?
-5. What is the expected business impact of those actions?
-
-Focus on actionable insights and business impact. Be direct and specific with recommendations.
+${this.getWidgetSpecificInstructions(widgetType, widgetTitle, type)}
 
 Return your analysis as valid JSON following the specified structure.`;
 
     return prompt;
+  }
+
+  /**
+   * Get widget context description
+   */
+  getWidgetContextDescription(widgetType, widgetTitle) {
+    if (widgetTitle.includes('device')) return 'Device Performance Breakdown - Analyze platform-specific effectiveness';
+    if (widgetTitle.includes('country') || widgetTitle.includes('geographic')) return 'Geographic Market Analysis - Identify market opportunities';
+    if (widgetTitle.includes('campaign')) return 'Campaign Performance Comparison - Find budget reallocation opportunities';
+    if (widgetTitle.includes('ad set') || widgetTitle.includes('adset')) return 'Ad Set Efficiency Analysis - Optimize targeting and budgets';
+    if (widgetTitle.includes('creative')) return 'Creative Performance Comparison - Identify winning creative formats';
+    if (widgetType === 'line_chart' || widgetType === 'bar_chart') return 'Time Series Trend Analysis - Detect patterns and anomalies';
+    if (widgetType === 'kpi_card') return 'Key Performance Indicator - Track against targets and trends';
+    return 'Performance Analysis';
+  }
+
+  /**
+   * Build breakdown table analysis
+   */
+  buildBreakdownAnalysis(widgetTitle, data, columns, metric) {
+    let analysis = '\n\nBREAKDOWN DATA ANALYSIS:';
+
+    // Calculate total and percentages
+    const total = data.reduce((sum, row) => {
+      const value = Object.values(row).find(v => typeof v === 'number' && !isNaN(v));
+      return sum + (value || 0);
+    }, 0);
+
+    // Identify breakdown type
+    let breakdownType = 'General';
+    if (widgetTitle.includes('device')) breakdownType = 'Device';
+    else if (widgetTitle.includes('country') || widgetTitle.includes('geographic')) breakdownType = 'Geographic';
+    else if (widgetTitle.includes('campaign')) breakdownType = 'Campaign';
+    else if (widgetTitle.includes('ad set') || widgetTitle.includes('adset')) breakdownType = 'Ad Set';
+    else if (widgetTitle.includes('creative')) breakdownType = 'Creative';
+
+    analysis += `\n- Breakdown Type: ${breakdownType}
+- Total ${metric}: ${total.toLocaleString()}
+- Number of Segments: ${data.length}
+
+DETAILED BREAKDOWN:`;
+
+    // Format each row with percentage
+    data.forEach((row, index) => {
+      const name = Object.values(row)[0];
+      const value = Object.values(row).find(v => typeof v === 'number' && !isNaN(v)) || 0;
+      const percentage = total > 0 ? (value / total * 100).toFixed(1) : 0;
+
+      // Get additional metrics if available (for ad sets/campaigns)
+      const additionalMetrics = [];
+      if (row.roas) additionalMetrics.push(`ROAS: ${row.roas}`);
+      if (row.ctr || row.click_rate_ctr) additionalMetrics.push(`CTR: ${row.ctr || row.click_rate_ctr}`);
+      if (row.cost_per_click || row.cpc) additionalMetrics.push(`CPC: ${row.cost_per_click || row.cpc}`);
+      if (row.conversions) additionalMetrics.push(`Conv: ${row.conversions}`);
+      if (row.status) additionalMetrics.push(`Status: ${row.status}`);
+
+      const metricsStr = additionalMetrics.length > 0 ? ` | ${additionalMetrics.join(', ')}` : '';
+      analysis += `\n${index + 1}. ${name}: ${value.toLocaleString()} (${percentage}%)${metricsStr}`;
+    });
+
+    // Add concentration analysis
+    if (data.length > 0) {
+      const topSegment = data[0];
+      const topValue = Object.values(topSegment).find(v => typeof v === 'number' && !isNaN(v)) || 0;
+      const topPercentage = total > 0 ? (topValue / total * 100) : 0;
+
+      analysis += `\n\nCONCENTRATION ANALYSIS:
+- Top Segment: ${Object.values(topSegment)[0]} (${topPercentage.toFixed(1)}%)
+- Concentration Risk: ${topPercentage > 80 ? 'HIGH - Diversification needed' : topPercentage > 60 ? 'MEDIUM - Monitor closely' : 'LOW - Well diversified'}`;
+    }
+
+    return analysis;
+  }
+
+  /**
+   * Build time series analysis
+   */
+  buildTimeSeriesAnalysis(timeSeries, value, previousValue, changePercent, metric, currency) {
+    const trendDirection = this.analyzeTrendDirection(timeSeries);
+
+    let analysis = `\n\nCURRENT PERFORMANCE:
+- Current Value: ${this.formatMetricValue(metric, value, currency)}
+- Previous Period: ${this.formatMetricValue(metric, previousValue, currency)}
+- Change: ${changePercent !== undefined ? `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%` : 'N/A'}
+
+TIME SERIES PATTERN ANALYSIS:
+- Data Points: ${timeSeries.length} days
+- Trend Direction: ${trendDirection.direction}
+- Average Daily Value: ${this.formatMetricValue(metric, trendDirection.average, currency)}
+- Volatility: ${trendDirection.volatility}`;
+
+    // Add recent performance comparison
+    if (timeSeries.length >= 7) {
+      const last7Days = timeSeries.slice(-7);
+      const prev7Days = timeSeries.slice(-14, -7);
+      const avg7Days = last7Days.reduce((sum, d) => sum + (d.value || 0), 0) / 7;
+      const avgPrev7Days = prev7Days.length > 0
+        ? prev7Days.reduce((sum, d) => sum + (d.value || 0), 0) / prev7Days.length
+        : 0;
+      const weekChange = avgPrev7Days > 0 ? ((avg7Days - avgPrev7Days) / avgPrev7Days * 100) : 0;
+
+      analysis += `\n- Last 7 Days Average: ${this.formatMetricValue(metric, avg7Days, currency)}
+- Week-over-Week Change: ${weekChange > 0 ? '+' : ''}${weekChange.toFixed(1)}%`;
+    }
+
+    // Detect anomalies
+    const values = timeSeries.map(d => d.value || 0);
+    const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+    const stdDev = Math.sqrt(values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length);
+    const anomalies = timeSeries.filter(d => Math.abs((d.value || 0) - mean) > 2 * stdDev);
+
+    if (anomalies.length > 0) {
+      analysis += `\n\nANOMALIES DETECTED:
+- ${anomalies.length} unusual data points identified
+- Investigate: ${anomalies.map(a => `${a.date} (${this.formatMetricValue(metric, a.value, currency)})`).slice(0, 3).join(', ')}`;
+    }
+
+    return analysis;
+  }
+
+  /**
+   * Get widget-specific analysis instructions
+   */
+  getWidgetSpecificInstructions(widgetType, widgetTitle, dataType) {
+    if (dataType === 'table') {
+      if (widgetTitle.includes('device')) {
+        return `1. Identify the dominant device platform and its performance metrics
+2. Calculate performance gaps between platforms (e.g., Mobile CPC vs Desktop CPC)
+3. Assess concentration risk - is >70% coming from one device?
+4. Recommend budget reallocation with EXACT dollar amounts and expected impact
+5. Identify underperforming platforms that should have budgets reduced`;
+      } else if (widgetTitle.includes('country') || widgetTitle.includes('geographic')) {
+        return `1. Rank markets by efficiency (ROAS or conversion rate if available)
+2. Identify top 3 markets by spend and their ROI
+3. Find underperforming regions consuming budget with low returns
+4. Discover high-potential markets (low spend but high efficiency)
+5. Recommend EXACT budget shifts between markets with $ impact
+6. Calculate opportunity cost of current allocation`;
+      } else if (widgetTitle.includes('campaign') || widgetTitle.includes('ad set')) {
+        return `1. Rank all campaigns/ad sets by efficiency (ROAS, CPA, or CTR)
+2. Identify budget misallocation (high spend on low performers)
+3. Calculate reallocation opportunity with EXACT dollar amounts
+4. Recommend which campaigns to pause, reduce, or increase
+5. Quantify daily revenue impact of recommended changes
+6. Provide implementation steps for Ads Manager`;
+      }
+    }
+
+    return `1. Assess overall performance status (excellent/good/concerning/critical)
+2. Identify the most critical insights with specific numbers
+3. Flag any urgent risks or issues requiring immediate action
+4. Provide specific, actionable recommendations with quantified impact
+5. Calculate expected business outcomes (revenue, cost savings, efficiency gains)`;
   }
 
   /**
@@ -365,12 +523,14 @@ Return your analysis as valid JSON following the specified structure.`;
       analysis.riskAlerts = analysis.riskAlerts || [];
       analysis.recommendations = analysis.recommendations || [];
 
-      // Validate recommendations structure
+      // Validate recommendations structure with new optional fields
       analysis.recommendations = analysis.recommendations.map(rec => ({
         priority: rec.priority || 'medium',
         title: rec.title || 'Recommendation',
         description: rec.description || '',
-        expectedImpact: rec.expectedImpact || 'Impact not specified'
+        expectedImpact: rec.expectedImpact || 'Impact not specified',
+        implementation: rec.implementation || null, // Optional: step-by-step implementation
+        urgency: rec.urgency || null // Optional: timeframe for action
       }));
 
       return analysis;

@@ -5887,17 +5887,34 @@
       // Recommendations
       const recommendationsList = document.getElementById('recommendationsList');
       recommendationsList.innerHTML = analysis.recommendations
-        .map((rec, idx) => `
-          <div class="recommendation-card priority-${rec.priority}">
-            <div class="rec-header">
-              <span class="rec-number">${idx + 1}</span>
-              <span class="rec-priority">${rec.priority.toUpperCase()} PRIORITY</span>
+        .map((rec, idx) => {
+          // Build urgency badge if available
+          const urgencyBadge = rec.urgency
+            ? `<span class="rec-urgency" style="margin-left: 0.5rem; padding: 0.2rem 0.5rem; background: rgba(255,152,0,0.15); border: 1px solid rgba(255,152,0,0.3); color: #ff9800; border-radius: 0.25rem; font-size: 0.65rem;">⏰ ${escapeHtml(rec.urgency)}</span>`
+            : '';
+
+          // Build implementation section if available
+          const implementationSection = rec.implementation
+            ? `<div class="rec-implementation" style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(183, 250, 49, 0.05); border-left: 2px solid rgba(183, 250, 49, 0.3); border-radius: 0.25rem;">
+                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">Implementation Steps:</div>
+                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.9); line-height: 1.5; white-space: pre-wrap;">${escapeHtml(rec.implementation)}</div>
+              </div>`
+            : '';
+
+          return `
+            <div class="recommendation-card priority-${rec.priority}">
+              <div class="rec-header">
+                <span class="rec-number">${idx + 1}</span>
+                <span class="rec-priority">${rec.priority.toUpperCase()} PRIORITY</span>
+                ${urgencyBadge}
+              </div>
+              <h5>${escapeHtml(rec.title)}</h5>
+              <p>${escapeHtml(rec.description)}</p>
+              <div class="rec-impact">💰 Expected Impact: ${escapeHtml(rec.expectedImpact)}</div>
+              ${implementationSection}
             </div>
-            <h5>${escapeHtml(rec.title)}</h5>
-            <p>${escapeHtml(rec.description)}</p>
-            <div class="rec-impact">Expected Impact: ${escapeHtml(rec.expectedImpact)}</div>
-          </div>
-        `)
+          `;
+        })
         .join('');
 
       // Trend Analysis
