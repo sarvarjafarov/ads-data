@@ -3176,10 +3176,8 @@
       // Initialize drag and drop
       setupDragAndDrop();
 
-      // Restore widget grid sizes from localStorage (before loading metrics to prevent layout shift)
-      restoreWidgetGridSizes();
-
       // Load actual metrics for widgets
+      // Note: Grid sizes are now applied during renderWidget(), no separate restoration needed
       loadWidgetMetrics();
     }
 
@@ -3509,8 +3507,18 @@
         `;
       }
 
+      // Get saved grid size from localStorage
+      const gridSizePrefs = JSON.parse(localStorage.getItem('widgetGridSizes') || '{}');
+      const savedSize = gridSizePrefs[widget.id] || '';
+      const gridSizeAttr = savedSize ? `data-grid-size="${savedSize}"` : '';
+
+      // Determine which size button should be active
+      const smallActive = savedSize === 'small' ? ' active' : '';
+      const mediumActive = savedSize === 'medium' ? ' active' : '';
+      const largeActive = savedSize === 'large' ? ' active' : '';
+
       return `
-        <div class="widget" data-widget-id="${widget.id}" data-widget-type="${widgetType}" draggable="true">
+        <div class="widget" data-widget-id="${widget.id}" data-widget-type="${widgetType}" ${gridSizeAttr} draggable="true">
           <div class="widget-header">
             <div style="display: flex; align-items: center;">
               <span class="widget-drag-handle" title="Drag to reorder"><span class="icon icon-drag"></span></span>
@@ -3519,9 +3527,9 @@
             </div>
             <div class="widget-actions">
               <div class="widget-size-controls">
-                <button class="widget-size-btn" onclick="setWidgetGridSize('${widget.id}', 'small')" title="Small (1 column)" data-size="small">S</button>
-                <button class="widget-size-btn" onclick="setWidgetGridSize('${widget.id}', 'medium')" title="Medium (2 columns)" data-size="medium">M</button>
-                <button class="widget-size-btn" onclick="setWidgetGridSize('${widget.id}', 'large')" title="Large (3 columns)" data-size="large">L</button>
+                <button class="widget-size-btn${smallActive}" onclick="setWidgetGridSize('${widget.id}', 'small')" title="Small (1 column)" data-size="small">S</button>
+                <button class="widget-size-btn${mediumActive}" onclick="setWidgetGridSize('${widget.id}', 'medium')" title="Medium (2 columns)" data-size="medium">M</button>
+                <button class="widget-size-btn${largeActive}" onclick="setWidgetGridSize('${widget.id}', 'large')" title="Large (3 columns)" data-size="large">L</button>
               </div>
               <button class="widget-action-btn" onclick="openWidgetZoom('${widget.id}')" title="Expand"><span class="icon icon-expand"></span></button>
               <button class="widget-action-btn" onclick="analyzeWidgetWithAI('${widget.id}')" title="AI Analysis"><span class="icon icon-ai"></span></button>
