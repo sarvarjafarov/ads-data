@@ -1123,29 +1123,48 @@ async function fetchMetaAdsAdSetBreakdown(accountId, accessToken, metric, since,
 
     return {
       type: 'table',
-      columns: ['Ad Set', 'Campaign', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Frequency', 'Conversions', 'Cost/Conv', 'ROAS'],
-      data: adSets.slice(0, 50).map(a => ({
-        ad_set: a.name,
-        campaign: a.campaign,
-        status: a.status,
-        spend: '$' + a.spend.toFixed(2),
-        impressions: a.impressions.toLocaleString(),
-        clicks: a.clicks.toLocaleString(),
-        ctr: (a.ctr * 100).toFixed(2) + '%',
-        cpc: '$' + a.cpc.toFixed(2),
-        cpm: '$' + a.cpm.toFixed(2),
-        reach: a.reach.toLocaleString(),
-        frequency: a.frequency.toFixed(2),
-        conversions: a.conversions,
-        cost_conv: a.costPerConversion > 0 ? '$' + a.costPerConversion.toFixed(2) : '-',
-        roas: a.roas > 0 ? a.roas.toFixed(2) + 'x' : '-'
-      }))
+      columns: ['Ad Set Name', 'Campaign', 'Status', 'Results', 'Budget Spent', 'People Reached', 'Impressions', 'Link Clicks', 'Click Rate (CTR)', 'Cost per Click', 'Cost per 1K (CPM)', 'Conversions', 'Conv. Rate', 'Cost/Conversion', 'ROAS'],
+      data: adSets.slice(0, 50).map(a => {
+        // Calculate conversion rate
+        const conversionRate = a.clicks > 0 ? (a.conversions / a.clicks) * 100 : 0;
+
+        // Format status with visual indicator
+        let statusDisplay = a.status;
+        if (a.status === 'ACTIVE') {
+          statusDisplay = '● Active';
+        } else if (a.status === 'PAUSED') {
+          statusDisplay = '○ Paused';
+        } else if (a.status === 'ARCHIVED') {
+          statusDisplay = '□ Archived';
+        }
+
+        // Calculate results score (clicks + conversions * 10)
+        const resultsScore = a.clicks + (a.conversions * 10);
+
+        return {
+          ad_set_name: a.name,
+          campaign: a.campaign,
+          status: statusDisplay,
+          results: resultsScore.toLocaleString(),
+          budget_spent: '$' + a.spend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+          people_reached: a.reach.toLocaleString(),
+          impressions: a.impressions.toLocaleString(),
+          link_clicks: a.clicks.toLocaleString(),
+          click_rate_ctr: (a.ctr * 100).toFixed(2) + '%',
+          cost_per_click: '$' + a.cpc.toFixed(2),
+          cost_per_1k_cpm: '$' + a.cpm.toFixed(2),
+          conversions: a.conversions.toLocaleString(),
+          conv_rate: conversionRate > 0 ? conversionRate.toFixed(2) + '%' : '0%',
+          cost_conversion: a.costPerConversion > 0 ? '$' + a.costPerConversion.toFixed(2) : '-',
+          roas: a.roas > 0 ? a.roas.toFixed(2) + 'x' : '-'
+        };
+      })
     };
   } catch (error) {
     console.error('Error fetching Meta ad set breakdown:', error);
     return {
       type: 'table',
-      columns: ['Ad Set', 'Campaign', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Frequency', 'Conversions', 'Cost/Conv', 'ROAS'],
+      columns: ['Ad Set Name', 'Campaign', 'Status', 'Results', 'Budget Spent', 'People Reached', 'Impressions', 'Link Clicks', 'Click Rate (CTR)', 'Cost per Click', 'Cost per 1K (CPM)', 'Conversions', 'Conv. Rate', 'Cost/Conversion', 'ROAS'],
       data: [],
       _demoData: true
     };
@@ -1178,7 +1197,7 @@ async function fetchMetaAdsAdsBreakdown(accountId, accessToken, metric, since, u
       console.error('Meta API error:', data.error);
       return {
         type: 'table',
-        columns: ['Ad', 'Ad Set', 'Campaign', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Frequency', 'Conversions', 'Cost/Conv', 'ROAS', 'Video Views'],
+        columns: ['Ad Name', 'Ad Set', 'Campaign', 'Status', 'Performance Score', 'Budget Spent', 'People Reached', 'Impressions', 'Link Clicks', 'Click Rate (CTR)', 'Cost per Click', 'Avg. Frequency', 'Conversions', 'Conv. Rate', 'Cost/Conversion', 'Return on Ad Spend', 'Video Plays'],
         data: [],
         _demoData: true
       };
@@ -1253,31 +1272,53 @@ async function fetchMetaAdsAdsBreakdown(accountId, accessToken, metric, since, u
 
     return {
       type: 'table',
-      columns: ['Ad', 'Ad Set', 'Campaign', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Frequency', 'Conversions', 'Cost/Conv', 'ROAS', 'Video Views'],
-      data: ads.slice(0, 50).map(a => ({
-        ad: a.name,
-        ad_set: a.adSet,
-        campaign: a.campaign,
-        status: a.status,
-        spend: '$' + a.spend.toFixed(2),
-        impressions: a.impressions.toLocaleString(),
-        clicks: a.clicks.toLocaleString(),
-        ctr: (a.ctr * 100).toFixed(2) + '%',
-        cpc: '$' + a.cpc.toFixed(2),
-        cpm: '$' + a.cpm.toFixed(2),
-        reach: a.reach.toLocaleString(),
-        frequency: a.frequency.toFixed(2),
-        conversions: a.conversions,
-        cost_conv: a.costPerConversion > 0 ? '$' + a.costPerConversion.toFixed(2) : '-',
-        roas: a.roas > 0 ? a.roas.toFixed(2) + 'x' : '-',
-        video_views: a.videoViews > 0 ? a.videoViews.toLocaleString() : '-'
-      }))
+      columns: ['Ad Name', 'Ad Set', 'Campaign', 'Status', 'Performance Score', 'Budget Spent', 'People Reached', 'Impressions', 'Link Clicks', 'Click Rate (CTR)', 'Cost per Click', 'Avg. Frequency', 'Conversions', 'Conv. Rate', 'Cost/Conversion', 'Return on Ad Spend', 'Video Plays'],
+      data: ads.slice(0, 50).map(a => {
+        // Calculate conversion rate
+        const conversionRate = a.clicks > 0 ? (a.conversions / a.clicks) * 100 : 0;
+
+        // Calculate performance score based on CTR, conversions, and ROAS
+        const ctrScore = (a.ctr * 100) * 10; // CTR weight
+        const conversionScore = a.conversions * 50; // Conversion weight
+        const roasScore = a.roas * 20; // ROAS weight
+        const performanceScore = Math.round(ctrScore + conversionScore + roasScore);
+
+        // Format status with visual indicator
+        let statusDisplay = a.status;
+        if (a.status === 'ACTIVE') {
+          statusDisplay = '● Active';
+        } else if (a.status === 'PAUSED') {
+          statusDisplay = '○ Paused';
+        } else if (a.status === 'ARCHIVED') {
+          statusDisplay = '□ Archived';
+        }
+
+        return {
+          ad_name: a.name,
+          ad_set: a.adSet,
+          campaign: a.campaign,
+          status: statusDisplay,
+          performance_score: performanceScore.toLocaleString(),
+          budget_spent: '$' + a.spend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+          people_reached: a.reach.toLocaleString(),
+          impressions: a.impressions.toLocaleString(),
+          link_clicks: a.clicks.toLocaleString(),
+          click_rate_ctr: (a.ctr * 100).toFixed(2) + '%',
+          cost_per_click: '$' + a.cpc.toFixed(2),
+          avg_frequency: a.frequency.toFixed(2) + 'x',
+          conversions: a.conversions.toLocaleString(),
+          conv_rate: conversionRate > 0 ? conversionRate.toFixed(2) + '%' : '0%',
+          cost_conversion: a.costPerConversion > 0 ? '$' + a.costPerConversion.toFixed(2) : 'No Conv.',
+          return_on_ad_spend: a.roas > 0 ? a.roas.toFixed(2) + 'x' : 'No Data',
+          video_plays: a.videoViews > 0 ? a.videoViews.toLocaleString() : '-'
+        };
+      })
     };
   } catch (error) {
     console.error('Error fetching Meta ads breakdown:', error);
     return {
       type: 'table',
-      columns: ['Ad', 'Ad Set', 'Campaign', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Frequency', 'Conversions', 'Cost/Conv', 'ROAS', 'Video Views'],
+      columns: ['Ad Name', 'Ad Set', 'Campaign', 'Status', 'Performance Score', 'Budget Spent', 'People Reached', 'Impressions', 'Link Clicks', 'Click Rate (CTR)', 'Cost per Click', 'Avg. Frequency', 'Conversions', 'Conv. Rate', 'Cost/Conversion', 'Return on Ad Spend', 'Video Plays'],
       data: [],
       _demoData: true
     };
@@ -1298,7 +1339,7 @@ async function fetchMetaAdsCreativeComparison(accountId, accessToken, metric, si
       console.error('Meta API error:', data.error);
       return {
         type: 'table',
-        columns: ['Ad Name', 'Creative Type', 'Campaign', 'Ad Set', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Conversions', 'Cost/Conv', 'ROAS', 'Video 100%', 'Engagement', 'Link Clicks'],
+        columns: ['Creative/Ad Name', 'Type', 'Campaign', 'Ad Set', 'Status', 'Quality Score', 'Budget Spent', 'People Reached', 'Total Impressions', 'Link Clicks', 'Click Rate', 'Cost/Click', 'Engagement Rate', 'Total Engagement', 'Conversions', 'Conv. Rate', 'Cost/Conv.', 'ROAS', 'Video Completion'],
         data: [],
         _demoData: true
       };
@@ -1425,34 +1466,71 @@ async function fetchMetaAdsCreativeComparison(accountId, accessToken, metric, si
 
     return {
       type: 'table',
-      columns: ['Ad Name', 'Creative Type', 'Campaign', 'Ad Set', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Conversions', 'Cost/Conv', 'ROAS', 'Video 100%', 'Engagement', 'Link Clicks'],
-      data: creatives.slice(0, 50).map(c => ({
-        ad_name: c.name,
-        creative_type: c.type,
-        campaign: c.campaign,
-        ad_set: c.adSet,
-        status: c.status,
-        spend: '$' + c.spend.toFixed(2),
-        impressions: c.impressions.toLocaleString(),
-        clicks: c.clicks.toLocaleString(),
-        ctr: (c.ctr * 100).toFixed(2) + '%',
-        cpc: '$' + c.cpc.toFixed(2),
-        cpm: '$' + c.cpm.toFixed(2),
-        reach: c.reach.toLocaleString(),
-        conversions: c.conversions,
-        cost_conv: c.costPerConversion > 0 ? '$' + c.costPerConversion.toFixed(2) : '-',
-        roas: c.roas > 0 ? c.roas.toFixed(2) + 'x' : '-',
-        video_100: c.video100 > 0 ? c.video100.toLocaleString() + (c.videoCompletionRate > 0 ? ' (' + c.videoCompletionRate.toFixed(1) + '%)' : '') : '-',
-        engagement: c.engagement > 0 ? c.engagement.toLocaleString() : '-',
-        link_clicks: c.linkClicks > 0 ? c.linkClicks.toLocaleString() : '-'
-      })),
+      columns: ['Creative/Ad Name', 'Type', 'Campaign', 'Ad Set', 'Status', 'Quality Score', 'Budget Spent', 'People Reached', 'Total Impressions', 'Link Clicks', 'Click Rate', 'Cost/Click', 'Engagement Rate', 'Total Engagement', 'Conversions', 'Conv. Rate', 'Cost/Conv.', 'ROAS', 'Video Completion'],
+      data: creatives.slice(0, 50).map(c => {
+        // Calculate conversion rate
+        const conversionRate = c.clicks > 0 ? (c.conversions / c.clicks) * 100 : 0;
+
+        // Calculate engagement rate
+        const engagementRate = c.impressions > 0 ? (c.engagement / c.impressions) * 100 : 0;
+
+        // Calculate quality score based on CTR, engagement, and completion
+        const ctrScore = (c.ctr * 100) * 15; // CTR weight
+        const engagementScore = engagementRate * 10; // Engagement weight
+        const videoScore = c.videoCompletionRate * 5; // Video completion weight
+        const qualityScore = Math.round(ctrScore + engagementScore + videoScore);
+
+        // Format status with visual indicator
+        let statusDisplay = c.status;
+        if (c.status === 'ACTIVE') {
+          statusDisplay = '● Active';
+        } else if (c.status === 'PAUSED') {
+          statusDisplay = '○ Paused';
+        } else if (c.status === 'ARCHIVED') {
+          statusDisplay = '□ Archived';
+        }
+
+        // Format creative type with icon
+        let typeDisplay = c.type;
+        if (c.type === 'Video') {
+          typeDisplay = '▶ Video';
+        } else if (c.type === 'Image') {
+          typeDisplay = '◼ Image';
+        } else if (c.type === 'Carousel') {
+          typeDisplay = '⊞ Carousel';
+        } else if (c.type === 'Link/Post') {
+          typeDisplay = '◈ Link/Post';
+        }
+
+        return {
+          creative_ad_name: c.name,
+          type: typeDisplay,
+          campaign: c.campaign,
+          ad_set: c.adSet,
+          status: statusDisplay,
+          quality_score: qualityScore.toLocaleString(),
+          budget_spent: '$' + c.spend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+          people_reached: c.reach.toLocaleString(),
+          total_impressions: c.impressions.toLocaleString(),
+          link_clicks: c.clicks.toLocaleString(),
+          click_rate: (c.ctr * 100).toFixed(2) + '%',
+          cost_click: '$' + c.cpc.toFixed(2),
+          engagement_rate: engagementRate > 0 ? engagementRate.toFixed(2) + '%' : '0%',
+          total_engagement: c.engagement > 0 ? c.engagement.toLocaleString() : '0',
+          conversions: c.conversions.toLocaleString(),
+          conv_rate: conversionRate > 0 ? conversionRate.toFixed(2) + '%' : '0%',
+          cost_conv: c.costPerConversion > 0 ? '$' + c.costPerConversion.toFixed(2) : 'No Conv.',
+          roas: c.roas > 0 ? c.roas.toFixed(2) + 'x' : 'No Data',
+          video_completion: c.video100 > 0 ? c.video100.toLocaleString() + ' (' + c.videoCompletionRate.toFixed(1) + '%)' : 'N/A'
+        };
+      }),
       _creativeGroups: Object.keys(creativeGroups).length // For future grouped view
     };
   } catch (error) {
     console.error('Error fetching Meta creative comparison:', error);
     return {
       type: 'table',
-      columns: ['Ad Name', 'Creative Type', 'Campaign', 'Ad Set', 'Status', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'CPM', 'Reach', 'Conversions', 'Cost/Conv', 'ROAS', 'Video 100%', 'Engagement', 'Link Clicks'],
+      columns: ['Creative/Ad Name', 'Type', 'Campaign', 'Ad Set', 'Status', 'Quality Score', 'Budget Spent', 'People Reached', 'Total Impressions', 'Link Clicks', 'Click Rate', 'Cost/Click', 'Engagement Rate', 'Total Engagement', 'Conversions', 'Conv. Rate', 'Cost/Conv.', 'ROAS', 'Video Completion'],
       data: [],
       _demoData: true
     };
