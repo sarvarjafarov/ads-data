@@ -116,7 +116,10 @@
       border-radius: 1.5rem;
       padding: 1.5rem;
       cursor: grab;
-      min-height: 180px; /* CRITICAL: Prevents height collapse causing grid reflow */
+      min-height: 180px;
+      max-height: 420px; /* CRITICAL: Prevents vertical expansion causing layout shift */
+      overflow-y: auto; /* Allow scrolling if content exceeds max-height */
+      overflow-x: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
     }
 
@@ -2923,17 +2926,24 @@
 
   <script>
     // ========================================
-    // VERSION: v111 - FINAL Layout Shift Fix (Height + Grid)
+    // VERSION: v112 - Layout Shift Fix: MAX-HEIGHT Constraint
+    // ROOT CAUSE IDENTIFIED:
+    //   - Widgets render immediately with empty placeholders
+    //   - loadWidgetMetrics() fetches data asynchronously (~5 seconds)
+    //   - When data loads, chart summaries + table rows are injected
+    //   - Content height exceeds initial render, causing vertical expansion
+    //   - Grid reflows, pushing other widgets down = LAYOUT SHIFT
+    //
     // CRITICAL FIXES:
-    // 1. Removed auto-fit from grid (prevents dynamic column recalculation)
-    // 2. Fixed explicit column counts (3 cols desktop, 2 tablet, 1 mobile)
-    // 3. Inline styles with !important (absolute highest priority)
-    // 4. Grid column set via setProperty('grid-column', 'span X', 'important')
-    // 5. min-height: 180px on widgets (prevents height collapse/expansion reflow)
+    // 1. Fixed grid (not auto-fit): repeat(3, 1fr)
+    // 2. Inline grid-column styles with !important
+    // 3. min-height: 180px (prevents collapse)
+    // 4. max-height: 420px + overflow-y: auto (PREVENTS EXPANSION!)
+    // 5. Tables already have max-height: 350px with overflow
     // ========================================
-    console.log('%c🚀 Dashboard Viewer v111 Loaded - FINAL FIX (Height + Grid)', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
-    console.log('%c✅ Fixed: Grid columns + !important + min-height = NO LAYOUT SHIFT', 'color: #4CAF50; font-weight: bold;');
-    console.log('%c🔒 Grid: 3 fixed columns | Widgets: 180px min-height', 'color: #FFD700; font-weight: bold;');
+    console.log('%c🚀 Dashboard Viewer v112 Loaded - MAX-HEIGHT FIX', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
+    console.log('%c✅ Root cause: Async data loading causes height expansion', 'color: #FF6B6B; font-weight: bold;');
+    console.log('%c🔒 Solution: max-height: 420px + overflow-y: auto', 'color: #4CAF50; font-weight: bold;');
 
     let dashboardId = null;
     let dashboard = null;
