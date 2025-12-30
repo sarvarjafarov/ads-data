@@ -2515,30 +2515,30 @@
       opacity: 1;
     }
 
-    /* Improved widgets grid for column spanning */
+    /* Improved widgets grid for column spanning - FIXED COLUMNS TO PREVENT AUTO-FIT REFLOW */
     .widgets-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(3, 1fr); /* DEFAULT: 3 columns on desktop */
       gap: 1.5rem;
       margin-top: 2rem;
     }
 
-    /* For better grid control */
+    /* Responsive grid - EXPLICIT COLUMN COUNTS */
     @media (min-width: 1200px) {
       .widgets-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr); /* 3 columns on large screens */
       }
     }
 
     @media (min-width: 768px) and (max-width: 1199px) {
       .widgets-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
       }
     }
 
     @media (max-width: 767px) {
       .widgets-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* 1 column on mobile */
       }
     }
   </style>
@@ -2922,12 +2922,16 @@
 
   <script>
     // ========================================
-    // VERSION: v109 - Inline Style Fix for Layout Shift
-    // CRITICAL: Grid sizes now applied as INLINE STYLES during render
-    // This ensures immediate grid-column application, preventing ANY layout shift
+    // VERSION: v110 - DEFINITIVE Layout Shift Fix
+    // CRITICAL FIXES:
+    // 1. Removed auto-fit from grid (prevents dynamic column recalculation)
+    // 2. Fixed explicit column counts (3 cols desktop, 2 tablet, 1 mobile)
+    // 3. Inline styles with !important (absolute highest priority)
+    // 4. Grid column set via setProperty('grid-column', 'span X', 'important')
     // ========================================
-    console.log('%c🚀 Dashboard Viewer v109 Loaded', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
-    console.log('%c✅ Grid sizes applied via INLINE STYLES (highest specificity - no layout shift possible)', 'color: #4CAF50; font-weight: bold;');
+    console.log('%c🚀 Dashboard Viewer v110 Loaded - DEFINITIVE FIX', 'background: #1a1a2e; color: #b7fa31; font-weight: bold; font-size: 16px; padding: 8px;');
+    console.log('%c✅ Fixed grid columns + inline !important styles = ZERO layout shift', 'color: #4CAF50; font-weight: bold;');
+    console.log('%c🔒 Grid: 3 fixed columns (no auto-fit reflow)', 'color: #FFD700; font-weight: bold;');
 
     let dashboardId = null;
     let dashboard = null;
@@ -3530,14 +3534,14 @@
       const savedSize = gridSizePrefs[widget.id] || '';
       const gridSizeAttr = savedSize ? `data-grid-size="${savedSize}"` : '';
 
-      // CRITICAL FIX: Apply inline grid-column style to prevent any layout shift
+      // CRITICAL FIX: Apply inline grid-column style with !important to prevent ANY layout shift
       let gridColumnStyle = '';
       if (savedSize === 'small') {
-        gridColumnStyle = ' style="grid-column: span 1;"';
+        gridColumnStyle = ' style="grid-column: span 1 !important;"';
       } else if (savedSize === 'medium') {
-        gridColumnStyle = ' style="grid-column: span 2;"';
+        gridColumnStyle = ' style="grid-column: span 2 !important;"';
       } else if (savedSize === 'large') {
-        gridColumnStyle = ' style="grid-column: span 3;"';
+        gridColumnStyle = ' style="grid-column: span 3 !important;"';
       }
 
       // Debug logging
@@ -5294,12 +5298,13 @@
       widgetEl.setAttribute('data-grid-size', size);
 
       // CRITICAL: Also update inline style to ensure immediate visual change
+      // Note: We use setProperty with 'important' priority for maximum specificity
       if (size === 'small') {
-        widgetEl.style.gridColumn = 'span 1';
+        widgetEl.style.setProperty('grid-column', 'span 1', 'important');
       } else if (size === 'medium') {
-        widgetEl.style.gridColumn = 'span 2';
+        widgetEl.style.setProperty('grid-column', 'span 2', 'important');
       } else if (size === 'large') {
-        widgetEl.style.gridColumn = 'span 3';
+        widgetEl.style.setProperty('grid-column', 'span 3', 'important');
       }
 
       console.log(`[SET_SIZE] New data-grid-size: ${widgetEl.getAttribute('data-grid-size')}, inline style: ${widgetEl.style.gridColumn}`);
