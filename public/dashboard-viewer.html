@@ -3167,17 +3167,27 @@
       }
 
       // Render widgets
+      console.log('[DASHBOARD] Starting to render widgets. localStorage widgetGridSizes:', localStorage.getItem('widgetGridSizes'));
       const widgetsHTML = dashboard.widgets.map(widget => {
         return renderWidget(widget);
       }).join('');
 
       container.innerHTML = `<div class="widgets-grid">${widgetsHTML}</div>`;
 
+      console.log('[DASHBOARD] Widgets HTML inserted into DOM. Checking rendered grid sizes...');
+      dashboard.widgets.forEach(widget => {
+        const widgetEl = document.querySelector(`[data-widget-id="${widget.id}"]`);
+        if (widgetEl) {
+          console.log(`[DASHBOARD] Widget ${widget.id} (${widget.title}) has data-grid-size: ${widgetEl.getAttribute('data-grid-size')}`);
+        }
+      });
+
       // Initialize drag and drop
       setupDragAndDrop();
 
       // Load actual metrics for widgets
       // Note: Grid sizes are now applied during renderWidget(), no separate restoration needed
+      console.log('[DASHBOARD] About to call loadWidgetMetrics()');
       loadWidgetMetrics();
     }
 
@@ -3511,6 +3521,9 @@
       const gridSizePrefs = JSON.parse(localStorage.getItem('widgetGridSizes') || '{}');
       const savedSize = gridSizePrefs[widget.id] || '';
       const gridSizeAttr = savedSize ? `data-grid-size="${savedSize}"` : '';
+
+      // Debug logging
+      console.log(`[RENDER] Widget ${widget.id} (${widget.title}): savedSize=${savedSize}, gridSizeAttr=${gridSizeAttr}`);
 
       // Determine which size button should be active
       const smallActive = savedSize === 'small' ? ' active' : '';
@@ -5250,14 +5263,19 @@
 
     // Widget Grid Size Functions
     function setWidgetGridSize(widgetId, size) {
+      console.log(`[SET_SIZE] Called for widget ${widgetId}, new size: ${size}`);
       const widgetEl = document.querySelector(`[data-widget-id="${widgetId}"]`);
       if (!widgetEl) {
         console.error('Widget element not found:', widgetId);
         return;
       }
 
+      console.log(`[SET_SIZE] Current data-grid-size: ${widgetEl.getAttribute('data-grid-size')}`);
+
       // Update data attribute
       widgetEl.setAttribute('data-grid-size', size);
+
+      console.log(`[SET_SIZE] New data-grid-size: ${widgetEl.getAttribute('data-grid-size')}`);
 
       // Update active state on buttons
       const sizeButtons = widgetEl.querySelectorAll('.widget-size-btn');
