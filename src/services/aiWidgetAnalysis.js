@@ -47,7 +47,7 @@ class AIWidgetAnalysisService {
       // Call Claude API
       const message = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 8192, // Increased for detailed breakdown analysis
+        max_tokens: 16384, // Increased for Phase 2: seasonal patterns, forecasting, historical comparison
         system: this.getSystemPrompt(),
         messages: [
           {
@@ -78,7 +78,7 @@ class AIWidgetAnalysisService {
    * @returns {string} System prompt
    */
   getSystemPrompt() {
-    return `You are an expert advertising performance analyst with deep expertise in digital marketing metrics, ROI optimization, and business strategy.
+    return `You are an expert advertising performance analyst with deep expertise in digital marketing metrics, ROI optimization, business strategy, and predictive analytics.
 
 Your role is to provide brutally honest, data-driven, business-focused analysis. You identify critical patterns, waste, opportunities, and provide specific, actionable recommendations with quantified impact.
 
@@ -108,6 +108,22 @@ CORE ANALYSIS PRINCIPLES:
    - Calculate impact: "Will generate additional $4,800/day revenue (+156% ROI)"
    - Include implementation: "In Ads Manager: Reduce Campaign A to $300/day, increase Campaign C to $1,500/day"
    - Estimate timeline: "Impact visible within 24-48 hours"
+
+5. **PHASE 2 ADVANCED INTELLIGENCE** (NEW):
+   - **Historical Context**: Compare current performance against multiple historical periods
+     * Week-over-week, month-over-month, quarter-over-quarter, year-over-year
+     * Identify if current trend is normal seasonal variation or genuine change
+   - **Seasonal Pattern Recognition**:
+     * Detect day-of-week patterns (e.g., weekends vs weekdays)
+     * Identify monthly/quarterly cycles
+     * Recognize holiday/event-driven spikes or drops
+   - **Cross-Metric Correlation**:
+     * When Spend increases by X%, how do Conversions typically respond?
+     * Identify leading vs lagging indicators
+   - **Predictive Forecasting**:
+     * Based on historical trends, predict next 7-30 days
+     * Calculate confidence intervals
+     * Warn about expected seasonal drops or surges
 
 OUTPUT REQUIREMENTS:
 Return ONLY valid JSON with this exact structure:
@@ -283,7 +299,7 @@ DETAILED BREAKDOWN:`;
   }
 
   /**
-   * Build time series analysis
+   * Build time series analysis (enhanced with Phase 2 features)
    */
   buildTimeSeriesAnalysis(timeSeries, value, previousValue, changePercent, metric, currency) {
     const trendDirection = this.analyzeTrendDirection(timeSeries);
@@ -323,6 +339,64 @@ TIME SERIES PATTERN ANALYSIS:
       analysis += `\n\nANOMALIES DETECTED:
 - ${anomalies.length} unusual data points identified
 - Investigate: ${anomalies.map(a => `${a.date} (${this.formatMetricValue(metric, a.value, currency)})`).slice(0, 3).join(', ')}`;
+    }
+
+    // PHASE 2: Add seasonal pattern detection
+    if (timeSeries.length >= 14) {
+      const seasonalPatterns = this.detectSeasonalPatterns(timeSeries);
+
+      if (seasonalPatterns.hasPatterns) {
+        analysis += `\n\n🔄 SEASONAL PATTERNS DETECTED (PHASE 2):`;
+        seasonalPatterns.insights.forEach(insight => {
+          analysis += `\n- ${insight}`;
+        });
+
+        if (seasonalPatterns.weekendVsWeekday) {
+          const { weekdayAvg, weekendAvg, differencePercent } = seasonalPatterns.weekendVsWeekday;
+          analysis += `\n- Weekday Performance: ${this.formatMetricValue(metric, weekdayAvg, currency)}`;
+          analysis += `\n- Weekend Performance: ${this.formatMetricValue(metric, weekendAvg, currency)}`;
+          analysis += `\n- Weekend vs Weekday: ${differencePercent > 0 ? '+' : ''}${differencePercent.toFixed(1)}%`;
+        }
+      }
+    }
+
+    // PHASE 2: Add historical comparison
+    if (timeSeries.length >= 30) {
+      const metricsData = { timeSeries, value, previousValue };
+      const historicalComparison = this.calculateHistoricalComparison(metricsData, metric);
+
+      if (historicalComparison) {
+        analysis += `\n\n📊 HISTORICAL COMPARISON (PHASE 2):
+- 7-Day Average: ${this.formatMetricValue(metric, historicalComparison.last7Days, currency)}
+- 14-Day Average: ${this.formatMetricValue(metric, historicalComparison.last14Days, currency)}
+- 30-Day Average: ${this.formatMetricValue(metric, historicalComparison.last30Days, currency)}`;
+
+        if (historicalComparison.trends.weekOverWeek) {
+          analysis += `\n- Week-over-Week Momentum: ${historicalComparison.trends.weekOverWeek > 0 ? '+' : ''}${historicalComparison.trends.weekOverWeek.toFixed(1)}%`;
+        }
+        if (historicalComparison.trends.monthOverMonth) {
+          analysis += `\n- Month-over-Month Momentum: ${historicalComparison.trends.monthOverMonth > 0 ? '+' : ''}${historicalComparison.trends.monthOverMonth.toFixed(1)}%`;
+        }
+      }
+    }
+
+    // PHASE 2: Add predictive forecast
+    if (timeSeries.length >= 14) {
+      const forecast = this.generateForecast(timeSeries, 7);
+
+      if (forecast) {
+        analysis += `\n\n🔮 PREDICTIVE FORECAST (PHASE 2 - Next 7 Days):
+- Predicted Trend: ${forecast.trendDirection} (${forecast.trendStrength} strength)
+- Forecast Confidence: ${forecast.confidence}
+- Expected Average: ${this.formatMetricValue(metric, forecast.averagePrediction, currency)}`;
+
+        // Add actionable forecast insight
+        if (forecast.trendDirection === 'Increasing') {
+          analysis += `\n- ⚠️ ACTION: Prepare for ${forecast.trendStrength} increase - consider scaling budgets`;
+        } else if (forecast.trendDirection === 'Decreasing') {
+          analysis += `\n- ⚠️ ACTION: Expect ${forecast.trendStrength} decline - investigate causes now`;
+        }
+      }
     }
 
     return analysis;
@@ -556,28 +630,373 @@ TIME SERIES PATTERN ANALYSIS:
   }
 
   /**
-   * Compare multiple widgets
+   * Detect seasonal patterns in time series data
    *
-   * @param {Array} widgets - Array of widgets with metrics
-   * @returns {Object} Comparative analysis
+   * @param {Array} timeSeries - Time series data with date and value
+   * @returns {Object} Seasonal pattern analysis
    */
-  async compareWidgets(widgets) {
-    // TODO: Implement multi-widget comparative analysis
-    // This would analyze performance across multiple widgets and identify patterns
-    throw new Error('Multi-widget comparison not yet implemented');
+  detectSeasonalPatterns(timeSeries) {
+    if (!timeSeries || timeSeries.length < 14) {
+      return { hasPatterns: false, message: 'Insufficient data for seasonal analysis' };
+    }
+
+    const patterns = {
+      hasPatterns: false,
+      dayOfWeek: {},
+      weekendVsWeekday: null,
+      monthlyTrend: null,
+      insights: []
+    };
+
+    // Group by day of week
+    const dayGroups = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] }; // Sunday=0, Monday=1, etc.
+
+    timeSeries.forEach(point => {
+      const date = new Date(point.date);
+      const dayOfWeek = date.getDay();
+      dayGroups[dayOfWeek].push(point.value || 0);
+    });
+
+    // Calculate average for each day
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    Object.keys(dayGroups).forEach(day => {
+      if (dayGroups[day].length > 0) {
+        const avg = dayGroups[day].reduce((sum, v) => sum + v, 0) / dayGroups[day].length;
+        patterns.dayOfWeek[dayNames[day]] = avg;
+      }
+    });
+
+    // Weekend vs Weekday analysis
+    const weekdayValues = [...(dayGroups[1] || []), ...(dayGroups[2] || []), ...(dayGroups[3] || []), ...(dayGroups[4] || []), ...(dayGroups[5] || [])];
+    const weekendValues = [...(dayGroups[0] || []), ...(dayGroups[6] || [])];
+
+    if (weekdayValues.length > 0 && weekendValues.length > 0) {
+      const weekdayAvg = weekdayValues.reduce((sum, v) => sum + v, 0) / weekdayValues.length;
+      const weekendAvg = weekendValues.reduce((sum, v) => sum + v, 0) / weekendValues.length;
+      const difference = ((weekendAvg - weekdayAvg) / weekdayAvg * 100);
+
+      patterns.weekendVsWeekday = {
+        weekdayAvg,
+        weekendAvg,
+        differencePercent: difference
+      };
+
+      if (Math.abs(difference) > 15) {
+        patterns.hasPatterns = true;
+        patterns.insights.push(
+          difference > 0
+            ? `Strong weekend performance: ${difference.toFixed(1)}% higher than weekdays`
+            : `Weekday dominance: ${Math.abs(difference).toFixed(1)}% higher than weekends`
+        );
+      }
+    }
+
+    // Find best and worst performing days
+    const dayAverages = Object.entries(patterns.dayOfWeek);
+    if (dayAverages.length > 0) {
+      dayAverages.sort((a, b) => b[1] - a[1]);
+      const bestDay = dayAverages[0];
+      const worstDay = dayAverages[dayAverages.length - 1];
+      const dayPerformanceGap = ((bestDay[1] - worstDay[1]) / worstDay[1] * 100);
+
+      if (dayPerformanceGap > 30) {
+        patterns.hasPatterns = true;
+        patterns.insights.push(
+          `${bestDay[0]} is strongest day (${dayPerformanceGap.toFixed(0)}% higher than ${worstDay[0]})`
+        );
+      }
+    }
+
+    return patterns;
   }
 
   /**
-   * Deep trend analysis with historical data
+   * Calculate historical comparison across multiple time periods
+   *
+   * @param {Object} metricsData - Current metrics data with time series
+   * @param {string} metric - Metric name
+   * @returns {Object} Historical comparison
+   */
+  calculateHistoricalComparison(metricsData, metric) {
+    const { timeSeries, value, previousValue } = metricsData;
+
+    if (!timeSeries || timeSeries.length < 30) {
+      return null;
+    }
+
+    const comparison = {
+      currentPeriod: value,
+      previousPeriod: previousValue,
+      last7Days: 0,
+      last14Days: 0,
+      last30Days: 0,
+      trends: {}
+    };
+
+    // Calculate averages for different periods
+    if (timeSeries.length >= 7) {
+      const last7 = timeSeries.slice(-7);
+      comparison.last7Days = last7.reduce((sum, d) => sum + (d.value || 0), 0) / 7;
+    }
+
+    if (timeSeries.length >= 14) {
+      const last14 = timeSeries.slice(-14);
+      comparison.last14Days = last14.reduce((sum, d) => sum + (d.value || 0), 0) / 14;
+    }
+
+    if (timeSeries.length >= 30) {
+      const last30 = timeSeries.slice(-30);
+      comparison.last30Days = last30.reduce((sum, d) => sum + (d.value || 0), 0) / 30;
+    }
+
+    // Calculate week-over-week trends
+    if (timeSeries.length >= 14) {
+      const thisWeek = timeSeries.slice(-7).reduce((sum, d) => sum + (d.value || 0), 0) / 7;
+      const lastWeek = timeSeries.slice(-14, -7).reduce((sum, d) => sum + (d.value || 0), 0) / 7;
+      comparison.trends.weekOverWeek = lastWeek > 0 ? ((thisWeek - lastWeek) / lastWeek * 100) : 0;
+    }
+
+    // Calculate month-over-month trend (comparing first half vs second half)
+    if (timeSeries.length >= 30) {
+      const firstHalf = timeSeries.slice(0, 15).reduce((sum, d) => sum + (d.value || 0), 0) / 15;
+      const secondHalf = timeSeries.slice(-15).reduce((sum, d) => sum + (d.value || 0), 0) / 15;
+      comparison.trends.monthOverMonth = firstHalf > 0 ? ((secondHalf - firstHalf) / firstHalf * 100) : 0;
+    }
+
+    return comparison;
+  }
+
+  /**
+   * Generate predictive forecast based on historical trends
+   *
+   * @param {Array} timeSeries - Time series data
+   * @param {number} daysToForecast - Number of days to forecast (default 7)
+   * @returns {Object} Forecast with predictions and confidence
+   */
+  generateForecast(timeSeries, daysToForecast = 7) {
+    if (!timeSeries || timeSeries.length < 14) {
+      return null;
+    }
+
+    const values = timeSeries.map(d => d.value || 0);
+    const n = values.length;
+
+    // Simple linear regression for trend
+    const xMean = (n - 1) / 2;
+    const yMean = values.reduce((sum, v) => sum + v, 0) / n;
+
+    let numerator = 0;
+    let denominator = 0;
+
+    for (let i = 0; i < n; i++) {
+      numerator += (i - xMean) * (values[i] - yMean);
+      denominator += (i - xMean) ** 2;
+    }
+
+    const slope = denominator !== 0 ? numerator / denominator : 0;
+    const intercept = yMean - slope * xMean;
+
+    // Generate forecast
+    const forecast = [];
+    for (let i = 0; i < daysToForecast; i++) {
+      const futureX = n + i;
+      const prediction = intercept + slope * futureX;
+      forecast.push({
+        day: i + 1,
+        predictedValue: Math.max(0, prediction) // Ensure non-negative
+      });
+    }
+
+    // Calculate confidence based on recent volatility
+    const recentValues = values.slice(-14);
+    const recentMean = recentValues.reduce((sum, v) => sum + v, 0) / recentValues.length;
+    const variance = recentValues.reduce((sum, v) => sum + (v - recentMean) ** 2, 0) / recentValues.length;
+    const stdDev = Math.sqrt(variance);
+    const coefficientOfVariation = recentMean > 0 ? (stdDev / recentMean) * 100 : 0;
+
+    let confidence = 'High';
+    if (coefficientOfVariation > 50) confidence = 'Low';
+    else if (coefficientOfVariation > 25) confidence = 'Medium';
+
+    // Determine trend direction
+    const trendDirection = slope > 0 ? 'Increasing' : slope < 0 ? 'Decreasing' : 'Stable';
+    const trendStrength = Math.abs(slope / yMean * 100);
+
+    return {
+      forecast,
+      confidence,
+      trendDirection,
+      trendStrength: trendStrength.toFixed(1) + '%',
+      averagePrediction: forecast.reduce((sum, f) => sum + f.predictedValue, 0) / daysToForecast
+    };
+  }
+
+  /**
+   * Compare multiple widgets and identify correlations (PHASE 2)
+   *
+   * @param {Array} widgetsData - Array of {widget, metricsData} objects
+   * @returns {Object} Comparative analysis with correlations
+   */
+  async compareWidgets(widgetsData) {
+    try {
+      if (!widgetsData || widgetsData.length < 2) {
+        throw new Error('At least 2 widgets required for comparison');
+      }
+
+      // Build comparative analysis prompt
+      let prompt = `Analyze the correlation and relationships between these ${widgetsData.length} widgets:
+
+CROSS-WIDGET INTELLIGENCE ANALYSIS:\n\n`;
+
+      widgetsData.forEach((item, idx) => {
+        const { widget, metricsData } = item;
+        const metric = widget.dataSource?.metric || 'unknown';
+
+        prompt += `WIDGET ${idx + 1}: ${widget.title}
+- Metric: ${metric}
+- Current Value: ${this.formatMetricValue(metric, metricsData.value, metricsData.currency)}
+- Change: ${metricsData.changePercent ? metricsData.changePercent.toFixed(1) + '%' : 'N/A'}
+- Trend: ${metricsData.timeSeries ? this.analyzeTrendDirection(metricsData.timeSeries).direction : 'Unknown'}
+
+`;
+      });
+
+      prompt += `\nCROSS-METRIC CORRELATION ANALYSIS REQUIRED:
+1. Identify cause-and-effect relationships (e.g., Spend↑ → Conversions↑?)
+2. Detect inverse correlations (e.g., CPC↓ → CTR↑?)
+3. Find efficiency metrics (ROAS = Revenue/Spend)
+4. Calculate opportunity cost (underinvestment in high-ROAS areas)
+5. Recommend budget reallocation between correlated metrics
+
+Provide specific insights about how these metrics interact and influence each other. Include exact dollar amounts for any recommended budget shifts.
+
+Return your analysis as valid JSON following the specified structure.`;
+
+      // Call Claude API
+      const message = await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 12288,
+        system: this.getSystemPrompt(),
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const responseText = message.content[0].text;
+      const analysis = this.parseAnalysisResponse(responseText);
+      analysis.tokensUsed = (message.usage?.input_tokens || 0) + (message.usage?.output_tokens || 0);
+      analysis.widgetsAnalyzed = widgetsData.length;
+
+      return analysis;
+
+    } catch (error) {
+      console.error('Multi-widget comparison error:', error);
+      throw new Error(`Failed to compare widgets: ${error.message}`);
+    }
+  }
+
+  /**
+   * Deep trend analysis with historical data and seasonality (PHASE 2)
    *
    * @param {Object} widget - Widget configuration
-   * @param {Array} historicalData - Historical metrics data
-   * @returns {Object} Trend analysis
+   * @param {Object} metricsData - Current metrics data with time series
+   * @returns {Object} Deep trend analysis with forecasting
    */
-  async analyzeTrend(widget, historicalData) {
-    // TODO: Implement deep historical trend analysis
-    // This would analyze long-term patterns and seasonality
-    throw new Error('Deep trend analysis not yet implemented');
+  async analyzeTrend(widget, metricsData) {
+    try {
+      const metric = widget.dataSource?.metric || 'unknown';
+      const { timeSeries } = metricsData;
+
+      if (!timeSeries || timeSeries.length < 14) {
+        throw new Error('Insufficient data for trend analysis (minimum 14 days required)');
+      }
+
+      // Detect seasonal patterns
+      const seasonalPatterns = this.detectSeasonalPatterns(timeSeries);
+
+      // Calculate historical comparison
+      const historicalComparison = this.calculateHistoricalComparison(metricsData, metric);
+
+      // Generate forecast
+      const forecast = this.generateForecast(timeSeries, 7);
+
+      // Build enhanced analysis prompt
+      let prompt = `Perform deep historical trend analysis for this widget:
+
+WIDGET: ${widget.title}
+METRIC: ${metric}
+CURRENT VALUE: ${this.formatMetricValue(metric, metricsData.value, metricsData.currency)}
+
+SEASONAL PATTERN ANALYSIS:`;
+
+      if (seasonalPatterns.hasPatterns) {
+        prompt += `\n✓ Patterns Detected:`;
+        seasonalPatterns.insights.forEach(insight => {
+          prompt += `\n  - ${insight}`;
+        });
+
+        if (seasonalPatterns.weekendVsWeekday) {
+          const { weekdayAvg, weekendAvg, differencePercent } = seasonalPatterns.weekendVsWeekday;
+          prompt += `\n  - Weekday Average: ${this.formatMetricValue(metric, weekdayAvg, metricsData.currency)}`;
+          prompt += `\n  - Weekend Average: ${this.formatMetricValue(metric, weekendAvg, metricsData.currency)}`;
+          prompt += `\n  - Difference: ${differencePercent > 0 ? '+' : ''}${differencePercent.toFixed(1)}%`;
+        }
+      } else {
+        prompt += `\n✗ No significant seasonal patterns detected`;
+      }
+
+      if (historicalComparison) {
+        prompt += `\n\nHISTORICAL COMPARISON:
+- Last 7 Days Average: ${this.formatMetricValue(metric, historicalComparison.last7Days, metricsData.currency)}
+- Last 14 Days Average: ${this.formatMetricValue(metric, historicalComparison.last14Days, metricsData.currency)}
+- Last 30 Days Average: ${this.formatMetricValue(metric, historicalComparison.last30Days, metricsData.currency)}`;
+
+        if (historicalComparison.trends.weekOverWeek) {
+          prompt += `\n- Week-over-Week Trend: ${historicalComparison.trends.weekOverWeek > 0 ? '+' : ''}${historicalComparison.trends.weekOverWeek.toFixed(1)}%`;
+        }
+        if (historicalComparison.trends.monthOverMonth) {
+          prompt += `\n- Month-over-Month Trend: ${historicalComparison.trends.monthOverMonth > 0 ? '+' : ''}${historicalComparison.trends.monthOverMonth.toFixed(1)}%`;
+        }
+      }
+
+      if (forecast) {
+        prompt += `\n\nPREDICTIVE FORECAST (Next 7 Days):
+- Trend Direction: ${forecast.trendDirection}
+- Trend Strength: ${forecast.trendStrength}
+- Forecast Confidence: ${forecast.confidence}
+- Average Predicted Value: ${this.formatMetricValue(metric, forecast.averagePrediction, metricsData.currency)}`;
+      }
+
+      prompt += `\n\nPROVIDE ADVANCED ANALYSIS:
+1. Interpret seasonal patterns and their business implications
+2. Assess if current performance is within normal seasonal variation or represents genuine change
+3. Based on forecast, predict expected performance for next 7-30 days
+4. Recommend proactive actions to capitalize on predicted trends or mitigate risks
+5. Quantify the impact of following (or ignoring) the seasonal patterns
+
+Return your analysis as valid JSON following the specified structure.`;
+
+      // Call Claude API
+      const message = await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 12288,
+        system: this.getSystemPrompt(),
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const responseText = message.content[0].text;
+      const analysis = this.parseAnalysisResponse(responseText);
+
+      // Add Phase 2 metadata
+      analysis.tokensUsed = (message.usage?.input_tokens || 0) + (message.usage?.output_tokens || 0);
+      analysis.seasonalPatterns = seasonalPatterns;
+      analysis.forecast = forecast;
+      analysis.historicalComparison = historicalComparison;
+
+      return analysis;
+
+    } catch (error) {
+      console.error('Deep trend analysis error:', error);
+      throw new Error(`Failed to analyze trend: ${error.message}`);
+    }
   }
 }
 
