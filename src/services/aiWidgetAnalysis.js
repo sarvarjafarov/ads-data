@@ -45,9 +45,12 @@ class AIWidgetAnalysisService {
       const prompt = this.buildAnalysisPrompt(widget, metricsData, options);
 
       // Call Claude API
+      console.log('[AI Analysis] Calling Claude API with Haiku model...');
+      const startTime = Date.now();
+
       const message = await this.anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 2048, // Reduced to 2048 for faster response - balances quality vs speed
+        model: 'claude-3-5-haiku-20241022', // SWITCHED TO HAIKU - 3-4x faster than Sonnet
+        max_tokens: 2048,
         system: this.getSystemPrompt(),
         messages: [
           {
@@ -56,6 +59,9 @@ class AIWidgetAnalysisService {
           }
         ]
       });
+
+      const duration = Date.now() - startTime;
+      console.log(`[AI Analysis] Claude API responded in ${duration}ms`);
 
       // Parse response
       const responseText = message.content[0].text;
@@ -873,12 +879,17 @@ Provide specific insights about how these metrics interact and influence each ot
 Return your analysis as valid JSON following the specified structure.`;
 
       // Call Claude API
+      console.log('[AI Multi-Widget] Calling Claude Haiku...');
+      const startTime = Date.now();
+
       const message = await this.anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 2048, // Reduced to 2048 for faster response
+        model: 'claude-3-5-haiku-20241022', // Haiku for speed
+        max_tokens: 2048,
         system: this.getSystemPrompt(),
         messages: [{ role: 'user', content: prompt }]
       });
+
+      console.log(`[AI Multi-Widget] Completed in ${Date.now() - startTime}ms`);
 
       const responseText = message.content[0].text;
       const analysis = this.parseAnalysisResponse(responseText);
@@ -975,12 +986,17 @@ SEASONAL PATTERN ANALYSIS:`;
 Return your analysis as valid JSON following the specified structure.`;
 
       // Call Claude API
+      console.log('[AI Trend Analysis] Calling Claude Haiku...');
+      const startTime = Date.now();
+
       const message = await this.anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 2048, // Reduced to 2048 for faster response
+        model: 'claude-3-5-haiku-20241022', // Haiku for speed
+        max_tokens: 2048,
         system: this.getSystemPrompt(),
         messages: [{ role: 'user', content: prompt }]
       });
+
+      console.log(`[AI Trend Analysis] Completed in ${Date.now() - startTime}ms`);
 
       const responseText = message.content[0].text;
       const analysis = this.parseAnalysisResponse(responseText);
