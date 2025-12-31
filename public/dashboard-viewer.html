@@ -5800,7 +5800,7 @@
     let currentAnalysisWidgetId = null;
 
     async function pollForAnalysisResults(jobId) {
-      const maxAttempts = 60; // 60 seconds max
+      const maxAttempts = 120; // 120 seconds max (Claude API can be slow)
       const pollInterval = 1000; // Poll every 1 second
       let attempts = 0;
 
@@ -5808,6 +5808,10 @@
         try {
           const response = await fetch(`/api/dashboards/ai-jobs/${jobId}`, {
             credentials: 'include',
+            cache: 'no-cache', // Prevent 304 Not Modified responses
+            headers: {
+              'Cache-Control': 'no-cache',
+            },
           });
 
           if (!response.ok) {
@@ -5838,7 +5842,7 @@
       }
 
       // Timeout
-      throw new Error('AI analysis timed out after 60 seconds');
+      throw new Error('AI analysis timed out after 120 seconds. Please try again or contact support.');
     }
 
     async function analyzeWidgetWithAI(widgetId) {

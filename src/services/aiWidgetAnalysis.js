@@ -47,7 +47,7 @@ class AIWidgetAnalysisService {
       // Call Claude API
       const message = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4096, // Further reduced for Heroku 30s timeout - balanced analysis depth vs speed
+        max_tokens: 2048, // Reduced to 2048 for faster response - balances quality vs speed
         system: this.getSystemPrompt(),
         messages: [
           {
@@ -875,7 +875,7 @@ Return your analysis as valid JSON following the specified structure.`;
       // Call Claude API
       const message = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4096, // Reduced for Heroku 30s timeout
+        max_tokens: 2048, // Reduced to 2048 for faster response
         system: this.getSystemPrompt(),
         messages: [{ role: 'user', content: prompt }]
       });
@@ -977,7 +977,7 @@ Return your analysis as valid JSON following the specified structure.`;
       // Call Claude API
       const message = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4096, // Reduced for Heroku 30s timeout
+        max_tokens: 2048, // Reduced to 2048 for faster response
         system: this.getSystemPrompt(),
         messages: [{ role: 'user', content: prompt }]
       });

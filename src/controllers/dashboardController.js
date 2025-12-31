@@ -895,6 +895,11 @@ const getAIJobStatus = async (req, res) => {
 
     const jobInfo = await getJobStatus(jobId);
 
+    // Prevent caching to avoid 304 Not Modified responses during polling
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     res.json({
       success: true,
       ...jobInfo,
