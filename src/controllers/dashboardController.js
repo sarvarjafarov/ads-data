@@ -2,6 +2,8 @@ const Dashboard = require('../models/Dashboard');
 const Workspace = require('../models/Workspace');
 const widgetDataService = require('../services/widgetDataService');
 const aiWidgetAnalysis = require('../services/aiWidgetAnalysis');
+const { startAIAnalysisJob, getJobStatus } = require('../services/backgroundJobs');
+const crypto = require('crypto');
 
 // Get all dashboards for a workspace
 const getWorkspaceDashboards = async (req, res) => {
@@ -858,20 +860,18 @@ const analyzeWidgetWithAI = async (req, res) => {
 
     console.log(`[AI Analysis] Metrics data fetched. Type: ${metricsData.type || 'value'}, Has timeSeries: ${!!metricsData.timeSeries}`);
 
-    // Call AI analysis service
-    console.log(`[AI Analysis] Calling AI service...`);
-    const analysis = await aiWidgetAnalysis.analyzeWidget(
-      widget,
-      metricsData,
-      { includeHistorical }
-    );
+    // Generate unique job ID
+    const jobId = crypto.randomBytes(16).toString('hex');
 
-    console.log(`[AI Analysis] AI analysis completed successfully. Tokens used: ${analysis.tokensUsed}`);
+    // Start background job for AI analysis (doesn't block)
+    console.log(`[AI Analysis] Starting background job ${jobId}...`);
+    startAIAnalysisJob(jobId, widget, metricsData, { includeHistorical });
 
+    // Return immediately with job ID
     res.json({
       success: true,
-      analysis,
-      tokensUsed: analysis.tokensUsed,
+      jobId,
+      message: 'AI analysis started. Poll /api/dashboards/ai-jobs/:jobId for results.',
     });
 
   } catch (error) {
@@ -882,6 +882,29 @@ const analyzeWidgetWithAI = async (req, res) => {
       message: 'Failed to analyze widget',
       error: error.message,
       errorStack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+};
+
+// Get AI analysis job status
+const getAIJobStatus = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    console.log(`[AI Job] Checking status for job ${jobId}`);
+
+    const jobInfo = await getJobStatus(jobId);
+
+    res.json({
+      success: true,
+      ...jobInfo,
+    });
+  } catch (error) {
+    console.error('[AI Job] Error getting job status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get job status',
+      error: error.message,
     });
   }
 };
@@ -907,4 +930,5 @@ module.exports = {
   getAIImprovements,
   getAIOptions,
   analyzeWidgetWithAI,
+  getAIJobStatus,
 };

@@ -5799,6 +5799,48 @@
     // AI Widget Analysis Functions
     let currentAnalysisWidgetId = null;
 
+    async function pollForAnalysisResults(jobId) {
+      const maxAttempts = 60; // 60 seconds max
+      const pollInterval = 1000; // Poll every 1 second
+      let attempts = 0;
+
+      while (attempts < maxAttempts) {
+        try {
+          const response = await fetch(`/api/dashboards/ai-jobs/${jobId}`, {
+            credentials: 'include',
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to check job status: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+
+          if (result.status === 'completed' && result.data) {
+            // Success! Display results
+            document.getElementById('aiAnalysisLoading').style.display = 'none';
+            displayAIAnalysisResults(result.data);
+            return;
+          }
+
+          if (result.status === 'failed') {
+            throw new Error(result.error || 'AI analysis failed');
+          }
+
+          // Still processing, wait and try again
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+          attempts++;
+
+        } catch (error) {
+          console.error('Polling error:', error);
+          throw error;
+        }
+      }
+
+      // Timeout
+      throw new Error('AI analysis timed out after 60 seconds');
+    }
+
     async function analyzeWidgetWithAI(widgetId) {
       currentAnalysisWidgetId = widgetId;
 
@@ -5822,7 +5864,7 @@
       document.getElementById('aiAnalysisError').style.display = 'none';
 
       try {
-        // Call API
+        // Start AI analysis job
         const response = await fetch(`/api/dashboards/widgets/${widgetId}/analyze`, {
           method: 'POST',
           headers: {
@@ -5836,13 +5878,11 @@
 
         if (!response.ok) {
           let errorMessage = 'Analysis failed';
-          // Read response as text first, then try to parse as JSON
           const responseText = await response.text();
           try {
             const errorData = JSON.parse(responseText);
             errorMessage = errorData.message || errorData.error || 'Analysis failed';
           } catch (parseError) {
-            // Server returned HTML error page instead of JSON
             console.error('Server returned non-JSON response:', responseText.substring(0, 500));
             errorMessage = `Server error (${response.status}): ${response.statusText}. Check browser console for details.`;
           }
@@ -5851,11 +5891,13 @@
 
         const data = await response.json();
 
-        // Hide loading
-        document.getElementById('aiAnalysisLoading').style.display = 'none';
+        if (!data.success || !data.jobId) {
+          throw new Error('Failed to start AI analysis');
+        }
 
-        // Display results
-        displayAIAnalysisResults(data.analysis);
+        // Poll for results
+        console.log(`AI analysis job started: ${data.jobId}`);
+        await pollForAnalysisResults(data.jobId);
 
       } catch (error) {
         console.error('AI analysis error:', error);
