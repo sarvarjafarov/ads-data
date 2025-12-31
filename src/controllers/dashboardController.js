@@ -2,8 +2,6 @@ const Dashboard = require('../models/Dashboard');
 const Workspace = require('../models/Workspace');
 const widgetDataService = require('../services/widgetDataService');
 const aiWidgetAnalysis = require('../services/aiWidgetAnalysis');
-const { startAIAnalysisJob, getJobStatus } = require('../services/backgroundJobs');
-const crypto = require('crypto');
 
 // Get all dashboards for a workspace
 const getWorkspaceDashboards = async (req, res) => {
@@ -860,18 +858,24 @@ const analyzeWidgetWithAI = async (req, res) => {
 
     console.log(`[AI Analysis] Metrics data fetched. Type: ${metricsData.type || 'value'}, Has timeSeries: ${!!metricsData.timeSeries}`);
 
-    // Generate unique job ID
-    const jobId = crypto.randomBytes(16).toString('hex');
+    // Call AI analysis service directly (Haiku is fast enough for sync - 15-30s)
+    console.log(`[AI Analysis] Calling AI service with Haiku model...`);
+    const startTime = Date.now();
 
-    // Start background job for AI analysis (doesn't block)
-    console.log(`[AI Analysis] Starting background job ${jobId}...`);
-    startAIAnalysisJob(jobId, widget, metricsData, { includeHistorical });
+    const analysis = await aiWidgetAnalysis.analyzeWidget(
+      widget,
+      metricsData,
+      { includeHistorical }
+    );
 
-    // Return immediately with job ID
+    const duration = Date.now() - startTime;
+    console.log(`[AI Analysis] Completed in ${duration}ms (${Math.round(duration/1000)}s). Tokens: ${analysis.tokensUsed}`);
+
     res.json({
       success: true,
-      jobId,
-      message: 'AI analysis started. Poll /api/dashboards/ai-jobs/:jobId for results.',
+      analysis,
+      tokensUsed: analysis.tokensUsed,
+      duration,
     });
 
   } catch (error) {
@@ -882,34 +886,6 @@ const analyzeWidgetWithAI = async (req, res) => {
       message: 'Failed to analyze widget',
       error: error.message,
       errorStack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
-  }
-};
-
-// Get AI analysis job status
-const getAIJobStatus = async (req, res) => {
-  try {
-    const { jobId } = req.params;
-
-    console.log(`[AI Job] Checking status for job ${jobId}`);
-
-    const jobInfo = await getJobStatus(jobId);
-
-    // Prevent caching to avoid 304 Not Modified responses during polling
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-
-    res.json({
-      success: true,
-      ...jobInfo,
-    });
-  } catch (error) {
-    console.error('[AI Job] Error getting job status:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get job status',
-      error: error.message,
     });
   }
 };
@@ -935,5 +911,4 @@ module.exports = {
   getAIImprovements,
   getAIOptions,
   analyzeWidgetWithAI,
-  getAIJobStatus,
 };

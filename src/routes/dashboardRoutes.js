@@ -20,7 +20,6 @@ const {
   getAIImprovements,
   getAIOptions,
   analyzeWidgetWithAI,
-  getAIJobStatus,
 } = require('../controllers/dashboardController');
 const authenticate = require('../middleware/auth');
 
@@ -46,7 +45,6 @@ router.delete('/widgets/:widgetId', deleteWidget);
 
 // AI Widget Analysis
 router.post('/widgets/:widgetId/analyze', analyzeWidgetWithAI);
-router.get('/ai-jobs/:jobId', getAIJobStatus);
 
 // Share link management
 router.post('/:dashboardId/share', createShareLink);
