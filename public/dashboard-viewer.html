@@ -5786,6 +5786,10 @@
     }
 
     function escapeHtml(text) {
+      // Handle non-string inputs
+      if (text === null || text === undefined) return '';
+      if (typeof text !== 'string') text = String(text);
+
       const map = {
         '&': '&amp;',
         '<': '&lt;',
