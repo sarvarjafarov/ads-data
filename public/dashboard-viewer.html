@@ -5899,14 +5899,13 @@
 
         const data = await response.json();
 
-        if (!data.success || !data.analysis) {
-          throw new Error('Failed to get AI analysis results');
+        if (!data.success || !data.jobId) {
+          throw new Error('Failed to start AI analysis job');
         }
 
-        // Hide loading and display results immediately
-        console.log(`AI analysis completed in ${data.duration}ms using ${data.tokensUsed} tokens`);
-        document.getElementById('aiAnalysisLoading').style.display = 'none';
-        displayAIAnalysisResults(data.analysis);
+        // Job started, now poll for results
+        console.log(`AI analysis job ${data.jobId} started. Polling for results...`);
+        await pollForAnalysisResults(data.jobId);
 
       } catch (error) {
         console.error('AI analysis error:', error);

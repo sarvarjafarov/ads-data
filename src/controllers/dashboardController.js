@@ -1,7 +1,8 @@
 const Dashboard = require('../models/Dashboard');
 const Workspace = require('../models/Workspace');
 const widgetDataService = require('../services/widgetDataService');
-const aiWidgetAnalysis = require('../services/aiWidgetAnalysis');
+const { startAIAnalysisJob, getJobStatus } = require('../services/backgroundJobs');
+const crypto = require('crypto');
 
 // Get all dashboards for a workspace
 const getWorkspaceDashboards = async (req, res) => {
@@ -858,24 +859,19 @@ const analyzeWidgetWithAI = async (req, res) => {
 
     console.log(`[AI Analysis] Metrics data fetched. Type: ${metricsData.type || 'value'}, Has timeSeries: ${!!metricsData.timeSeries}`);
 
-    // Call AI analysis service directly (Haiku is fast enough for sync - 15-30s)
-    console.log(`[AI Analysis] Calling AI service with Haiku model...`);
-    const startTime = Date.now();
+    // Generate unique job ID
+    const jobId = crypto.randomBytes(16).toString('hex');
 
-    const analysis = await aiWidgetAnalysis.analyzeWidget(
-      widget,
-      metricsData,
-      { includeHistorical }
-    );
+    // Start background job (Sonnet takes 60-120s, exceeds Heroku 30s timeout)
+    console.log(`[AI Analysis] Starting background job ${jobId} with Sonnet 4.5...`);
+    startAIAnalysisJob(jobId, widget, metricsData, { includeHistorical });
 
-    const duration = Date.now() - startTime;
-    console.log(`[AI Analysis] Completed in ${duration}ms (${Math.round(duration/1000)}s). Tokens: ${analysis.tokensUsed}`);
-
+    // Return job ID immediately (client will poll for results)
     res.json({
       success: true,
-      analysis,
-      tokensUsed: analysis.tokensUsed,
-      duration,
+      jobId,
+      message: 'AI analysis started in background. Poll /api/dashboards/ai-jobs/:jobId for results.',
+      estimatedTime: '60-120 seconds'
     });
 
   } catch (error) {
@@ -886,6 +882,28 @@ const analyzeWidgetWithAI = async (req, res) => {
       message: 'Failed to analyze widget',
       error: error.message,
       errorStack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+};
+
+/**
+ * Get AI analysis job status and results
+ */
+const getAIJobStatus = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    console.log(`[AI Job Status] Checking job ${jobId}`);
+    const jobInfo = await getJobStatus(jobId);
+
+    res.json(jobInfo);
+
+  } catch (error) {
+    console.error('[AI Job Status] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get job status',
+      error: error.message
     });
   }
 };
@@ -911,4 +929,5 @@ module.exports = {
   getAIImprovements,
   getAIOptions,
   analyzeWidgetWithAI,
+  getAIJobStatus,
 };
