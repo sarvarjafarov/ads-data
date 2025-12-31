@@ -5836,13 +5836,14 @@
 
         if (!response.ok) {
           let errorMessage = 'Analysis failed';
+          // Read response as text first, then try to parse as JSON
+          const responseText = await response.text();
           try {
-            const errorData = await response.json();
+            const errorData = JSON.parse(responseText);
             errorMessage = errorData.message || errorData.error || 'Analysis failed';
           } catch (parseError) {
             // Server returned HTML error page instead of JSON
-            const text = await response.text();
-            console.error('Server returned non-JSON response:', text.substring(0, 500));
+            console.error('Server returned non-JSON response:', responseText.substring(0, 500));
             errorMessage = `Server error (${response.status}): ${response.statusText}. Check browser console for details.`;
           }
           throw new Error(errorMessage);
