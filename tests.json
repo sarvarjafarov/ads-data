@@ -3,6 +3,8 @@
     {
       "test_id": "kpi_scorecard_layout",
       "description": "Tests whether a compact (A) vs expanded (B) KPI scorecard layout leads to more engagement (clicks).",
+      "change_type": "layout",
+      "what_changes": "KPI scorecard component only (grid of metric cards). Not the whole page.",
       "variants": {
         "A": "compact",
         "B": "expanded"
@@ -12,6 +14,8 @@
     {
       "test_id": "guided_onboarding",
       "description": "Tests whether minimal (A) vs guided step-by-step (B) onboarding increases tooltip usage.",
+      "change_type": "onboarding_flow",
+      "what_changes": "Onboarding experience on first use: minimal vs guided (step indicator + tooltips). Can affect one or more screens.",
       "variants": {
         "A": "minimal",
         "B": "guided"
@@ -21,6 +25,8 @@
     {
       "test_id": "pricing_cta_upgrade",
       "description": "Tests which pricing CTA leads to more subscription upgrades. Primary business conversion = subscription upgrade.",
+      "change_type": "button",
+      "what_changes": "CTA button text on the pricing page (e.g. 'Start Free Trial' vs 'Get full access'). Rest of page unchanged.",
       "variants": {
         "A": "standard_cta",
         "B": "value_cta"

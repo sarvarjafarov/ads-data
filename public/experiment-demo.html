@@ -108,6 +108,19 @@
     <div id="demoContent" style="display: none;">
       <div class="your-variants" id="yourVariantsSummary"></div>
 
+      <div class="experiment-demo-section" style="background: #f8fafc; border-color: #cbd5e1;">
+        <h2 style="margin-bottom: 0.75rem;">What kind of change each test makes</h2>
+        <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1rem;">None of these change the whole page — each test changes a specific element or flow.</p>
+        <table class="comparison-table">
+          <thead><tr><th>Experiment</th><th>Type</th><th>What changes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>kpi_scorecard_layout</strong></td><td>Layout</td><td>KPI scorecard component only (grid of metric cards). Rest of dashboard unchanged.</td></tr>
+            <tr><td><strong>guided_onboarding</strong></td><td>Onboarding flow</td><td>First-use experience: minimal vs guided (step indicator + tooltips). Can span one or more screens.</td></tr>
+            <tr><td><strong>pricing_cta_upgrade</strong></td><td>Button (CTA)</td><td>CTA button text on pricing page only (e.g. "Start Free Trial" vs "Get full access"). Rest of page unchanged.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="experiment-demo-section" id="kpiSection">
         <h2>Experiment 1: KPI scorecard layout</h2>
         <p id="kpiVariantBadge"></p>
@@ -135,6 +148,20 @@
           </tbody>
         </table>
       </div>
+
+      <div class="experiment-demo-section" id="pricingSection">
+        <h2>Experiment 3: Pricing CTA (button)</h2>
+        <p id="pricingVariantBadge"></p>
+        <p class="mockup-label">What changes</p>
+        <p style="font-size: 0.875rem; color: #64748b;">Only the main CTA button text on the <strong>/pricing</strong> page. Rest of the page (layout, copy, plans) is the same.</p>
+        <table class="comparison-table">
+          <thead><tr><th>Variant</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="variant-badge variant-badge-a">A</span> standard_cta</td><td>e.g. "Start Free Trial"</td></tr>
+            <tr><td><span class="variant-badge variant-badge-b">B</span> value_cta</td><td>e.g. "Get full access"</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -148,6 +175,7 @@
       const kpiMockup = document.getElementById('kpiMockup');
       const onboardingBadge = document.getElementById('onboardingVariantBadge');
       const onboardingMockup = document.getElementById('onboardingMockup');
+      const pricingBadge = document.getElementById('pricingVariantBadge');
 
       try {
         const res = await fetch('/api/experiments/dashboard', { credentials: 'include' });
@@ -168,10 +196,12 @@
 
         const kpiV = variants.kpi_scorecard_layout || 'A';
         const onboardingV = variants.guided_onboarding || 'A';
+        const pricingV = variants.pricing_cta_upgrade || 'A';
 
         summary.innerHTML = '<strong>Your current assignment:</strong> ' +
           'KPI layout = <strong>' + (descriptions.kpi_scorecard_layout?.description || (kpiV === 'A' ? 'compact' : 'expanded')) + '</strong> (Variant ' + kpiV + '), ' +
-          'Onboarding = <strong>' + (descriptions.guided_onboarding?.description || (onboardingV === 'A' ? 'minimal' : 'guided')) + '</strong> (Variant ' + onboardingV + ').';
+          'Onboarding = <strong>' + (descriptions.guided_onboarding?.description || (onboardingV === 'A' ? 'minimal' : 'guided')) + '</strong> (Variant ' + onboardingV + '), ' +
+          'Pricing CTA = <strong>' + (descriptions.pricing_cta_upgrade?.description || (pricingV === 'A' ? 'standard_cta' : 'value_cta')) + '</strong> (Variant ' + pricingV + ').';
 
         kpiBadge.innerHTML = 'You are in <span class="variant-badge variant-badge-' + (kpiV === 'A' ? 'a' : 'b') + '">Variant ' + kpiV + '</span>: ' + (kpiV === 'A' ? 'compact' : 'expanded') + ' layout.';
         if (kpiV === 'A') {
@@ -196,6 +226,8 @@
         } else {
           onboardingMockup.innerHTML = '<div class="mockup-onboarding-guided">Welcome to the dashboard. Use the sidebar to switch workspaces and connect data sources.<div class="tooltip-hint">💡 Tip: Click "Connect" to add your first data source.</div></div>';
         }
+
+        pricingBadge.innerHTML = 'You are in <span class="variant-badge variant-badge-' + (pricingV === 'A' ? 'a' : 'b') + '">Variant ' + pricingV + '</span>: ' + (pricingV === 'A' ? 'standard_cta' : 'value_cta') + ' (button text on /pricing).';
       } catch (e) {
         loading.style.display = 'none';
         error.textContent = 'Could not load variant assignment: ' + e.message;
