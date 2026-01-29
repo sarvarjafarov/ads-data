@@ -40,7 +40,19 @@ Assignment and exposure middleware are applied **per route** on `/api/experiment
 
 ---
 
-## 3. Experiment Configuration (`tests.json`)
+## 3. Business Conversion = Subscription Upgrade
+
+For product/business use, **conversion** can be defined as **subscription upgrade**:
+
+- **Primary metric:** Users who see a variant (exposure) and later complete a subscription upgrade (event: `subscription_upgrade`).
+- **Conversion rate:** `subscription_upgrade` events ÷ exposures per variant (reported in Admin → A/B Experiments for the pricing experiment).
+- **Recommended flow:** User sees pricing (exposure via `GET /api/experiments/pricing-view`) → user completes upgrade → log `POST /api/experiments/events` with `event: "subscription_upgrade"`. See **docs/AB_TESTING_SUBSCRIPTION_FLOW.md** for full funnel, instrumentation, and how to read results.
+
+The experiment **pricing_cta_upgrade** in `tests.json` is configured with `target_event: "subscription_upgrade"` so that A/B results in the admin panel directly reflect subscription upgrade rate by variant.
+
+---
+
+## 4. Experiment Configuration (`tests.json`)
 
 Experiments are defined declaratively:
 
@@ -61,7 +73,7 @@ Two example experiments are included:
 
 ---
 
-## 4. One Concrete Experiment: KPI Scorecard Layout
+## 5. One Concrete Experiment: KPI Scorecard Layout
 
 - **Hypothesis**: An expanded KPI scorecard (B) will lead to more clicks on KPIs than the compact layout (A).
 - **Setup**: User hits `GET /api/experiments/dashboard`. Assignment middleware assigns A or B (50/50) and stores it in a cookie. Exposure middleware logs (visitor_id, test_id, variant, timestamp). Response includes variant so the client can render the correct layout.
@@ -70,7 +82,7 @@ Two example experiments are included:
 
 ---
 
-## 5. Simulated User Testing and Observed Bias
+## 6. Simulated User Testing and Observed Bias
 
 A script `scripts/simulate-ab-users.js` simulates at least 500 users:
 
@@ -91,7 +103,7 @@ A script `scripts/simulate-ab-users.js` simulates at least 500 users:
 
 ---
 
-## 6. Data Storage
+## 7. Data Storage
 
 - **Exposures**: `data/experiment-logs/exposures.json` — one object per exposure: `user_or_session_id`, `test_id`, `variant`, `timestamp`.
 - **Events**: `data/experiment-logs/events.json` — one object per event: `user_or_session_id`, `event_name`, `test_id` (optional), `variant` (optional), `timestamp`.
@@ -100,7 +112,7 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 7. Assumptions & Hypotheses
+## 8. Assumptions & Hypotheses
 
 - **Assumptions** are explicit and testable: (1) Users in variant B (expanded layout / guided onboarding) will exhibit more target actions (KPI clicks, tooltip opens) than users in variant A. (2) Sticky assignment via cookies correctly represents a single user across requests.
 - **Each assumption maps to a concrete experiment**: KPI scorecard layout → `kpi_click`; guided onboarding → `tooltip_open`.
@@ -108,7 +120,7 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 8. Final Sanity Checks (Professor Traps)
+## 9. Final Sanity Checks (Professor Traps)
 
 - **Exposure ≠ Event**: They are logged separately. Exposure is logged by middleware when a user sees a variant (e.g. on dashboard load), even if no action occurs. Events are logged only when the user performs an action (e.g. KPI click) via `logEvent()` in route handlers. Separate store methods and files (`exposures.json` vs `events.json`) enforce this.
 - **Assignment is NOT random per request**: Assignment is random only on first exposure; thereafter the variant is read from a persistent cookie (`ab_<test_id>`), so the same visitor always gets the same variant across requests and sessions.
@@ -117,7 +129,7 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 9. Challenges Encountered
+## 10. Challenges Encountered
 
 1. **Route ordering**  
    Custom-data routes and workspace routes both use the path prefix `/workspaces`. The more specific path (`/workspaces/:id/custom-data`) had to be registered before the generic `/workspaces` so experiment and custom-data behavior are correct. This was documented in the route index.
@@ -130,7 +142,7 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 10. Metrics & Evaluation
+## 11. Metrics & Evaluation
 
 - **Exposure counts** per variant: aggregated from `exposures.json` (one row per exposure; group by test_id and variant).
 - **Event counts** per variant: aggregated from `events.json` for the test’s `target_event` (group by test_id and variant).
@@ -139,7 +151,7 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 11. Admin: Tracking A/B Results
+## 12. Admin: Tracking A/B Results
 
 Admins can track A/B results via an authenticated API:
 
@@ -148,7 +160,7 @@ Admins can track A/B results via an authenticated API:
 
 ---
 
-## 12. File Reference
+## 13. File Reference
 
 | File | Purpose |
 |------|---------|
@@ -157,5 +169,6 @@ Admins can track A/B results via an authenticated API:
 | `src/middleware/abAssignment.js` | Sticky A/B assignment; sets `req.abVariants` and `req.experimentVisitorId`. |
 | `src/middleware/exposureLogging.js` | Logs exposure for given test IDs on the current request. |
 | `src/services/eventLogger.js` | `logEvent(req, eventName, options)` for route handlers. |
-| `src/routes/experimentRoutes.js` | Example routes: GET dashboard, POST events, GET config, GET results (admin). |
+| `src/routes/experimentRoutes.js` | Example routes: GET dashboard, GET pricing-view (exposure for subscription flow), POST events, GET config, GET results (admin). |
+| `docs/AB_TESTING_SUBSCRIPTION_FLOW.md` | Business flow: conversion = subscription upgrade, funnel, instrumentation, how to read results. |
 | `scripts/simulate-ab-users.js` | Simulates 500+ users with higher interaction probability for Variant B. |

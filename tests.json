@@ -17,6 +17,15 @@
         "B": "guided"
       },
       "target_event": "tooltip_open"
+    },
+    {
+      "test_id": "pricing_cta_upgrade",
+      "description": "Tests which pricing CTA leads to more subscription upgrades. Primary business conversion = subscription upgrade.",
+      "variants": {
+        "A": "standard_cta",
+        "B": "value_cta"
+      },
+      "target_event": "subscription_upgrade"
     }
   ]
 }

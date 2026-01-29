@@ -88,6 +88,35 @@ router.post(
 );
 
 /**
+ * GET /api/experiments/pricing-view
+ *
+ * For subscription-upgrade A/B flow: call when user lands on /pricing.
+ * Assigns variant (if not already), logs exposure for pricing_cta_upgrade, returns variant
+ * so the frontend can show different CTA (e.g. A = "Start Free Trial", B = "Get full access").
+ * Conversion = subscription_upgrade (log via POST /api/experiments/events when user upgrades).
+ */
+const PRICING_EXPERIMENT_ID = 'pricing_cta_upgrade';
+router.get(
+  '/pricing-view',
+  abAssignment,
+  exposureLogging([PRICING_EXPERIMENT_ID]),
+  (req, res) => {
+    const variant = req.abVariants?.[PRICING_EXPERIMENT_ID] || 'A';
+    const config = getTestsConfig();
+    const exp = (config.experiments || []).find((e) => e.test_id === PRICING_EXPERIMENT_ID);
+    const description = exp?.variants?.[variant] || (variant === 'A' ? 'standard_cta' : 'value_cta');
+
+    res.json({
+      success: true,
+      testId: PRICING_EXPERIMENT_ID,
+      variant,
+      description,
+      message: 'Exposure logged for pricing view; log subscription_upgrade when user completes upgrade.',
+    });
+  }
+);
+
+/**
  * GET /api/experiments/config
  *
  * Returns active experiments (for clients or simulation).
