@@ -25,7 +25,7 @@ app.use(cors({
 // Logging middleware
 app.use(morgan('dev'));
 
-// Cookie parser
+// Cookie parser (required for A/B experiment sticky assignment via cookies)
 app.use(cookieParser());
 
 // Body parsing middleware
@@ -101,6 +101,10 @@ app.get('/platforms/linkedin', (req, res) => {
 
 app.get('/platforms/search-console', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/platform-searchconsole.html'));
+});
+
+app.get('/website-audit', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/website-audit.html'));
 });
 
 // Root route - serve landing page

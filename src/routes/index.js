@@ -22,7 +22,8 @@ const linkedinRoutes = require('./linkedinRoutes');
 const unifiedReportingRoutes = require('./unifiedReportingRoutes');
 const customDataRoutes = require('./customDataRoutes');
 const webhookRoutes = require('./webhookRoutes');
-// const websiteAuditRoutes = require('./websiteAuditRoutes');
+const websiteAuditRoutes = require('./websiteAuditRoutes');
+const experimentRoutes = require('./experimentRoutes');
 
 const router = express.Router();
 
@@ -31,6 +32,8 @@ router.use('/auth', authRoutes);
 router.use('/ads', adsRoutes);
 router.use('/admin', adminRoutes);
 router.use('/oauth', oauthRoutes);
+// More specific path first so /workspaces/:id/custom-data/* is handled by customDataRoutes
+router.use('/workspaces/:workspaceId/custom-data', customDataRoutes);
 router.use('/workspaces', workspaceRoutes);
 router.use('/dashboards', dashboardRoutes);
 router.use('/metrics', metricsRoutes);
@@ -47,8 +50,8 @@ router.use('/comments', commentRoutes);
 router.use('/tiktok', tiktokRoutes);
 router.use('/linkedin', linkedinRoutes);
 router.use('/unified', unifiedReportingRoutes);
-router.use('/api', customDataRoutes);
 router.use('/webhooks', webhookRoutes);
-// router.use('/website-audit', websiteAuditRoutes);
+router.use('/website-audit', websiteAuditRoutes);
+router.use('/experiments', experimentRoutes);
 
 module.exports = router;

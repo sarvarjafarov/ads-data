@@ -1,0 +1,22 @@
+{
+  "experiments": [
+    {
+      "test_id": "kpi_scorecard_layout",
+      "description": "Tests whether a compact (A) vs expanded (B) KPI scorecard layout leads to more engagement (clicks).",
+      "variants": {
+        "A": "compact",
+        "B": "expanded"
+      },
+      "target_event": "kpi_click"
+    },
+    {
+      "test_id": "guided_onboarding",
+      "description": "Tests whether minimal (A) vs guided step-by-step (B) onboarding increases tooltip usage.",
+      "variants": {
+        "A": "minimal",
+        "B": "guided"
+      },
+      "target_event": "tooltip_open"
+    }
+  ]
+}

@@ -6,9 +6,11 @@ const authenticate = require('../middleware/auth');
 // All routes require authentication
 router.use(authenticate);
 
+// Mounted at /api/workspaces/:workspaceId/custom-data - req.params.workspaceId is set by parent
+
 // Upload and preview file
 router.post(
-  '/workspaces/:workspaceId/custom-data/upload',
+  '/upload',
   customDataController.upload,
   customDataController.handleMulterError,
   customDataController.uploadFile
@@ -16,55 +18,55 @@ router.post(
 
 // Confirm import (after preview)
 router.post(
-  '/workspaces/:workspaceId/custom-data/confirm',
+  '/confirm',
   customDataController.confirmImport
 );
 
 // Get all custom data sources for workspace
 router.get(
-  '/workspaces/:workspaceId/custom-data/sources',
+  '/sources',
   customDataController.getSources
 );
 
 // Get single custom data source
 router.get(
-  '/workspaces/:workspaceId/custom-data/sources/:sourceId',
+  '/sources/:sourceId',
   customDataController.getSource
 );
 
 // Update custom data source
 router.put(
-  '/workspaces/:workspaceId/custom-data/sources/:sourceId',
+  '/sources/:sourceId',
   customDataController.updateSource
 );
 
 // Delete custom data source
 router.delete(
-  '/workspaces/:workspaceId/custom-data/sources/:sourceId',
+  '/sources/:sourceId',
   customDataController.deleteSource
 );
 
 // Get metrics data for widgets
 router.get(
-  '/workspaces/:workspaceId/custom-data/sources/:sourceId/metrics',
+  '/sources/:sourceId/metrics',
   customDataController.getMetrics
 );
 
 // Query custom data with advanced filtering
 router.post(
-  '/workspaces/:workspaceId/custom-data/sources/:sourceId/query',
+  '/sources/:sourceId/query',
   customDataController.queryData
 );
 
 // Trigger manual sync for Google Sheets
 router.post(
-  '/workspaces/:workspaceId/custom-data/sources/:sourceId/sync',
+  '/sources/:sourceId/sync',
   customDataController.triggerSync
 );
 
 // Get sync history
 router.get(
-  '/workspaces/:workspaceId/custom-data/sources/:sourceId/sync-history',
+  '/sources/:sourceId/sync-history',
   customDataController.getSyncHistory
 );
 
