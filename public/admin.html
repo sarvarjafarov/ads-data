@@ -100,9 +100,13 @@
             <!-- A/B Experiments Tab Content -->
             <div id="experimentsTab" class="tab-content">
                 <div class="admin-controls">
-                    <button id="refreshExperimentsBtn" class="btn btn-primary">Refresh results</button>
-                    <div class="stats">
+                    <div>
+                        <h2 class="experiments-section-title">Experiment results</h2>
+                        <p class="experiments-section-desc">Exposures, events, and conversion rates by variant.</p>
+                    </div>
+                    <div class="stats" style="display: flex; align-items: center; gap: 1.5rem;">
                         <span>Last updated: <strong id="experimentsUpdated">—</strong></span>
+                        <button id="refreshExperimentsBtn" class="btn btn-primary">Refresh results</button>
                     </div>
                 </div>
                 <div id="experimentsResultsContainer">
@@ -176,6 +180,6 @@
         </div>
     </div>
 
-    <script src="/js/admin.js?v=3"></script>
+    <script src="/js/admin.js?v=4"></script>
 </body>
 </html>

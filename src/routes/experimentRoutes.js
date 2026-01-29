@@ -16,8 +16,11 @@ const { getTestsConfig, getResults } = require('../services/experimentStore');
 
 const router = express.Router();
 
-// Test IDs that apply to the dashboard view (used for exposure logging)
-const DASHBOARD_TEST_IDS = ['kpi_scorecard_layout', 'guided_onboarding'];
+// Test IDs are derived from tests.json so new experiments can be added without code changes
+function getDashboardTestIds() {
+  const config = getTestsConfig();
+  return (config.experiments || []).map((e) => e.test_id);
+}
 
 /**
  * GET /api/experiments/dashboard
@@ -29,7 +32,7 @@ const DASHBOARD_TEST_IDS = ['kpi_scorecard_layout', 'guided_onboarding'];
 router.get(
   '/dashboard',
   abAssignment,
-  exposureLogging(DASHBOARD_TEST_IDS),
+  exposureLogging(getDashboardTestIds()),
   (req, res) => {
     const config = getTestsConfig();
     const variants = req.abVariants || {};

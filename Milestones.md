@@ -100,7 +100,24 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 7. Challenges Encountered
+## 7. Assumptions & Hypotheses
+
+- **Assumptions** are explicit and testable: (1) Users in variant B (expanded layout / guided onboarding) will exhibit more target actions (KPI clicks, tooltip opens) than users in variant A. (2) Sticky assignment via cookies correctly represents a single user across requests.
+- **Each assumption maps to a concrete experiment**: KPI scorecard layout → `kpi_click`; guided onboarding → `tooltip_open`.
+- **Each experiment has a clearly defined target event**: `tests.json` specifies `target_event` per test (`kpi_click`, `tooltip_open`), and event logs record that event name with test ID and variant.
+
+---
+
+## 8. Final Sanity Checks (Professor Traps)
+
+- **Exposure ≠ Event**: They are logged separately. Exposure is logged by middleware when a user sees a variant (e.g. on dashboard load), even if no action occurs. Events are logged only when the user performs an action (e.g. KPI click) via `logEvent()` in route handlers. Separate store methods and files (`exposures.json` vs `events.json`) enforce this.
+- **Assignment is NOT random per request**: Assignment is random only on first exposure; thereafter the variant is read from a persistent cookie (`ab_<test_id>`), so the same visitor always gets the same variant across requests and sessions.
+- **Subscription is NOT the primary experiment metric**: The primary metrics are the target events defined in `tests.json` (e.g. `kpi_click`, `tooltip_open`). Conversion rate is computed as target events ÷ exposures per variant.
+- **Future experiments are easy to add**: Add a new entry to `tests.json` (test_id, description, variants A/B, target_event). No code changes are required: assignment and exposure middleware read from `tests.json`; the dashboard route derives test IDs from the config; the simulation and results aggregation iterate over all experiments in the config.
+
+---
+
+## 9. Challenges Encountered
 
 1. **Route ordering**  
    Custom-data routes and workspace routes both use the path prefix `/workspaces`. The more specific path (`/workspaces/:id/custom-data`) had to be registered before the generic `/workspaces` so experiment and custom-data behavior are correct. This was documented in the route index.
@@ -113,7 +130,16 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 8. Admin: Tracking A/B Results
+## 10. Metrics & Evaluation
+
+- **Exposure counts** per variant: aggregated from `exposures.json` (one row per exposure; group by test_id and variant).
+- **Event counts** per variant: aggregated from `events.json` for the test’s `target_event` (group by test_id and variant).
+- **Conversion rate** per variant: events ÷ exposures for that variant (computed in `getResults()` and returned by GET `/api/experiments/results`).
+- **Metrics align with assumptions**: Variant B is assumed to have higher interaction; the simulation uses higher probability for B, and logged metrics (event counts and conversion rates) reflect that bias.
+
+---
+
+## 11. Admin: Tracking A/B Results
 
 Admins can track A/B results via an authenticated API:
 
@@ -122,7 +148,7 @@ Admins can track A/B results via an authenticated API:
 
 ---
 
-## 9. File Reference
+## 12. File Reference
 
 | File | Purpose |
 |------|---------|

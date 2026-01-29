@@ -156,6 +156,13 @@ function truncate(str, length) {
     return str.length > length ? str.substring(0, length) + '...' : str;
 }
 
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function openModal(ad = null) {
     const modal = document.getElementById('adModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -402,11 +409,36 @@ async function loadExperimentResults() {
         msgEl.style.display = 'none';
         contentEl.style.display = 'block';
 
+        const totalExposures = data.total_exposures ?? 0;
+        const totalEvents = data.total_events ?? 0;
+        const hasData = totalExposures > 0 || totalEvents > 0;
+
         let html = `
-            <div class="experiments-summary" style="margin-bottom: 1.5rem;">
-                <p><strong>Total exposures:</strong> ${data.total_exposures ?? 0} &nbsp;|&nbsp; <strong>Total events:</strong> ${data.total_events ?? 0}</p>
+            <div class="experiments-summary-cards">
+                <div class="experiments-summary-card">
+                    <div class="label">Total exposures</div>
+                    <div class="value">${totalExposures.toLocaleString()}</div>
+                </div>
+                <div class="experiments-summary-card">
+                    <div class="label">Total events</div>
+                    <div class="value">${totalEvents.toLocaleString()}</div>
+                </div>
             </div>
         `;
+
+        if (!hasData) {
+            html += `
+                <div class="experiments-get-data-callout">
+                    <strong>No data yet</strong>
+                    To see results here, generate exposure and event logs by either:
+                    <ul style="margin: 0.5rem 0 0 1rem;">
+                        <li>Running the simulation: <code>npm run simulate-ab</code> (with the server running)</li>
+                        <li>Sending traffic to <code>GET /api/experiments/dashboard</code> and <code>POST /api/experiments/events</code></li>
+                    </ul>
+                    Then click <strong>Refresh results</strong>.
+                </div>
+            `;
+        }
 
         data.experiments.forEach(exp => {
             const r = exp.results || {};
@@ -414,13 +446,18 @@ async function loadExperimentResults() {
             const b = r.B || { exposures: 0, events: 0, conversion_rate: 0 };
             const labelA = (exp.variants && exp.variants.A) || 'A';
             const labelB = (exp.variants && exp.variants.B) || 'B';
+            const rateA = (a.conversion_rate * 100).toFixed(2);
+            const rateB = (b.conversion_rate * 100).toFixed(2);
+            const leadingRate = a.conversion_rate >= b.conversion_rate ? a.conversion_rate : b.conversion_rate;
 
             html += `
-                <div class="experiment-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1rem;">${exp.test_id}</h3>
-                    <p style="margin: 0 0 0.75rem 0; color: #6b7280; font-size: 0.875rem;">${exp.description || ''}</p>
-                    <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem;"><strong>Target event:</strong> ${exp.target_event || '—'}</p>
-                    <table class="ads-table" style="width: 100%; margin-top: 0.5rem;">
+                <div class="experiment-card">
+                    <h3 class="experiment-card-title">
+                        <span class="test-id">${escapeHtml(exp.test_id)}</span>
+                    </h3>
+                    <p class="experiment-card-desc">${escapeHtml(exp.description || '')}</p>
+                    <p class="experiment-card-target"><strong>Target event:</strong> ${escapeHtml(exp.target_event || '—')}</p>
+                    <table class="experiments-variant-table">
                         <thead>
                             <tr>
                                 <th>Variant</th>
@@ -431,16 +468,16 @@ async function loadExperimentResults() {
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>${labelA}</strong></td>
-                                <td>${a.exposures}</td>
-                                <td>${a.events}</td>
-                                <td>${(a.conversion_rate * 100).toFixed(2)}%</td>
+                                <td><span class="variant-badge variant-badge-a">${escapeHtml(labelA)}</span></td>
+                                <td>${a.exposures.toLocaleString()}</td>
+                                <td>${a.events.toLocaleString()}</td>
+                                <td class="conversion-cell ${a.conversion_rate === leadingRate && leadingRate > 0 ? 'leading' : 'trailing'}">${rateA}%</td>
                             </tr>
                             <tr>
-                                <td><strong>${labelB}</strong></td>
-                                <td>${b.exposures}</td>
-                                <td>${b.events}</td>
-                                <td>${(b.conversion_rate * 100).toFixed(2)}%</td>
+                                <td><span class="variant-badge variant-badge-b">${escapeHtml(labelB)}</span></td>
+                                <td>${b.exposures.toLocaleString()}</td>
+                                <td>${b.events.toLocaleString()}</td>
+                                <td class="conversion-cell ${b.conversion_rate === leadingRate && leadingRate > 0 ? 'leading' : 'trailing'}">${rateB}%</td>
                             </tr>
                         </tbody>
                     </table>
