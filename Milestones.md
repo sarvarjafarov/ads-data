@@ -2,7 +2,26 @@
 
 **Yale CPSC 4391 / CPSC 5391 / MGT 697**
 
+**Deadline:** Aim to finish by Wednesday February 4, 2026 (soft deadline). Code changes are on the GitHub repository; this file describes the code changes and is placed in the root directory of the `main` branch. Any challenges encountered are described in §10 below.
+
 This document describes the A/B testing and analytics infrastructure implemented for the analytics dashboard backend. It is written for an academic audience and focuses on correctness, clarity, and separation of concerns.
+
+---
+
+## Assignment compliance (four required objects)
+
+The assignment requires infrastructure comprising four objects, using middleware in the backend:
+
+| Required object | Implementation | Location |
+|-----------------|----------------|----------|
+| **tests.json** (describes A/B tests currently running) | Declarative experiment config: test_id, description, variants A/B, target_event. | **Root:** `tests.json` |
+| **Middleware 1** (assigns variation per user; same variation on every visit) | **A/B assignment middleware:** Reads `tests.json`, assigns A or B randomly on first visit, then persists variant in cookies so the same user always gets the same variant on subsequent visits. | `src/middleware/abAssignment.js`; applied on experiment routes (e.g. `/api/experiments/dashboard`, `/api/experiments/pricing-view`, `/api/experiments/events`). |
+| **Middleware 2** (records that user was presented a particular variation) | **Exposure logging middleware:** Records when a user is shown a variant (test_id, variant, user/session id, timestamp). Runs after assignment; logs even if the user performs no action. | `src/middleware/exposureLogging.js`; applied selectively on routes that serve experiment views (e.g. dashboard, pricing-view). |
+| **Middleware 3** (records when the desirable action is performed) | **Event logger:** Records when the target action (e.g. button click) occurs. Invoked from the route handler when the client reports the action via `POST /api/experiments/events`; the handler calls `logEvent(req, eventName, options)`, which writes to the event store. Applied selectively on the `/api/experiments/events` route. | `src/services/eventLogger.js` (logEvent); used in `src/routes/experimentRoutes.js` in the POST `/events` handler. |
+
+**Middleware execution:** The assignment states that middleware can be executed by default during any API request or selectively. In this implementation, assignment and exposure middleware are applied **selectively** to routes that participate in experiments (e.g. `/api/experiments/dashboard`, `/api/experiments/pricing-view`, `/api/experiments/events`), so only experiment-related traffic is affected. The event logger runs when a request is made to POST `/api/experiments/events` (i.e. when the client reports that the desirable action was performed).
+
+**MGT 697 (if applicable):** A script simulates user behavior with a **mild preference for one variant** (Variant B has higher click probability than Variant A). The script generates API calls that reflect this bias; the bias becomes **quantitatively observable** in the collected metrics (event counts and conversion rates per variant). See §6 for a description of this work.
 
 ---
 
@@ -49,6 +68,12 @@ For product/business use, **conversion** can be defined as **subscription upgrad
 - **Recommended flow:** User sees pricing (exposure via `GET /api/experiments/pricing-view`) → user completes upgrade → log `POST /api/experiments/events` with `event: "subscription_upgrade"`. See **docs/AB_TESTING_SUBSCRIPTION_FLOW.md** for full funnel, instrumentation, and how to read results.
 
 The experiment **pricing_cta_upgrade** in `tests.json` is configured with `target_event: "subscription_upgrade"` so that A/B results in the admin panel directly reflect subscription upgrade rate by variant.
+
+---
+
+## Team KPIs
+
+Team Key Performance Indicators are defined in **`team-kpis.json`** (project root) with definition, how they are measured, and why they are well-defined. The eight KPIs are: Activation Rate, Time to First Insight, Weekly Active Users (WAU), Dashboard Engagement Rate, AI Analysis Usage Rate, **Upgrade Rate (Free → Paid)** (primary conversion for A/B testing), Subscriber Retention Rate, and Revenue per Active User (ARPU). Upgrade Rate is linked to the experiment `pricing_cta_upgrade`; its conversion rate in Admin → A/B Experiments corresponds to this KPI.
 
 ---
 
@@ -165,6 +190,7 @@ Admins can track A/B results via an authenticated API:
 | File | Purpose |
 |------|---------|
 | `tests.json` | Experiment definitions (test_id, description, variants, target_event). |
+| `team-kpis.json` | Team KPIs: optional list of business metrics (name, description) linked to experiments; edit to add your team’s KPIs. |
 | `src/services/experimentStore.js` | Loads tests; appends exposures/events; `getResults()` for admin aggregation. |
 | `src/middleware/abAssignment.js` | Sticky A/B assignment; sets `req.abVariants` and `req.experimentVisitorId`. |
 | `src/middleware/exposureLogging.js` | Logs exposure for given test IDs on the current request. |

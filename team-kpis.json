@@ -1,0 +1,64 @@
+{
+  "description": "Team Key Performance Indicators: definitions, how they are measured, and why they are well-defined. KPIs linked to an experiment_id can be tracked via A/B results (Admin → A/B Experiments).",
+  "team_kpis": [
+    {
+      "kpi_id": "activation_rate",
+      "name": "Activation Rate",
+      "definition": "Percentage of registered users who connect at least one ad account and create at least one dashboard.",
+      "how_measured": "(Users completing both actions) ÷ (Total registered users).",
+      "why_well_defined": "Measures successful onboarding and first value realization; prerequisite for monetization."
+    },
+    {
+      "kpi_id": "time_to_first_insight",
+      "name": "Time to First Insight",
+      "definition": "Time from registration to the first meaningful insight (e.g., dashboard creation, widget interaction, or AI analysis).",
+      "how_measured": "Timestamp difference between registration and the first insight event.",
+      "why_well_defined": "Directly measures how effectively the product reduces complexity and helps users understand data."
+    },
+    {
+      "kpi_id": "wau",
+      "name": "Weekly Active Users (WAU)",
+      "definition": "Number of unique users actively interacting with dashboards each week.",
+      "how_measured": "Unique users with at least one dashboard interaction per week.",
+      "why_well_defined": "Indicates sustained engagement and ongoing product value."
+    },
+    {
+      "kpi_id": "dashboard_engagement_rate",
+      "name": "Dashboard Engagement Rate",
+      "definition": "Average number of dashboard interactions per active user.",
+      "how_measured": "Widget additions, filter usage, and reorder actions per session.",
+      "why_well_defined": "Shows whether dashboards are actively used rather than passively viewed."
+    },
+    {
+      "kpi_id": "ai_analysis_usage_rate",
+      "name": "AI Analysis Usage Rate",
+      "definition": "Percentage of dashboards analyzed using AI features.",
+      "how_measured": "(AI analysis events) ÷ (Total dashboards created).",
+      "why_well_defined": "Evaluates whether AI functionality delivers meaningful value."
+    },
+    {
+      "kpi_id": "upgrade_rate_free_to_paid",
+      "name": "Upgrade Rate (Free → Paid)",
+      "definition": "Percentage of active users who convert to a paid plan.",
+      "how_measured": "(Paid users) ÷ (Active free users).",
+      "why_well_defined": "Measures perceived value and willingness to pay.",
+      "experiment_id": "pricing_cta_upgrade",
+      "target_event": "subscription_upgrade",
+      "note": "Primary conversion goal for A/B testing; tracked in Admin → A/B Experiments for pricing_cta_upgrade."
+    },
+    {
+      "kpi_id": "subscriber_retention_rate",
+      "name": "Subscriber Retention Rate",
+      "definition": "Percentage of paid users who remain subscribed over time.",
+      "how_measured": "(Retained paid users) ÷ (Total paid users).",
+      "why_well_defined": "Indicates long-term value and revenue sustainability."
+    },
+    {
+      "kpi_id": "arpu",
+      "name": "Revenue per Active User (ARPU)",
+      "definition": "Average revenue generated per active user.",
+      "how_measured": "(Total revenue) ÷ (Active users).",
+      "why_well_defined": "Connects user engagement directly to monetization outcomes."
+    }
+  ]
+}
