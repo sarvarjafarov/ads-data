@@ -107,6 +107,10 @@ app.get('/website-audit', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/website-audit.html'));
 });
 
+app.get('/experiment-demo', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/experiment-demo.html'));
+});
+
 // Root route - serve landing page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
