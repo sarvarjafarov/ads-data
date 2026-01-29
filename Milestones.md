@@ -113,14 +113,23 @@ Both are JSON arrays appended via the in-memory store and synced to disk. This f
 
 ---
 
-## 8. File Reference
+## 8. Admin: Tracking A/B Results
+
+Admins can track A/B results via an authenticated API:
+
+- **GET /api/experiments/results** (requires auth)  
+  Returns aggregated results per test: exposures and events per variant (A/B), plus conversion rate (events / exposures) per variant. Use this to see which variant is performing better.
+
+---
+
+## 9. File Reference
 
 | File | Purpose |
 |------|---------|
 | `tests.json` | Experiment definitions (test_id, description, variants, target_event). |
-| `src/services/experimentStore.js` | Loads tests; appends exposures and events to JSON files. |
+| `src/services/experimentStore.js` | Loads tests; appends exposures/events; `getResults()` for admin aggregation. |
 | `src/middleware/abAssignment.js` | Sticky A/B assignment; sets `req.abVariants` and `req.experimentVisitorId`. |
 | `src/middleware/exposureLogging.js` | Logs exposure for given test IDs on the current request. |
 | `src/services/eventLogger.js` | `logEvent(req, eventName, options)` for route handlers. |
-| `src/routes/experimentRoutes.js` | Example routes: GET dashboard (assignment + exposure), POST events. |
+| `src/routes/experimentRoutes.js` | Example routes: GET dashboard, POST events, GET config, GET results (admin). |
 | `scripts/simulate-ab-users.js` | Simulates 500+ users with higher interaction probability for Variant B. |

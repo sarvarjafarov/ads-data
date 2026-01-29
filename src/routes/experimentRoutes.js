@@ -10,8 +10,9 @@
 const express = require('express');
 const abAssignment = require('../middleware/abAssignment');
 const exposureLogging = require('../middleware/exposureLogging');
+const authenticate = require('../middleware/auth');
 const { logEvent } = require('../services/eventLogger');
-const { getTestsConfig } = require('../services/experimentStore');
+const { getTestsConfig, getResults } = require('../services/experimentStore');
 
 const router = express.Router();
 
@@ -91,6 +92,17 @@ router.post(
 router.get('/config', (req, res) => {
   const config = getTestsConfig();
   res.json({ success: true, ...config });
+});
+
+/**
+ * GET /api/experiments/results
+ *
+ * Admin-only: aggregated A/B results (exposures, events, conversion rate per variant).
+ * Requires authentication so only admins / logged-in users can track results.
+ */
+router.get('/results', authenticate, (req, res) => {
+  const data = getResults();
+  res.json({ success: true, ...data });
 });
 
 module.exports = router;

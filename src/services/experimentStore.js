@@ -122,12 +122,73 @@ function getTestsConfig() {
   }
 }
 
+/**
+ * Aggregate A/B results for admin: exposures and events per test per variant,
+ * plus conversion rate (events / exposures) per variant.
+ */
+function getResults() {
+  const config = getTestsConfig();
+  const exposureList = getExposures();
+  const eventList = getEvents();
+
+  const results = (config.experiments || []).map((exp) => {
+    const byVariant = { A: { exposures: 0, events: 0 }, B: { exposures: 0, events: 0 } };
+
+    exposureList
+      .filter((e) => e.test_id === exp.test_id)
+      .forEach((e) => {
+        if (byVariant[e.variant] != null) {
+          byVariant[e.variant].exposures += 1;
+        }
+      });
+
+    eventList
+      .filter((e) => e.test_id === exp.test_id && e.event_name === exp.target_event)
+      .forEach((e) => {
+        if (e.variant && byVariant[e.variant] != null) {
+          byVariant[e.variant].events += 1;
+        }
+      });
+
+    const variants = {
+      A: {
+        ...byVariant.A,
+        conversion_rate: byVariant.A.exposures
+          ? (byVariant.A.events / byVariant.A.exposures)
+          : 0,
+      },
+      B: {
+        ...byVariant.B,
+        conversion_rate: byVariant.B.exposures
+          ? (byVariant.B.events / byVariant.B.exposures)
+          : 0,
+      },
+    };
+
+    return {
+      test_id: exp.test_id,
+      description: exp.description,
+      target_event: exp.target_event,
+      variants: exp.variants,
+      results: variants,
+    };
+  });
+
+  return {
+    generated_at: new Date().toISOString(),
+    total_exposures: exposureList.length,
+    total_events: eventList.length,
+    experiments: results,
+  };
+}
+
 module.exports = {
   addExposure,
   addEvent,
   getExposures,
   getEvents,
   getTestsConfig,
+  getResults,
   EXPOSURES_FILE,
   EVENTS_FILE,
 };
