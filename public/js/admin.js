@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('adForm').addEventListener('submit', handleSubmit);
     document.getElementById('cancelBtn').addEventListener('click', closeModal);
     document.querySelector('.close').addEventListener('click', closeModal);
+    document.getElementById('refreshExperimentsBtn').addEventListener('click', loadExperimentResults);
 
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -53,6 +54,9 @@ function switchTab(tabName) {
     } else if (tabName === 'users') {
         document.getElementById('usersTab').classList.add('active');
         loadUsers(); // Refresh users when switching to tab
+    } else if (tabName === 'experiments') {
+        document.getElementById('experimentsTab').classList.add('active');
+        loadExperimentResults();
     }
 }
 
@@ -357,6 +361,99 @@ function displayUsers(users) {
             </tr>
         `;
     }).join('');
+}
+
+// A/B Experiments: load and display results from GET /api/experiments/results
+async function loadExperimentResults() {
+    const token = localStorage.getItem('token');
+    const msgEl = document.getElementById('experimentsMessage');
+    const contentEl = document.getElementById('experimentsContent');
+    const updatedEl = document.getElementById('experimentsUpdated');
+
+    msgEl.textContent = 'Loading A/B test results…';
+    msgEl.style.display = 'block';
+    contentEl.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/experiments/results', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                msgEl.textContent = 'Please log in to view experiment results.';
+            } else {
+                msgEl.textContent = data.error || data.message || 'Failed to load experiment results.';
+            }
+            return;
+        }
+
+        if (!data.success || !data.experiments || data.experiments.length === 0) {
+            msgEl.textContent = 'No experiment data yet. Run the simulation (npm run simulate-ab) or use the experiment dashboard to generate exposure and event logs.';
+            updatedEl.textContent = '—';
+            return;
+        }
+
+        updatedEl.textContent = data.generated_at ? new Date(data.generated_at).toLocaleString() : '—';
+        msgEl.style.display = 'none';
+        contentEl.style.display = 'block';
+
+        let html = `
+            <div class="experiments-summary" style="margin-bottom: 1.5rem;">
+                <p><strong>Total exposures:</strong> ${data.total_exposures ?? 0} &nbsp;|&nbsp; <strong>Total events:</strong> ${data.total_events ?? 0}</p>
+            </div>
+        `;
+
+        data.experiments.forEach(exp => {
+            const r = exp.results || {};
+            const a = r.A || { exposures: 0, events: 0, conversion_rate: 0 };
+            const b = r.B || { exposures: 0, events: 0, conversion_rate: 0 };
+            const labelA = (exp.variants && exp.variants.A) || 'A';
+            const labelB = (exp.variants && exp.variants.B) || 'B';
+
+            html += `
+                <div class="experiment-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1rem;">${exp.test_id}</h3>
+                    <p style="margin: 0 0 0.75rem 0; color: #6b7280; font-size: 0.875rem;">${exp.description || ''}</p>
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem;"><strong>Target event:</strong> ${exp.target_event || '—'}</p>
+                    <table class="ads-table" style="width: 100%; margin-top: 0.5rem;">
+                        <thead>
+                            <tr>
+                                <th>Variant</th>
+                                <th>Exposures</th>
+                                <th>Events</th>
+                                <th>Conversion rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>${labelA}</strong></td>
+                                <td>${a.exposures}</td>
+                                <td>${a.events}</td>
+                                <td>${(a.conversion_rate * 100).toFixed(2)}%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>${labelB}</strong></td>
+                                <td>${b.exposures}</td>
+                                <td>${b.events}</td>
+                                <td>${(b.conversion_rate * 100).toFixed(2)}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
+
+        contentEl.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading experiment results:', error);
+        msgEl.textContent = 'Failed to load experiment results. Check the console.';
+        updatedEl.textContent = '—';
+    }
 }
 
 async function approveUser(userId) {

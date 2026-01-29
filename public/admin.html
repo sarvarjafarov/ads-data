@@ -25,6 +25,7 @@
             <div class="tabs">
                 <button class="tab-btn active" data-tab="ads">Ads Management</button>
                 <button class="tab-btn" data-tab="users">User Management</button>
+                <button class="tab-btn" data-tab="experiments">A/B Experiments</button>
             </div>
 
             <!-- Ads Tab Content -->
@@ -95,6 +96,20 @@
                     </table>
                 </div>
             </div>
+
+            <!-- A/B Experiments Tab Content -->
+            <div id="experimentsTab" class="tab-content">
+                <div class="admin-controls">
+                    <button id="refreshExperimentsBtn" class="btn btn-primary">Refresh results</button>
+                    <div class="stats">
+                        <span>Last updated: <strong id="experimentsUpdated">—</strong></span>
+                    </div>
+                </div>
+                <div id="experimentsResultsContainer">
+                    <p id="experimentsMessage" class="experiments-message">Loading A/B test results…</p>
+                    <div id="experimentsContent" style="display: none;"></div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -161,6 +176,6 @@
         </div>
     </div>
 
-    <script src="/js/admin.js?v=2"></script>
+    <script src="/js/admin.js?v=3"></script>
 </body>
 </html>
