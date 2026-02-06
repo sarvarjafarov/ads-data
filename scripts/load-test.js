@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 const { performance } = require('perf_hooks');
+const { query } = require('../src/config/database');
 
 const BASE_URL = process.argv[2] || 'http://localhost:3000';
 const WORKERS = parseInt(process.env.LOAD_WORKERS || '30', 10);
 const ITERATIONS = parseInt(process.env.LOAD_ITERATIONS || '20', 10);
 const EVENT_PROBABILITY = 0.4;
 const TIME_BETWEEN = parseInt(process.env.LOAD_DELAY || '30', 10);
+const DB_CHECK_ENABLED = process.env.LOAD_TEST_DB === 'true';
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -66,6 +68,18 @@ async function postEvent(cookieStore, body) {
   return { ok: res.ok, status: res.status, duration, url: '/api/experiments/events' };
 }
 
+async function postBulkEvents(cookieStore, payload) {
+  const start = performance.now();
+  const res = await fetch(`${BASE_URL}/api/experiments/bulk-events`, {
+    method: 'POST',
+    ...requestOptions(cookieStore),
+    body: JSON.stringify({ events: payload }),
+  });
+  captureCookies(res, cookieStore);
+  const duration = performance.now() - start;
+  return { ok: res.ok, status: res.status, duration, url: '/api/experiments/bulk-events' };
+}
+
 async function hitPricing(cookieStore) {
   const start = performance.now();
   const res = await fetch(`${BASE_URL}/api/experiments/pricing-view`, {
@@ -118,6 +132,23 @@ async function worker(id) {
         record(eventResult);
       }
 
+      if (Math.random() < 0.2) {
+        const bulkPayload = [
+          {
+            event: 'tooltip_open',
+            testId: 'guided_onboarding',
+            variant: dash.body?.variants?.guided_onboarding || 'A',
+          },
+          {
+            event: 'kpi_click',
+            testId: 'kpi_scorecard_layout',
+            variant: dash.body?.variants?.kpi_scorecard_layout || 'A',
+          },
+        ];
+        const bulkResult = await postBulkEvents(cookieStore, bulkPayload);
+        record(bulkResult);
+      }
+
       const pricingResult = await hitPricing(cookieStore);
       record(pricingResult);
 
@@ -153,6 +184,18 @@ async function main() {
     const rate = ((summary.successes / summary.total) * 100).toFixed(1);
     console.log(`  ${url}: ${summary.total} requests, ${rate}% success`);
   });
+
+  if (DB_CHECK_ENABLED) {
+    try {
+      const expRes = await query('SELECT COUNT(*)::int AS count FROM experiment_exposures');
+      const evtRes = await query('SELECT COUNT(*)::int AS count FROM experiment_events');
+      console.log(`DB counts: exposures=${expRes.rows[0]?.count ?? 'NA'} events=${evtRes.rows[0]?.count ?? 'NA'}`);
+    } catch (error) {
+      console.warn('Load test warning: could not read experiment tables:', error.message);
+    }
+  } else {
+    console.log('DB check skipped (set LOAD_TEST_DB=true to enable)');
+  }
 }
 
 main().catch((error) => {

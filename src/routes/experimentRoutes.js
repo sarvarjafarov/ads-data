@@ -16,6 +16,41 @@ const { getTestsConfig, getResults } = require('../services/experimentStore');
 
 const router = express.Router();
 
+/**
+ * POST /api/experiments/bulk-events
+ *
+ * Helper for load-testing: writes multiple events in one request using the
+ * existing logEvent machinery so the experiment events table can be stressed.
+ */
+router.post(
+  '/bulk-events',
+  abAssignment,
+  (req, res) => {
+    const { events: payload } = req.body || {};
+    if (!Array.isArray(payload) || payload.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing or invalid "events" array in body',
+      });
+    }
+
+    payload.forEach((event) => {
+      if (event && typeof event.event === 'string') {
+        logEvent(req, event.event, {
+          testId: event.testId,
+          variant: event.variant,
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      logged: payload.length,
+      message: 'Batch events logged',
+    });
+  }
+);
+
 // Test IDs are derived from tests.json so new experiments can be added without code changes
 function getDashboardTestIds() {
   const config = getTestsConfig();
