@@ -1,0 +1,15 @@
+{
+  "watch": [
+    "src",
+    "config",
+    "jobs",
+    "services"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "data/experiment-logs/*",
+    "public/*",
+    "node_modules/*",
+    "frontend/.next/*"
+  ]
+}

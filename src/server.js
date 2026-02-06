@@ -7,7 +7,7 @@ const { initRedis } = require('./config/redis');
 // Store scheduler instances
 let syncSchedulerInstance = null;
 
-const server = app.listen(config.port, async () => {
+const server = app.listen(config.port, config.host, async () => {
   console.log(`Server running in ${config.nodeEnv} mode on port ${config.port}`);
 
   // Initialize Redis cache
