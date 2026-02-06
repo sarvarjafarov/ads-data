@@ -63,8 +63,8 @@
 
 | Check | Status |
 |-------|--------|
-| Exposures: `data/experiment-logs/exposures.json` (user_or_session_id, test_id, variant, timestamp) | ✅ |
-| Events: `data/experiment-logs/events.json` (user_or_session_id, event_name, test_id?, variant?, timestamp) | ✅ |
+| Exposures: Postgres table `experiment_exposures` (mirrored to `data/experiment-logs/exposures.json`) with `(user_or_session_id, test_id, variant, timestamp)` | ✅ |
+| Events: Postgres table `experiment_events` (mirrored to `data/experiment-logs/events.json`) with `(user_or_session_id, event_name, test_id?, variant?, timestamp)` | ✅ |
 | Store: `src/services/experimentStore.js` (addExposure, addEvent, getExposures, getEvents, getTestsConfig, getResults) | ✅ |
 | Logs distinguishable and suitable for analysis | ✅ |
 
@@ -115,7 +115,7 @@
 - [ ] tests.json has all experiments your team needs (test_id, description, variants A/B, target_event).
 - [ ] team-kpis.json updated with your team’s KPIs (name, description, experiment_id, target_event).
 - [ ] Milestones.md is in the repo root and describes code changes; challenges in §10.
-- [ ] Run simulation once: `npm run simulate-ab` (server running); check data/experiment-logs/ for exposures and events.
+- [ ] Run simulation once: `npm run simulate-ab` (server running); aggregation now reads from Postgres (`experiment_exposures`, `experiment_events`) while the JSON files provide a mirror.
 - [ ] Admin A/B Experiments tab shows results (exposures, events, conversion rate per variant).
 - [ ] All changes pushed to GitHub and (if applicable) deployed to Heroku.
 

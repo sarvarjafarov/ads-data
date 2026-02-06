@@ -33,7 +33,7 @@ The system provides:
 - **Sticky A/B assignment** so each user gets a consistent variant per test (cookie-based).
 - **Exposure logging** when a user is shown a variant (e.g. on dashboard load).
 - **Event logging** for user actions (e.g. KPI click, tooltip open), decoupled from assignment and exposure.
-- **Simple file-based storage** (`data/experiment-logs/exposures.json`, `events.json`) suitable for analysis; production scalability is not required.
+- **Durable storage (Postgres table + file mirror)**: exposures/events persist in the `experiment_exposures` and `experiment_events` tables while still being mirrored to `data/experiment-logs/exposures.json` and `events.json` for quick offline analysis.
 
 All experiment logic is implemented as Express middleware and a small store service, so it can be applied globally or per route.
 
@@ -103,7 +103,7 @@ Two example experiments are included:
 - **Hypothesis**: An expanded KPI scorecard (B) will lead to more clicks on KPIs than the compact layout (A).
 - **Setup**: User hits `GET /api/experiments/dashboard`. Assignment middleware assigns A or B (50/50) and stores it in a cookie. Exposure middleware logs (visitor_id, test_id, variant, timestamp). Response includes variant so the client can render the correct layout.
 - **Measurement**: When the user clicks a KPI, the client calls `POST /api/experiments/events` with `{ event: 'kpi_click', testId: 'kpi_scorecard_layout', variant: 'A'|'B' }`. Event logging records (visitor_id, event_name, test_id, variant, timestamp).
-- **Analysis**: Compare counts of `kpi_click` events by variant (and optionally conversion rate = events / exposures by variant) using `data/experiment-logs/events.json` and `exposures.json`.
+- **Analysis**: Compare counts of `kpi_click` events by variant (and optionally conversion rate = events / exposures by variant) by querying the Postgres tables (`experiment_exposures`, `experiment_events`) or the mirrored JSON files (`data/experiment-logs/exposures.json`, `events.json`).
 
 ---
 
@@ -130,10 +130,12 @@ A script `scripts/simulate-ab-users.js` simulates at least 500 users:
 
 ## 7. Data Storage
 
-- **Exposures**: `data/experiment-logs/exposures.json` — one object per exposure: `user_or_session_id`, `test_id`, `variant`, `timestamp`.
-- **Events**: `data/experiment-logs/events.json` — one object per event: `user_or_session_id`, `event_name`, `test_id` (optional), `variant` (optional), `timestamp`.
+- **Exposures**: Logged to the Postgres `experiment_exposures` table and mirrored in `data/experiment-logs/exposures.json` — one object per exposure: `user_or_session_id`, `test_id`, `variant`, `timestamp`.
+- **Events**: Logged to the Postgres `experiment_events` table and mirrored in `data/experiment-logs/events.json` — one object per event: `user_or_session_id`, `event_name`, `test_id` (optional), `variant` (optional), `timestamp`.
 
-Both are JSON arrays appended via the in-memory store and synced to disk. This format is suitable for analysis (e.g. counts by variant, conversion rates); it is not designed for production scale.
+Both stores are written simultaneously from the in-memory process. The tables make the metrics durable across dyno restarts, and the JSON mirror is still available for quick offline analysis (counts by variant, conversion rates) just like before.
+
+> **Note:** Run `node src/database/runMigrations.js` whenever you reset the database so that `experiment_exposures` and `experiment_events` exist before running the simulation or admin queries.
 
 ---
 
@@ -198,3 +200,10 @@ Admins can track A/B results via an authenticated API:
 | `src/routes/experimentRoutes.js` | Example routes: GET dashboard, GET pricing-view (exposure for subscription flow), POST events, GET config, GET results (admin). |
 | `docs/AB_TESTING_SUBSCRIPTION_FLOW.md` | Business flow: conversion = subscription upgrade, funnel, instrumentation, how to read results. |
 | `scripts/simulate-ab-users.js` | Simulates 500+ users with higher interaction probability for Variant B. |
+
+## 14. Milestone 2 — Concurrency Load Testing
+
+- **Goal:** Stress-test the experiment endpoints to surface spikes in error rates, inconsistent data, or latency under concurrent writes.
+- **Tooling:** `scripts/load-test.js` spins up multiple workers that hit `/api/experiments/dashboard`, `POST /api/experiments/events`, and `/api/experiments/pricing-view`. The script logs validation metrics (requests, successes, failures, latencies) and can be tuned via `LOAD_WORKERS`, `LOAD_ITERATIONS`, and `LOAD_DELAY`. Run it with `npm run load-test [baseUrl]`.
+- **Observations:** Track error rates (timeouts, 500s) and inspect `experiment_exposures`/`experiment_events` (and their JSON mirrors) to ensure counts match successful requests. Use the “Error occurred:” logs from `src/middleware/errorHandler.js` to catch unexpected database or file errors.
+- **Async refactor:** The load path now uses asynchronous `fs/promises.writeFile` to mirror exposures/events, and the durable tables persist the same records. This keeps the event loop clear during_write bursts while giving you persistent, queryable analytics even after dyno restarts.

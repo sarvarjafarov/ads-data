@@ -6,6 +6,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeFile } = require('node:fs/promises');
+const { query } = require('../config/database');
 
 const DATA_DIR = path.join(__dirname, '../../data/experiment-logs');
 const EXPOSURES_FILE = path.join(DATA_DIR, 'exposures.json');
@@ -45,19 +47,100 @@ function loadFromDisk() {
 
 function writeExposures() {
   ensureDataDir();
-  try {
-    fs.writeFileSync(EXPOSURES_FILE, JSON.stringify(exposures, null, 2), 'utf8');
-  } catch (e) {
-    console.error('experimentStore: could not write exposures:', e.message);
-  }
+  const payload = JSON.stringify(exposures, null, 2);
+  return writeFile(EXPOSURES_FILE, payload, 'utf8')
+    .catch((e) => {
+      console.error('experimentStore: could not write exposures:', e.message);
+    });
 }
 
 function writeEvents() {
   ensureDataDir();
+  const payload = JSON.stringify(events, null, 2);
+  return writeFile(EVENTS_FILE, payload, 'utf8')
+    .catch((e) => {
+      console.error('experimentStore: could not write events:', e.message);
+    });
+}
+
+async function persistExposureToDb(record) {
+  const timestamp = record.timestamp || new Date().toISOString();
   try {
-    fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2), 'utf8');
-  } catch (e) {
-    console.error('experimentStore: could not write events:', e.message);
+    await query(
+      `INSERT INTO experiment_exposures (
+         user_or_session_id,
+         test_id,
+         variant,
+         recorded_at
+       ) VALUES ($1, $2, $3, $4)`,
+      [
+        record.user_or_session_id,
+        record.test_id,
+        record.variant,
+        timestamp,
+      ]
+    );
+  } catch (error) {
+    console.warn('experimentStore: could not persist exposure to DB:', error.message);
+  }
+}
+
+async function persistEventToDb(record) {
+  const timestamp = record.timestamp || new Date().toISOString();
+  try {
+    await query(
+      `INSERT INTO experiment_events (
+         user_or_session_id,
+         event_name,
+         test_id,
+         variant,
+         recorded_at
+       ) VALUES ($1, $2, $3, $4, $5)`,
+      [
+        record.user_or_session_id,
+        record.event_name,
+        record.test_id,
+        record.variant,
+        timestamp,
+      ]
+    );
+  } catch (error) {
+    console.warn('experimentStore: could not persist event to DB:', error.message);
+  }
+}
+
+async function fetchExposures() {
+  try {
+    const result = await query(
+      `SELECT user_or_session_id,
+              test_id,
+              variant,
+              recorded_at AS timestamp
+       FROM experiment_exposures
+       ORDER BY recorded_at ASC`
+    );
+    return result.rows;
+  } catch (error) {
+    console.warn('experimentStore: could not load exposures from DB:', error.message);
+    return getExposures();
+  }
+}
+
+async function fetchEvents() {
+  try {
+    const result = await query(
+      `SELECT user_or_session_id,
+              event_name,
+              test_id,
+              variant,
+              recorded_at AS timestamp
+       FROM experiment_events
+       ORDER BY recorded_at ASC`
+    );
+    return result.rows;
+  } catch (error) {
+    console.warn('experimentStore: could not load events from DB:', error.message);
+    return getEvents();
   }
 }
 
@@ -76,6 +159,7 @@ function addExposure(record) {
     timestamp: record.timestamp || new Date().toISOString(),
   });
   writeExposures();
+  persistExposureToDb(record);
 }
 
 /**
@@ -92,6 +176,7 @@ function addEvent(record) {
   };
   events.push(entry);
   writeEvents();
+  persistEventToDb(entry);
 }
 
 /**
@@ -126,10 +211,10 @@ function getTestsConfig() {
  * Aggregate A/B results for admin: exposures and events per test per variant,
  * plus conversion rate (events / exposures) per variant.
  */
-function getResults() {
+async function getResults() {
   const config = getTestsConfig();
-  const exposureList = getExposures();
-  const eventList = getEvents();
+  const exposureList = await fetchExposures();
+  const eventList = await fetchEvents();
 
   const results = (config.experiments || []).map((exp) => {
     const byVariant = { A: { exposures: 0, events: 0 }, B: { exposures: 0, events: 0 } };

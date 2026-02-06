@@ -132,9 +132,13 @@ router.get('/config', (req, res) => {
  * Admin-only: aggregated A/B results (exposures, events, conversion rate per variant).
  * Requires authentication so only admins / logged-in users can track results.
  */
-router.get('/results', authenticate, (req, res) => {
-  const data = getResults();
-  res.json({ success: true, ...data });
-});
+  router.get('/results', authenticate, async (req, res, next) => {
+    try {
+      const data = await getResults();
+      res.json({ success: true, ...data });
+    } catch (error) {
+      next(error);
+    }
+  });
 
 module.exports = router;

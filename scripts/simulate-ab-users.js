@@ -112,7 +112,7 @@ async function main() {
   const failed = results.filter((r) => !r.ok).length;
   console.log('');
   console.log(`Done. Success: ${ok}, Failed: ${failed}`);
-  console.log('Exposure and event data are in data/experiment-logs/ (exposures.json, events.json).');
+  console.log('Exposure/event data are persisted in Postgres (experiment_exposures, experiment_events) and mirrored under data/experiment-logs/.');
   console.log('To observe bias: compare event counts by variant (Variant B should have more interactions).');
 }
 

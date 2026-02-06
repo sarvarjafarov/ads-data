@@ -30,7 +30,7 @@ This checklist verifies that the implementation satisfies **every requirement** 
 | 2 | **Scripts that simulate user behavior** | **`scripts/simulate-ab-users.js`** — simulates users hitting the experiment API | ✅ |
 | 3 | **Mild preference for one experimental variant over another** | **Variant B** has higher interaction probability (P_INTERACT_B = 0.35, P_INTERACT_A = 0.15); script encodes this bias | ✅ |
 | 4 | **Use these scripts to generate API calls reflecting that bias** | Each simulated user: GET /api/experiments/dashboard (exposure + assignment), then with probability 0.15 (A) or 0.35 (B) sends POST /api/experiments/events (e.g. kpi_click, tooltip_open); cookies reused so same user = same variant | ✅ |
-| 5 | **On the backend, bias should become quantitatively observable in collected metrics over time** | Exposures ~50/50 A vs B; event counts show **more events for Variant B** than A; conversion rate (events ÷ exposures) higher for B; see data/experiment-logs/ and Admin → A/B Experiments | ✅ |
+| 5 | **On the backend, bias should become quantitatively observable in collected metrics over time** | Exposures ~50/50 A vs B; event counts show **more events for Variant B** than A; conversion rate (events ÷ exposures) higher for B; observe the Postgres tables (`experiment_exposures`, `experiment_events`) or the mirrored data/experiment-logs/ files and the Admin → A/B Experiments view | ✅ |
 | 6 | **Description of this work added to Milestones.md** | **Milestones.md §6** — "Simulated User Testing and Observed Bias": script name, 500 users, probabilities (A 15%, B 35%), API calls, expected result (bias observable in metrics); Assignment compliance section also summarizes MGT 697 | ✅ |
 
 ---

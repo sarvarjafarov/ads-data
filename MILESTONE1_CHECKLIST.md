@@ -95,9 +95,9 @@ Use this checklist to verify that the implementation satisfies all requirements.
 
 | Requirement | Status | Where |
 |-------------|--------|-------|
-| Logs are stored in a structured format (JSON) | ✅ | data/experiment-logs/exposures.json, events.json |
+| Logs are stored in a structured format (JSON + Postgres) | ✅ | Postgres tables (`experiment_exposures`, `experiment_events`) mirrored to `data/experiment-logs/exposures.json`, `events.json` |
 | Exposure logs and event logs are distinguishable | ✅ | Separate files and separate addExposure() vs addEvent() |
-| Logs can be queried or aggregated for analysis | ✅ | getExposures(), getEvents(), getResults() aggregate by test and variant |
+| Logs can be queried or aggregated for analysis | ✅ | `getResults()` aggregates the Postgres tables (`experiment_exposures`, `experiment_events`); the JSON mirror is still available |
 | No production-scale infrastructure is required | ✅ | File-based; in-memory arrays synced to disk |
 
 ---
@@ -118,9 +118,9 @@ Use this checklist to verify that the implementation satisfies all requirements.
 
 | Requirement | Status | Where |
 |-------------|--------|-------|
-| Exposure counts can be calculated per variant | ✅ | getResults(); exposures.json grouped by test_id and variant |
-| Event counts can be calculated per variant | ✅ | getResults(); events.json filtered by target_event, grouped by variant |
-| Conversion rates are computable (events ÷ exposures) | ✅ | getResults() returns conversion_rate per variant |
+| Exposure counts can be calculated per variant | ✅ | getResults(); aggregates `experiment_exposures` (and exposures.json) grouped by test_id and variant |
+| Event counts can be calculated per variant | ✅ | getResults(); aggregates `experiment_events` (and events.json) filtered by target_event, grouped by variant |
+| Conversion rates are computable (events ÷ exposures) | ✅ | getResults() returns conversion_rate per variant using the DB tables |
 | Metrics align with stated assumptions | ✅ | Simulation assumes B interacts more; logged metrics show higher B events and conversion |
 
 ---
