@@ -4,7 +4,7 @@ const { query } = require('../config/database');
 const { GoogleSheetsService } = require('../services/platforms');
 const CustomDataSource = require('../models/CustomDataSource');
 const CustomDataParser = require('../services/customDataParser');
-const AICustomData = require('../services/aiCustomData');
+const { customDataProxy: AICustomData } = require('../services/genaiGatewayClient');
 
 /**
  * Initiate Meta OAuth flow

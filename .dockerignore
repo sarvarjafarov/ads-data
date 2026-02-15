@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+frontend/node_modules
+services/genai-gateway/node_modules
+docs/
+scripts/
+*.md
+!README.md

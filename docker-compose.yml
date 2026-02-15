@@ -1,0 +1,117 @@
+# ──────────────────────────────────────────────────────────
+# docker-compose.yml — Dashly Multi-Service Architecture
+# Milestone 3: Containers
+#
+# Services:
+#   1. api           — Main Dashly backend (Express.js)
+#   2. genai-gateway  — GenAI Inference Gateway (LLM proxy)
+#   3. db            — PostgreSQL database
+#   4. redis         — Redis cache
+# ──────────────────────────────────────────────────────────
+services:
+  # ── Service 1: Main API ──────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dashly-api
+    ports:
+      - "3001:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - CORS_ORIGIN=*
+      # Database — points to the db service
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=adsdata
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      # Redis — points to the redis service
+      - REDIS_URL=redis://redis:6379
+      # GenAI Gateway — points to the gateway service
+      - GENAI_GATEWAY_URL=http://genai-gateway:4000
+      # JWT
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_EXPIRE=7d
+      # Admin
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      # Disable SSL for local Docker PostgreSQL
+      - DB_SSL=false
+      # Anthropic (not needed when gateway is used, but kept for fallback)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      genai-gateway:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - dashly-network
+
+  # ── Service 2: GenAI Inference Gateway ───────────────
+  genai-gateway:
+    build:
+      context: ./services/genai-gateway
+      dockerfile: Dockerfile
+    container_name: dashly-genai-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - CORS_ORIGIN=*
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - RATE_LIMIT_RPM=60
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:4000/api/health',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - dashly-network
+
+  # ── PostgreSQL ───────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    container_name: dashly-db
+    environment:
+      POSTGRES_DB: adsdata
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - dashly-network
+
+  # ── Redis ────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: dashly-redis
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+    networks:
+      - dashly-network
+
+volumes:
+  pgdata:
+
+networks:
+  dashly-network:
+    driver: bridge

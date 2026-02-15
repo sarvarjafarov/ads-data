@@ -1,0 +1,138 @@
+# ──────────────────────────────────────────────────────────
+# Canary Deployment — Main API
+#
+# How it works:
+#   The stable deployment (api-deployment.yaml) has 3 replicas.
+#   This canary deployment has 1 replica.
+#   Both use the SAME label selector (app: api), so the
+#   Kubernetes Service routes traffic to ALL pods with app=api.
+#   Traffic split is ~75% stable / ~25% canary (3:1 ratio).
+#
+# Workflow:
+#   1. Build new image:  docker build -t dashly-api:canary .
+#   2. Apply canary:     kubectl apply -f k8s/api-canary-deployment.yaml
+#   3. Monitor:          kubectl get pods -n dashly -l version=canary
+#   4. Check logs:       kubectl logs -n dashly -l version=canary
+#   5. Promote:          Update stable image tag, delete canary deployment
+#   6. Rollback:         kubectl delete -f k8s/api-canary-deployment.yaml
+# ──────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-canary
+  namespace: dashly
+  labels:
+    app: api
+    version: canary
+spec:
+  replicas: 1          # 1 canary pod vs 3 stable pods = ~25% traffic
+  selector:
+    matchLabels:
+      app: api
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: api       # Same label as stable — Service routes traffic here too
+        version: canary
+    spec:
+      containers:
+        - name: api
+          image: dashly-api:canary    # New version image
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: NODE_ENV
+            - name: CORS_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: CORS_ORIGIN
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dashly-secrets
+                  key: DB_PASSWORD
+            - name: DB_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: DB_SSL
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: REDIS_URL
+            - name: GENAI_GATEWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: GENAI_GATEWAY_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: dashly-secrets
+                  key: JWT_SECRET
+            - name: JWT_EXPIRE
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: JWT_EXPIRE
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dashly-secrets
+                  key: ADMIN_USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dashly-secrets
+                  key: ADMIN_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi

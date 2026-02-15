@@ -5,7 +5,7 @@
  */
 
 const { setCache, getCache, deleteCache } = require('../config/redis');
-const aiWidgetAnalysis = require('./aiWidgetAnalysis');
+const { widgetAnalysisProxy: aiWidgetAnalysis } = require('./genaiGatewayClient');
 
 /**
  * Job statuses

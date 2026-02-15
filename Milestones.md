@@ -210,3 +210,256 @@ Admins can track A/B results via an authenticated API:
 - **Observations:** Track error rates (timeouts, 500s) and inspect `experiment_exposures`/`experiment_events` (and their JSON mirrors) to ensure counts match successful requests. The load-test harness now prints post-run row counts so you can verify the number of persisted exposures/events equals the number of succeeded requests, and the “Error occurred:” logs from `src/middleware/errorHandler.js` help you investigate any unexpected DB/file errors.
 - **Baseline:** Before the async refactor, the load test kept triggering nodemon restarts because the synchronous JSON writes touched `data/experiment-logs`, blocking the event loop during heavy load. After the change, the same script runs ~1,450 requests with zero failures, consistent DB counts, and p99 latency ≈ 100 ms, proving the async path removes the blocking bottleneck.
 - **Async refactor:** The load path now uses asynchronous `fs/promises.writeFile` to mirror exposures/events, and the durable tables persist the same records. This keeps the event loop clear during_write bursts while giving you persistent, queryable analytics even after dyno restarts.
+
+---
+
+## 15. Milestone 3 — Containers
+
+**Deadline:** Aim to finish by Wednesday February 18, 2026 (soft deadline).
+
+This section describes the containerisation of Dashly into a Service-Oriented Architecture with two independent services, deployed to Minikube (Kubernetes) with canary-release infrastructure.
+
+---
+
+### 15.1 Service Decomposition
+
+The monolithic Express backend was split into **two services**:
+
+| # | Service | Purpose | Port | Image |
+|---|---------|---------|------|-------|
+| 1 | **Main API** | Core business logic: auth, ads, dashboards, workspaces, OAuth, reports, A/B experiments, static frontend | 3000 | `dashly-api` |
+| 2 | **GenAI Inference Gateway** | Centralized proxy that manages, routes, and monitors **all** LLM (Anthropic Claude) API requests across the organisation | 4000 | `dashly-genai-gateway` |
+
+**Why a GenAI Gateway?** The assignment suggests using the Milestone 1 Analytics code or a "GenAI Inference Gateway" as a second service. We chose the gateway because Dashly already makes Claude API calls from four different service files (`aiDashboard.js`, `aiWidgetAnalysis.js`, `aiWebsiteAudit.js`, `aiCustomData.js`). Centralising them provides:
+
+- **Single point of API-key management** — the Anthropic key only lives in the gateway.
+- **Usage tracking** — a `/api/metrics` endpoint exposes token counts, latencies, and request counts per AI endpoint.
+- **Rate limiting** — protects the upstream Anthropic API with a per-IP rate limiter.
+- **Independent scaling** — the gateway can be scaled independently of the main API.
+- **Model switching** — changing the Claude model only requires updating the gateway, not every service.
+
+---
+
+### 15.2 How the Gateway Works
+
+The Main API no longer imports `@anthropic-ai/sdk` directly. Instead, a **gateway client** (`src/services/genaiGatewayClient.js`) replaces all four AI service imports with HTTP calls:
+
+| Original import (monolith) | Replaced with | Gateway endpoint |
+|---|---|---|
+| `require('../services/aiDashboard')` | `require('../services/genaiGatewayClient')` | `POST /api/ai/dashboard/generate`, etc. |
+| `require('./aiWidgetAnalysis')` | `genaiGatewayClient.widgetAnalysisProxy` | `POST /api/ai/widget/analyze`, etc. |
+| `require('../services/aiWebsiteAudit')` | `genaiGatewayClient.websiteAuditProxy` | `POST /api/ai/website-audit/analyze` |
+| `require('../services/aiCustomData')` | `genaiGatewayClient.customDataProxy` | `POST /api/ai/custom-data/detect-schema`, etc. |
+
+The gateway client exposes **identical function signatures** to the original services, so existing controllers required zero logic changes — only the `require()` path changed.
+
+**Files updated in the main API:**
+
+| File | Change |
+|------|--------|
+| `src/controllers/dashboardController.js` | `require('../services/aiDashboard')` → `require('../services/genaiGatewayClient')` |
+| `src/controllers/websiteAuditController.js` | `require('../services/aiWebsiteAudit')` → `genaiGatewayClient.websiteAuditProxy` |
+| `src/controllers/customDataController.js` | `require('../services/aiCustomData')` → `genaiGatewayClient.customDataProxy` |
+| `src/controllers/oauthController.js` | `require('../services/aiCustomData')` → `genaiGatewayClient.customDataProxy` |
+| `src/services/backgroundJobs.js` | `require('./aiWidgetAnalysis')` → `genaiGatewayClient.widgetAnalysisProxy` |
+| `src/services/googleSheetsSync.js` | `require('./aiCustomData')` → `genaiGatewayClient.customDataProxy` |
+
+---
+
+### 15.3 GenAI Gateway Service Structure
+
+```
+services/genai-gateway/
+├── package.json
+├── Dockerfile
+├── .dockerignore
+└── src/
+    ├── server.js                          # Entry point (port 4000)
+    ├── app.js                             # Express app with helmet, CORS, rate limiter
+    ├── config.js                          # Environment config
+    ├── routes/
+    │   └── index.js                       # All AI endpoints + /health + /metrics
+    ├── controllers/
+    │   ├── dashboardAIController.js       # Dashboard generation, recommendations, improvements
+    │   ├── widgetAnalysisController.js    # Widget analysis, comparison, trend
+    │   ├── websiteAuditAIController.js    # Business impact analysis
+    │   └── customDataAIController.js      # Schema detection, viz suggestions, quality, NL query
+    ├── services/
+    │   ├── aiDashboard.js                 # Claude calls for dashboard generation
+    │   ├── aiWidgetAnalysis.js            # Claude calls for widget analysis
+    │   ├── aiWebsiteAudit.js              # Claude calls for website audit
+    │   └── aiCustomData.js                # Claude calls for custom data
+    └── middleware/
+        ├── rateLimiter.js                 # Per-IP rate limiter (configurable RPM)
+        └── usageLogger.js                 # Token/latency tracking
+```
+
+**Gateway REST API:**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/ai/dashboard/generate` | Generate dashboard from natural language |
+| POST | `/api/ai/dashboard/recommendations` | Get recommendations for a dashboard |
+| POST | `/api/ai/dashboard/improvements` | Suggest improvements to a dashboard |
+| GET | `/api/ai/dashboard/options` | Available widgets and metrics |
+| POST | `/api/ai/widget/analyze` | Analyze a single widget |
+| POST | `/api/ai/widget/compare` | Compare multiple widgets |
+| POST | `/api/ai/widget/trend` | Deep trend analysis |
+| POST | `/api/ai/website-audit/analyze` | Business impact analysis for website audit |
+| POST | `/api/ai/custom-data/detect-schema` | AI schema detection |
+| POST | `/api/ai/custom-data/suggest-visualizations` | Visualization recommendations |
+| POST | `/api/ai/custom-data/analyze-quality` | Data quality analysis |
+| POST | `/api/ai/custom-data/generate-query` | Natural language to structured query |
+| GET | `/api/metrics` | Gateway usage metrics |
+| GET | `/api/health` | Health check |
+
+---
+
+### 15.4 Containerisation (Docker)
+
+Each service has its own Dockerfile:
+
+| File | Service | Base Image | Notes |
+|------|---------|------------|-------|
+| `Dockerfile` (root) | Main API | `node:18-alpine` | Includes Chromium for Puppeteer (website audit) |
+| `services/genai-gateway/Dockerfile` | GenAI Gateway | `node:18-alpine` | Lightweight, no native deps |
+
+Both Dockerfiles follow best practices: layer caching for `npm ci`, health checks, Alpine base for small image size.
+
+**`docker-compose.yml`** orchestrates all four containers for local development:
+
+| Service | Image | Port | Depends On |
+|---------|-------|------|------------|
+| `api` | `dashly-api` (built) | 3000 | db, redis, genai-gateway |
+| `genai-gateway` | `dashly-genai-gateway` (built) | 4000 | — |
+| `db` | `postgres:15-alpine` | 5432 | — |
+| `redis` | `redis:7-alpine` | 6379 | — |
+
+**How to run locally with Docker Compose:**
+
+```bash
+# Set your Anthropic API key
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Build and start all services
+docker compose up --build
+
+# In another terminal, run migrations
+docker compose exec api node src/database/migrate.js
+
+# Access the app
+open http://localhost:3000
+```
+
+---
+
+### 15.5 Kubernetes Deployment (Minikube)
+
+All Kubernetes manifests are in the `k8s/` directory:
+
+| Manifest | Resource | Replicas |
+|----------|----------|----------|
+| `namespace.yaml` | Namespace `dashly` | — |
+| `configmap.yaml` | Non-secret config (DB host, Redis URL, gateway URL) | — |
+| `secrets.yaml` | Secrets (DB password, JWT secret, API key) | — |
+| `postgres-deployment.yaml` | PostgreSQL + PVC + Service | 1 |
+| `redis-deployment.yaml` | Redis + Service | 1 |
+| `genai-gateway-deployment.yaml` | GenAI Gateway Deployment + Service | 2 |
+| `api-deployment.yaml` | Main API Deployment + NodePort Service | 3 |
+
+All deployments include **readiness and liveness probes** (HTTP health checks), **resource limits**, and use ConfigMap/Secret references for environment variables.
+
+**How to deploy to Minikube:**
+
+```bash
+# Start Minikube
+minikube start
+
+# Deploy everything (builds images, applies manifests, runs migrations)
+./scripts/deploy-minikube.sh
+
+# Check status
+./scripts/deploy-minikube.sh status
+
+# Get the API URL
+minikube service api -n dashly --url
+
+# Tear down
+./scripts/deploy-minikube.sh teardown
+```
+
+---
+
+### 15.6 Canary Releases
+
+Canary deployments are implemented using Kubernetes' native label-based routing:
+
+1. **Stable** pods have label `version: stable`.
+2. **Canary** pods have label `version: canary`.
+3. Both share the label `app: api` (or `app: genai-gateway`), which the Service selects on.
+4. Kubernetes distributes traffic across all matching pods, so traffic split is proportional to replica count.
+
+| Service | Stable Replicas | Canary Replicas | Canary Traffic % |
+|---------|-----------------|-----------------|------------------|
+| API | 3 | 1 | ~25% |
+| GenAI Gateway | 2 | 1 | ~33% |
+
+**Canary manifests:**
+
+- `k8s/api-canary-deployment.yaml`
+- `k8s/genai-gateway-canary-deployment.yaml`
+
+**Canary workflow script** (`scripts/deploy-canary.sh`):
+
+```bash
+# Deploy canary (builds :canary images, applies canary manifests)
+./scripts/deploy-canary.sh deploy
+
+# Monitor traffic split
+./scripts/deploy-canary.sh status
+
+# If canary looks good → promote to stable
+./scripts/deploy-canary.sh promote
+
+# If canary has issues → rollback (removes canary pods)
+./scripts/deploy-canary.sh rollback
+```
+
+The promote step re-tags the canary image as `:latest`, restarts the stable deployment to pick up the new image, and deletes the canary deployment. The rollback step simply deletes the canary deployment so all traffic returns to stable.
+
+---
+
+### 15.7 File Reference (Milestone 3)
+
+| File | Purpose |
+|------|---------|
+| `services/genai-gateway/` | Complete GenAI Inference Gateway service |
+| `src/services/genaiGatewayClient.js` | Gateway HTTP client (replaces direct AI imports) |
+| `Dockerfile` | Main API container image |
+| `services/genai-gateway/Dockerfile` | GenAI Gateway container image |
+| `.dockerignore` | Docker build exclusions |
+| `docker-compose.yml` | Multi-service local orchestration |
+| `k8s/namespace.yaml` | Kubernetes namespace |
+| `k8s/configmap.yaml` | Non-secret configuration |
+| `k8s/secrets.yaml` | Secret values |
+| `k8s/postgres-deployment.yaml` | PostgreSQL deployment + PVC + service |
+| `k8s/redis-deployment.yaml` | Redis deployment + service |
+| `k8s/api-deployment.yaml` | Main API deployment (3 replicas) + NodePort service |
+| `k8s/genai-gateway-deployment.yaml` | GenAI Gateway deployment (2 replicas) + ClusterIP service |
+| `k8s/api-canary-deployment.yaml` | API canary deployment (1 replica) |
+| `k8s/genai-gateway-canary-deployment.yaml` | GenAI Gateway canary deployment (1 replica) |
+| `scripts/deploy-minikube.sh` | Minikube deployment automation script |
+| `scripts/deploy-canary.sh` | Canary release workflow script |
+
+---
+
+### 15.8 Challenges Encountered
+
+1. **Database dependency in AI services**
+   The original `aiDashboard.js` called `CustomDataSource.findById()` directly, creating a database dependency that doesn't belong in a stateless AI gateway. This was resolved by having the gateway client in the main API pre-fetch custom source data and pass it in the HTTP request body.
+
+2. **Large payloads for AI endpoints**
+   Widget analysis and website audit requests can include large time-series data or full audit findings. The gateway Express app sets `express.json({ limit: '10mb' })` to handle these payloads.
+
+3. **Maintaining interface compatibility**
+   The gateway client had to expose identical function signatures (same function names, same arguments, same return types) as the original AI service modules so that all existing controllers and services required only a `require()` path change with zero logic modifications.

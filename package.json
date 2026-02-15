@@ -11,6 +11,16 @@
     "db:setup": "npm run migrate && npm run seed",
     "simulate-ab": "node scripts/simulate-ab-users.js",
     "load-test": "node scripts/load-test.js",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "docker:migrate": "docker compose exec api node src/database/migrate.js",
+    "minikube:deploy": "./scripts/deploy-minikube.sh",
+    "minikube:status": "./scripts/deploy-minikube.sh status",
+    "minikube:teardown": "./scripts/deploy-minikube.sh teardown",
+    "canary:deploy": "./scripts/deploy-canary.sh deploy",
+    "canary:status": "./scripts/deploy-canary.sh status",
+    "canary:promote": "./scripts/deploy-canary.sh promote",
+    "canary:rollback": "./scripts/deploy-canary.sh rollback",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -1,7 +1,7 @@
 const multer = require('multer');
 const CustomDataSource = require('../models/CustomDataSource');
 const CustomDataParser = require('../services/customDataParser');
-const AICustomData = require('../services/aiCustomData');
+const { customDataProxy: AICustomData } = require('../services/genaiGatewayClient');
 const Workspace = require('../models/Workspace');
 const { fetchCustomData, queryCustomData, invalidateSourceCache } = require('../services/widgetDataService');
 const GoogleSheetsSyncService = require('../services/googleSheetsSync');

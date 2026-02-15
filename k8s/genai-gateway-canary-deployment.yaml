@@ -1,0 +1,75 @@
+# ──────────────────────────────────────────────────────────
+# Canary Deployment — GenAI Inference Gateway
+#
+# Stable: 2 replicas, Canary: 1 replica → ~33% canary traffic.
+#
+# Workflow is the same as the API canary (see api-canary-deployment.yaml).
+# ──────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: genai-gateway-canary
+  namespace: dashly
+  labels:
+    app: genai-gateway
+    version: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: genai-gateway
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: genai-gateway
+        version: canary
+    spec:
+      containers:
+        - name: genai-gateway
+          image: dashly-genai-gateway:canary
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000
+          env:
+            - name: PORT
+              value: "4000"
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: NODE_ENV
+            - name: CORS_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: CORS_ORIGIN
+            - name: RATE_LIMIT_RPM
+              valueFrom:
+                configMapKeyRef:
+                  name: dashly-config
+                  key: RATE_LIMIT_RPM
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dashly-secrets
+                  key: ANTHROPIC_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

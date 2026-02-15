@@ -6,7 +6,7 @@
 const { GoogleSheetsService } = require('./platforms');
 const CustomDataSource = require('../models/CustomDataSource');
 const CustomDataParser = require('./customDataParser');
-const AICustomData = require('./aiCustomData');
+const { customDataProxy: AICustomData } = require('./genaiGatewayClient');
 const { query } = require('../config/database');
 const config = require('../config/config');
 const { invalidateSourceCache } = require('./widgetDataService');

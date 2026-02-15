@@ -522,14 +522,14 @@ const toggleShareLink = async (req, res) => {
 // Template functions
 const { getTemplates, getTemplateById } = require('../services/templates');
 
-// AI Dashboard generation
+// AI Dashboard generation — routed through the GenAI Inference Gateway
 const {
   generateDashboardFromPrompt,
   generateRecommendations,
   suggestDashboardImprovements,
   AVAILABLE_WIDGETS,
   AVAILABLE_METRICS,
-} = require('../services/aiDashboard');
+} = require('../services/genaiGatewayClient');
 
 // Get all available templates
 const listTemplates = async (req, res) => {

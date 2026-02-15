@@ -1,5 +1,5 @@
 const websiteAuditService = require('../services/websiteAuditService');
-const aiWebsiteAuditService = require('../services/aiWebsiteAudit');
+const { websiteAuditProxy: aiWebsiteAuditService } = require('../services/genaiGatewayClient');
 const { getCache, setCache } = require('../config/redis');
 const { query } = require('../config/database');
 
