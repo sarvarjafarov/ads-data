@@ -674,6 +674,8 @@ Results are saved to the `chaos-results/` directory:
 
 ### 16.5 File Reference (Milestone 4)
 
+**Chaos experiment configuration files:**
+
 | File | Purpose |
 |------|---------|
 | `k8s/chaos/pod-kill-api.yaml` | PodChaos CRD — kill one API pod |
@@ -681,6 +683,13 @@ Results are saved to the `chaos-results/` directory:
 | `k8s/chaos/network-latency-moderate.yaml` | NetworkChaos CRD — 200ms/pkt delay on API egress |
 | `k8s/chaos/network-latency-severe.yaml` | NetworkChaos CRD — 500ms/pkt delay on API egress |
 | `scripts/chaos-test.sh` | Automation script for all chaos experiments |
+
+**Deployment configuration files (resilience settings tested by Milestone 4):**
+
+| File | Key Settings |
+|------|-------------|
+| `k8s/api-deployment.yaml` | `replicas: 3`, readinessProbe (HTTP `/api/health`, initialDelay=10s, period=10s), livenessProbe (HTTP `/api/health`, initialDelay=15s, period=20s), `restartPolicy: Always` (default) |
+| `k8s/genai-gateway-deployment.yaml` | `replicas: 2`, readinessProbe (HTTP `/api/health`, initialDelay=5s, period=10s), livenessProbe (HTTP `/api/health`, initialDelay=10s, period=15s), `restartPolicy: Always` (default) |
 
 ---
 
