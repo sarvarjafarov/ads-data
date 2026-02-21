@@ -562,16 +562,21 @@ The following Kubernetes deployment settings were validated by this experiment:
 
 #### Results
 
-| Event | API Pod Kill | GenAI Gateway Pod Kill |
-|-------|-------------|----------------------|
-| Pod killed at | 20:49:48 | 20:50:20 |
-| New pod created | Immediately (within 3s) | Immediately (within 3s) |
-| New pod Running | ~13s after kill | ~12s after kill |
-| All pods Ready | ~31s (waited for old pods to terminate) | ~13s |
-| Health check after | `{"status":"healthy"}` | `{"status":"healthy"}` |
-| Downtime | **Zero** — remaining pods served traffic | **Zero** — remaining pod served traffic |
+**Experiment 1b (GenAI Gateway)** provides the cleanest demonstration of the pod-kill → recovery mechanism:
 
-**Key finding:** Kubernetes replaced the killed pod with a new one (new pod name, new IP address) rather than restarting the same pod. The Deployment controller detected the pod count dropped below the desired replica count and immediately scheduled a replacement. The readiness probe (`initialDelaySeconds: 10`) ensured the new pod only received traffic after its health check passed.
+| Event | GenAI Gateway Pod Kill |
+|-------|----------------------|
+| Chaos applied at | 20:50:20 |
+| Pod killed | `5cpqs` (1/1 Running, age 48m) — terminated immediately |
+| New pod created | `mdz9s` appeared within 3s (0/1 Running, age 3s) |
+| New pod Ready | 12s after kill (1/1 Running at check 4) |
+| Surviving pod | `qkclr` continued serving traffic throughout (1/1 Running, age 140m) |
+| Health check after | `{"status":"healthy"}` |
+| Downtime | **Zero** — `qkclr` served all traffic while `mdz9s` started |
+
+**Experiment 1a (API)** was run while the cluster had 3 leftover Terminating pods from a previous canary rollback. PodChaos selected and killed one of the already-Terminating pods rather than a Running pod (the 3 Running pods' ages incremented continuously with no interruption across all 10 polling checks). The 3 healthy API replicas continued serving traffic with zero downtime, confirming the system's resilience, though the kill-and-replace mechanism was not directly exercised on the API side.
+
+**Key finding:** The GenAI Gateway experiment clearly demonstrates Kubernetes self-healing: the ReplicaSet controller detected that the actual pod count (1) dropped below the desired count (2) and immediately scheduled a replacement pod (`mdz9s`). The new pod received a new name and IP address. The readiness probe (`initialDelaySeconds: 5`) ensured `mdz9s` only received traffic after its health check passed at the 12-second mark. Meanwhile, the surviving pod (`qkclr`) handled all requests with zero downtime.
 
 ---
 
