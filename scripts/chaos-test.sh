@@ -336,10 +336,10 @@ run_latency() {
     LOAD_WORKERS=10 LOAD_ITERATIONS=5 LOAD_DELAY=50 node "$PROJECT_DIR/scripts/load-test.js" "$API_URL" 2>&1 | tee -a "$RESULTS_DIR/latency-log.txt" || echo "  (load test could not run)"
   fi
 
-  # ── Moderate Latency (500ms) ──
+  # ── Moderate Latency (200ms/pkt) ──
   echo "" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "==========================================================" | tee -a "$RESULTS_DIR/latency-log.txt"
-  echo "=== EXPERIMENT 2a: Moderate Latency (500ms + 100ms jitter) ===" | tee -a "$RESULTS_DIR/latency-log.txt"
+  echo "=== EXPERIMENT 2a: Moderate Latency (200ms/pkt + 50ms jitter) ===" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "==========================================================" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "$(timestamp) - Applying NetworkChaos (moderate)..." | tee -a "$RESULTS_DIR/latency-log.txt"
   kubectl apply -f "$CHAOS_DIR/network-latency-moderate.yaml"
@@ -348,8 +348,8 @@ run_latency() {
   sleep 10
 
   echo "" | tee -a "$RESULTS_DIR/latency-log.txt"
-  echo "Gateway latency from API pod (500ms chaos):" | tee -a "$RESULTS_DIR/latency-log.txt"
-  measure_gateway_latency "moderate-500ms" | tee -a "$RESULTS_DIR/latency-log.txt"
+  echo "Gateway latency from API pod (200ms/pkt chaos):" | tee -a "$RESULTS_DIR/latency-log.txt"
+  measure_gateway_latency "moderate-200ms" | tee -a "$RESULTS_DIR/latency-log.txt"
 
   echo "" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "API health check (moderate chaos):" | tee -a "$RESULTS_DIR/latency-log.txt"
@@ -367,10 +367,10 @@ run_latency() {
   force_delete_chaos networkchaos
   sleep 5
 
-  # ── Severe Latency (2000ms) ──
+  # ── Severe Latency (500ms/pkt) ──
   echo "" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "=============================================================" | tee -a "$RESULTS_DIR/latency-log.txt"
-  echo "=== EXPERIMENT 2b: Severe Latency (2000ms + 500ms jitter) ===" | tee -a "$RESULTS_DIR/latency-log.txt"
+  echo "=== EXPERIMENT 2b: Severe Latency (500ms/pkt + 200ms jitter) ===" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "=============================================================" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "$(timestamp) - Applying NetworkChaos (severe)..." | tee -a "$RESULTS_DIR/latency-log.txt"
   kubectl apply -f "$CHAOS_DIR/network-latency-severe.yaml"
@@ -379,8 +379,8 @@ run_latency() {
   sleep 10
 
   echo "" | tee -a "$RESULTS_DIR/latency-log.txt"
-  echo "Gateway latency from API pod (2000ms chaos):" | tee -a "$RESULTS_DIR/latency-log.txt"
-  measure_gateway_latency "severe-2000ms" | tee -a "$RESULTS_DIR/latency-log.txt"
+  echo "Gateway latency from API pod (500ms/pkt chaos):" | tee -a "$RESULTS_DIR/latency-log.txt"
+  measure_gateway_latency "severe-500ms" | tee -a "$RESULTS_DIR/latency-log.txt"
 
   echo "" | tee -a "$RESULTS_DIR/latency-log.txt"
   echo "API health check (severe chaos):" | tee -a "$RESULTS_DIR/latency-log.txt"

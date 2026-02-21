@@ -579,7 +579,7 @@ The following Kubernetes deployment settings were validated by this experiment:
 
 **Goal:** Test whether the system can handle slow network communication between the API service and the GenAI Inference Gateway.
 
-**Hypothesis:** The system should continue to function with increased response times but no errors, because the API's axios timeout (120s) is much larger than the injected latency (500ms–2000ms). The `/api/health` endpoint queries PostgreSQL (not the Gateway), so health checks remain unaffected.
+**Hypothesis:** The system should continue to function with increased response times but no errors, because the API's axios timeout (120s) is much larger than the injected per-packet delay (200ms–500ms, producing ~600ms–1.9s end-to-end latency). The `/api/health` endpoint queries PostgreSQL (not the Gateway), so health checks should remain unaffected.
 
 #### Setup
 
