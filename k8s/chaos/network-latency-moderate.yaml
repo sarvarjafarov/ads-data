@@ -1,0 +1,26 @@
+# Chaos Mesh NetworkChaos — inject latency on all API pod outgoing traffic
+# Experiment 2a: Moderate latency to observe graceful degradation
+# The delay applies per-packet, so end-to-end HTTP latency will be higher
+# due to TCP handshake (SYN/ACK) and data packets each being delayed.
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: network-latency-moderate
+  namespace: dashly
+  labels:
+    experiment: network-latency
+    severity: moderate
+spec:
+  action: delay
+  mode: all                        # Affect all API pods
+  selector:
+    namespaces:
+      - dashly
+    labelSelectors:
+      app: api
+      version: stable
+  delay:
+    latency: "200ms"
+    correlation: "25"
+    jitter: "50ms"
+  duration: "120s"

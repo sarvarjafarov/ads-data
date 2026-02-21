@@ -1,0 +1,26 @@
+# Chaos Mesh NetworkChaos — inject severe latency on all API pod outgoing traffic
+# Experiment 2b: Severe latency to test timeout/retry boundaries
+# The delay applies per-packet, so end-to-end HTTP latency will be higher
+# due to TCP handshake (SYN/ACK) and data packets each being delayed.
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: network-latency-severe
+  namespace: dashly
+  labels:
+    experiment: network-latency
+    severity: severe
+spec:
+  action: delay
+  mode: all                        # Affect all API pods
+  selector:
+    namespaces:
+      - dashly
+    labelSelectors:
+      app: api
+      version: stable
+  delay:
+    latency: "500ms"
+    correlation: "25"
+    jitter: "200ms"
+  duration: "120s"

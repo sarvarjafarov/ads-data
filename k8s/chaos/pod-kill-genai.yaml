@@ -1,0 +1,20 @@
+# Chaos Mesh PodChaos — kill one GenAI Gateway pod and observe Kubernetes recovery
+# Experiment 1b: Verify that K8s restarts the crashed pod automatically
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: pod-kill-genai
+  namespace: dashly
+  labels:
+    experiment: pod-kill
+    target: genai-gateway
+spec:
+  action: pod-kill
+  mode: one                    # Kill exactly one pod
+  selector:
+    namespaces:
+      - dashly
+    labelSelectors:
+      app: genai-gateway
+      version: stable
+  duration: "30s"

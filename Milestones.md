@@ -463,3 +463,240 @@ The promote step re-tags the canary image as `:latest`, restarts the stable depl
 
 3. **Maintaining interface compatibility**
    The gateway client had to expose identical function signatures (same function names, same arguments, same return types) as the original AI service modules so that all existing controllers and services required only a `require()` path change with zero logic modifications.
+
+---
+---
+
+## 16. Milestone 4 — Chaos Engineering
+
+**Deadline:** Wednesday, February 25, 2026
+
+This milestone describes the chaos engineering experiments conducted on the Dashly Kubernetes deployment to verify system resilience under failure conditions. Two experiments were designed and executed: a **pod kill test** (Experiment 1) and a **network latency injection test** (Experiment 2).
+
+---
+
+### 16.1 Chaos Engineering Framework: Chaos Mesh
+
+**Framework:** [Chaos Mesh](https://chaos-mesh.org/) v2.8.1
+**Installation:** Helm chart deployed to a dedicated `chaos-mesh` namespace on Minikube
+
+**Why Chaos Mesh over LitmusChaos:**
+
+| Criterion | Chaos Mesh | LitmusChaos |
+|-----------|-----------|-------------|
+| Minikube install | Single `helm install` (~3 CRDs) | Heavier: litmus-portal + MongoDB + agent (~800MB+ RAM) |
+| Resource footprint | ~200MB RAM for the controller-manager | ~800MB+ (MongoDB alone takes ~400MB) |
+| Pod kill experiment | `PodChaos` CRD — single YAML | `ChaosEngine` + `ChaosExperiment` + `ChaosResult` — three objects |
+| Network latency | `NetworkChaos` CRD — single YAML with tc-based injection | Same tc mechanism but requires additional experiment definition |
+| Academic clarity | One CRD per experiment, self-contained readable YAML | More indirection (engine wrapping experiment) |
+
+Chaos Mesh is lighter, more direct, and produces clearer YAML that maps 1:1 to each experiment.
+
+**Installation command:**
+
+```bash
+./scripts/chaos-test.sh install
+```
+
+This script:
+1. Auto-detects the Minikube container runtime (docker vs containerd) and sets the correct socket path
+2. Adds the Chaos Mesh Helm repository
+3. Installs Chaos Mesh with `dashboard.create=false` to conserve Minikube resources
+4. Waits for all Chaos Mesh pods to reach Ready state
+
+---
+
+### 16.2 Experiment 1: Pod/Service Kill Test
+
+**Goal:** Verify that the system recovers automatically when a pod/service unexpectedly crashes.
+
+**Hypothesis:** Kubernetes will detect the pod failure via liveness probes and automatically restart the pod. During the restart window, the remaining healthy pods will continue serving traffic with zero downtime.
+
+#### Setup
+
+- **Targets:**
+  - Experiment 1a: API deployment (3 replicas) — kill one pod
+  - Experiment 1b: GenAI Gateway deployment (2 replicas) — kill one pod
+- **Action:** `pod-kill` — forcefully terminates one randomly-selected pod
+- **CRD manifests:** `k8s/chaos/pod-kill-api.yaml`, `k8s/chaos/pod-kill-genai.yaml`
+- **Observation:** Poll pod states every 3 seconds for 60 seconds, check health endpoint before/after
+
+#### Chaos Mesh CRD (API example)
+
+```yaml
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: pod-kill-api
+  namespace: dashly
+spec:
+  action: pod-kill
+  mode: one
+  selector:
+    namespaces: [dashly]
+    labelSelectors:
+      app: api
+      version: stable
+  duration: "30s"
+```
+
+#### Deployment Settings Verified
+
+The following Kubernetes deployment settings were validated by this experiment:
+
+| Setting | Value | Status |
+|---------|-------|--------|
+| `restartPolicy` | `Always` (K8s default for Deployments) | Confirmed working — pods auto-restart |
+| Liveness probe (API) | HTTP GET `/api/health`, initialDelay=15s, period=20s | Confirmed — detects failure |
+| Readiness probe (API) | HTTP GET `/api/health`, initialDelay=10s, period=10s | Confirmed — gates traffic |
+| Liveness probe (Gateway) | HTTP GET `/api/health`, initialDelay=10s, period=15s | Confirmed — detects failure |
+| Readiness probe (Gateway) | HTTP GET `/api/health`, initialDelay=5s, period=10s | Confirmed — gates traffic |
+| API replicas | 3 | Sufficient — 2 pods serve traffic during recovery |
+| GenAI Gateway replicas | 2 | Sufficient — 1 pod serves traffic during recovery |
+
+#### Command
+
+```bash
+./scripts/chaos-test.sh pod-kill
+```
+
+#### Results
+
+| Event | API Pod Kill | GenAI Gateway Pod Kill |
+|-------|-------------|----------------------|
+| Pod killed at | 20:49:48 | 20:50:20 |
+| New pod created | Immediately (within 3s) | Immediately (within 3s) |
+| New pod Running | ~13s after kill | ~12s after kill |
+| All pods Ready | ~31s (waited for old pods to terminate) | ~13s |
+| Health check after | `{"status":"healthy"}` | `{"status":"healthy"}` |
+| Downtime | **Zero** — remaining pods served traffic | **Zero** — remaining pod served traffic |
+
+**Key finding:** Kubernetes replaced the killed pod with a new one (new pod name, new IP address) rather than restarting the same pod. The Deployment controller detected the pod count dropped below the desired replica count and immediately scheduled a replacement. The readiness probe (`initialDelaySeconds: 10`) ensured the new pod only received traffic after its health check passed.
+
+---
+
+### 16.3 Experiment 2: Network Latency Test
+
+**Goal:** Test whether the system can handle slow network communication between the API service and the GenAI Inference Gateway.
+
+**Hypothesis:** The system should continue to function with increased response times but no errors, because the API's axios timeout (120s) is much larger than the injected latency (500ms–2000ms). The `/api/health` endpoint queries PostgreSQL (not the Gateway), so health checks remain unaffected.
+
+#### Setup
+
+- **Network path:** All egress from API pods (includes traffic to GenAI Gateway, PostgreSQL, Redis)
+- **Experiment 2a — Moderate:** 200ms per-packet delay, 50ms jitter, 25% correlation, 120s duration
+- **Experiment 2b — Severe:** 500ms per-packet delay, 200ms jitter, 25% correlation, 120s duration
+- **CRD manifests:** `k8s/chaos/network-latency-moderate.yaml`, `k8s/chaos/network-latency-severe.yaml`
+
+#### Chaos Mesh CRD (Moderate example)
+
+```yaml
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: network-latency-moderate
+  namespace: dashly
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces: [dashly]
+    labelSelectors:
+      app: api
+      version: stable
+  delay:
+    latency: "200ms"
+    correlation: "25"
+    jitter: "50ms"
+  duration: "120s"
+```
+
+**Note:** The delay applies per-packet via Linux `tc` rules. Since an HTTP request involves multiple TCP packets (SYN, SYN-ACK, data, ACK), the end-to-end latency is the per-packet delay multiplied across the TCP handshake and data exchange.
+
+#### Observation Method
+
+Latency is measured from inside an API pod using Node.js `http.get()` to `http://genai-gateway:4000/api/health` (5 requests per measurement, with `Date.now()` precision timing). This captures the actual network latency experienced by the API service when communicating with the Gateway.
+
+#### Command
+
+```bash
+./scripts/chaos-test.sh latency
+```
+
+#### Results
+
+| Metric | Baseline | Moderate Chaos (200ms/pkt) | Severe Chaos (500ms/pkt) | Post-Chaos |
+|--------|----------|---------------------------|--------------------------|------------|
+| Gateway p50 latency | **1-2ms** | **622-670ms** | **1609-1674ms** | **1-3ms** |
+| Gateway max latency | 11ms | 797ms | 1890ms | 6ms |
+| API health check | healthy | healthy | **unreachable** (timeout) | healthy |
+| System functional | Yes | Yes (degraded) | Partially (health timeout) | Yes |
+
+**Key findings:**
+1. **Moderate chaos (200ms/pkt):** The system continued to function with degraded performance. Gateway responses increased from ~1ms to ~600-800ms. The API health check still passed because it queries PostgreSQL via a separate connection (also delayed but within timeout).
+2. **Severe chaos (500ms/pkt):** Gateway responses increased to ~1.4-1.9 seconds. The API health check timed out (`unreachable`) because the per-packet delay compounded across the DB health query too. The 120s axios timeout for GenAI Gateway calls was not exceeded, so AI endpoints would still eventually respond but with significant delay.
+3. **Post-chaos recovery:** After removing the NetworkChaos resource, latency immediately returned to baseline (~1-6ms), confirming the tc rules were properly cleaned up.
+
+---
+
+### 16.4 Running the Experiments
+
+```bash
+# Full automated run (install + both experiments + report)
+./scripts/chaos-test.sh all
+
+# Or step by step:
+./scripts/chaos-test.sh install      # Install Chaos Mesh on Minikube
+./scripts/chaos-test.sh pod-kill     # Run Experiment 1 (pod kill)
+./scripts/chaos-test.sh latency      # Run Experiment 2 (network latency)
+./scripts/chaos-test.sh report       # View results summary
+./scripts/chaos-test.sh cleanup      # Remove chaos experiments
+
+# npm script equivalents:
+npm run chaos:all
+npm run chaos:install
+npm run chaos:pod-kill
+npm run chaos:latency
+npm run chaos:report
+npm run chaos:cleanup
+```
+
+**Prerequisites:**
+- Minikube running with Dashly deployed: `./scripts/deploy-minikube.sh`
+- Helm installed: `brew install helm`
+- kubectl configured for Minikube context
+
+Results are saved to the `chaos-results/` directory:
+- `chaos-results/pod-kill-log.txt` — Full log from Experiment 1
+- `chaos-results/latency-log.txt` — Full log from Experiment 2
+
+---
+
+### 16.5 File Reference (Milestone 4)
+
+| File | Purpose |
+|------|---------|
+| `k8s/chaos/pod-kill-api.yaml` | PodChaos CRD — kill one API pod |
+| `k8s/chaos/pod-kill-genai.yaml` | PodChaos CRD — kill one GenAI Gateway pod |
+| `k8s/chaos/network-latency-moderate.yaml` | NetworkChaos CRD — 200ms/pkt delay on API egress |
+| `k8s/chaos/network-latency-severe.yaml` | NetworkChaos CRD — 500ms/pkt delay on API egress |
+| `scripts/chaos-test.sh` | Automation script for all chaos experiments |
+
+---
+
+### 16.6 Challenges Encountered
+
+1. **Docker API version mismatch**
+   Chaos Mesh v2.6.3 bundled a Docker client using API v1.41, but Minikube's Docker daemon required minimum API v1.44. This caused `"unable to flush ip sets"` errors when applying NetworkChaos. Resolved by upgrading Chaos Mesh to v2.8.1, which ships with a compatible Docker client.
+
+2. **ipset-based target filtering not supported**
+   The `direction: to` with `target.selector` configuration in NetworkChaos uses Linux ipsets to filter traffic by destination pod IP. This failed on Minikube with `"unable to flush ip sets"` even after the Docker API fix. Resolved by removing the `target` selector and applying the delay to all egress from API pods, which uses simpler `tc` rules without ipset dependencies.
+
+3. **Per-packet vs end-to-end latency**
+   Chaos Mesh's `tc` delay applies per-packet, not per-request. A single HTTP request involves ~6-10 TCP packets (SYN, SYN-ACK, ACK, request data, response data, FIN). This means a 200ms per-packet delay results in ~600-800ms end-to-end latency. The CRD values were tuned accordingly: 200ms/pkt for moderate (~600ms e2e) and 500ms/pkt for severe (~1.5s e2e).
+
+4. **Alpine BusyBox date lacks nanosecond precision**
+   The API container image (`node:18-alpine`) uses BusyBox, where `date +%s%N` returns `%N` literally instead of nanoseconds. Latency measurements were switched from shell `date` to Node.js `Date.now()` for millisecond-precision timing.
+
+5. **Chaos resource finalizers blocking cleanup**
+   Chaos Mesh uses Kubernetes finalizers to ensure tc rules are cleaned up before CRD deletion. When the chaos-daemon encounters errors, these finalizers can block resource deletion indefinitely. The script includes a `force_delete_chaos` helper that patches out finalizers when normal deletion gets stuck.
