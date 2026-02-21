@@ -510,7 +510,7 @@ This script:
 
 **Goal:** Verify that the system recovers automatically when a pod/service unexpectedly crashes.
 
-**Hypothesis:** Kubernetes will detect the pod failure via liveness probes and automatically restart the pod. During the restart window, the remaining healthy pods will continue serving traffic with zero downtime.
+**Hypothesis:** When a pod is forcefully killed, the Kubernetes ReplicaSet controller will detect that the actual pod count has dropped below the desired replica count and automatically schedule a replacement. During the restart window, the remaining healthy pods (validated by their readiness probes) will continue serving traffic with zero downtime.
 
 #### Setup
 
@@ -634,7 +634,7 @@ Latency is measured from inside an API pod using Node.js `http.get()` to `http:/
 
 **Key findings:**
 1. **Moderate chaos (200ms/pkt):** The system continued to function with degraded performance. Gateway responses increased from ~1ms to ~600-800ms. The API health check still passed because it queries PostgreSQL via a separate connection (also delayed but within timeout).
-2. **Severe chaos (500ms/pkt):** Gateway responses increased to ~1.4-1.9 seconds. The API health check timed out (`unreachable`) because the per-packet delay compounded across the DB health query too. The 120s axios timeout for GenAI Gateway calls was not exceeded, so AI endpoints would still eventually respond but with significant delay.
+2. **Severe chaos (500ms/pkt):** Gateway responses increased to ~1.4-1.9 seconds. The API health check timed out (`unreachable`) because the per-packet delay compounded across the DB health query too. This **partially disproved our hypothesis** that health checks would remain unaffected — the NetworkChaos delay applied to all egress traffic from API pods, including PostgreSQL health queries, not just Gateway traffic. The 120s axios timeout for GenAI Gateway calls was not exceeded, so AI endpoints would still eventually respond but with significant delay.
 3. **Post-chaos recovery:** After removing the NetworkChaos resource, latency immediately returned to baseline (~1-6ms), confirming the tc rules were properly cleaned up.
 
 ---
