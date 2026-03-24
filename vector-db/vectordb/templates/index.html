@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectorDB</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>VectorDB</h1>
+            <p class="subtitle">A vector database with TF-IDF embeddings &amp; HNSW indexing</p>
+            <div class="stats">
+                <span id="doc-count">0</span> documents stored
+            </div>
+        </header>
+
+        <div class="panels">
+            <!-- Add Document Panel -->
+            <section class="panel">
+                <h2>Add Document</h2>
+                <p class="description">Store a text document in the database. It will be encoded as a TF-IDF vector and indexed for similarity search.</p>
+                <div class="input-group">
+                    <textarea id="add-text" placeholder="Enter text to store in the database..." rows="4"></textarea>
+                    <button id="add-btn" onclick="addDocument()">Add Document</button>
+                </div>
+                <div id="add-result" class="result-box hidden"></div>
+            </section>
+
+            <!-- Query Panel -->
+            <section class="panel">
+                <h2>Query Database</h2>
+                <p class="description">Search for the most similar documents. Results are ranked by cosine similarity score.</p>
+                <div class="input-group">
+                    <textarea id="query-text" placeholder="Enter your search query..." rows="4"></textarea>
+                    <div class="query-controls">
+                        <label for="k-value">Results (k):</label>
+                        <input type="number" id="k-value" value="5" min="1" max="50">
+                        <button id="query-btn" onclick="queryDatabase()">Search</button>
+                    </div>
+                </div>
+                <div id="query-results" class="result-box hidden"></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -83,6 +83,21 @@ python -m vectordb --storage /path/to/data add "some text"
 python -m vectordb --storage /path/to/data query "search" --k 5
 ```
 
+### Web Interface
+
+Launch the browser-based UI:
+
+```bash
+python -m vectordb.web
+```
+
+Then open [http://localhost:5001](http://localhost:5001) in your browser. You can add documents and search from the web UI.
+
+Options:
+```bash
+python -m vectordb.web --port 8080 --storage my_data
+```
+
 ### Python API
 
 ```python
@@ -168,7 +183,13 @@ vector-db/
 │   ├── embeddings.py
 │   ├── hnsw.py
 │   ├── similarity.py
-│   └── store.py
+│   ├── store.py
+│   ├── web.py
+│   ├── templates/
+│   │   └── index.html
+│   └── static/
+│       ├── style.css
+│       └── app.js
 └── tests/
     ├── __init__.py
     ├── test_database.py
