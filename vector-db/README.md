@@ -31,7 +31,7 @@ A lightweight vector database that stores text documents, converts them to TF-ID
 
 ### Prerequisites
 
-- Python 3.10 or later
+- Python 3.9 or later
 - pip
 
 ### Setup

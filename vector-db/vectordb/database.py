@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import os
 
 from vectordb.embeddings import TextEncoder
 from vectordb.hnsw import HNSWIndex
-from vectordb.similarity import cosine_similarity
 from vectordb.store import VectorStore
 
 
@@ -100,7 +100,6 @@ class VectorDatabase:
         self._index.save(os.path.join(self.storage_path, "index"))
         # Store already saves on every add, but save next_id
         meta_path = os.path.join(self.storage_path, "db_meta.json")
-        import json
         with open(meta_path, "w") as f:
             json.dump({"next_id": self._next_id}, f)
 
@@ -120,7 +119,6 @@ class VectorDatabase:
         db._store = VectorStore(os.path.join(db.storage_path, "store"))
 
         # Restore next_id
-        import json
         meta_path = os.path.join(db.storage_path, "db_meta.json")
         if os.path.exists(meta_path):
             with open(meta_path, "r") as f:
