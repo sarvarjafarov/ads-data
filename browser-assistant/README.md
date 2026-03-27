@@ -1,6 +1,6 @@
-# Browser Assistant
+# Browser Assistant — Playwright + LLM
 
-A Playwright + Claude LLM browser automation assistant for the ads analytics dashboard.
+A Playwright + Claude LLM browser automation assistant for the Dashly ads analytics dashboard.
 
 The assistant opens a real browser, takes screenshots, sends them to Claude, and executes whatever actions Claude decides are needed to accomplish your goal.
 
