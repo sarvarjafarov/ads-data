@@ -852,7 +852,9 @@ The assistant is intentionally minimal but easily extendable. New actions (like 
 
 ### 1. User Personas
 
-#### Persona 1: Sarah Chen, Marketing Manager at a Mid-Size E-Commerce Company
+In HW1, we defined three high-level user archetypes (Growth Marketer, Small Business Owner, Freelance Digital Marketer). For this milestone, we expand those into fully detailed personas with names, backstories, and concrete actions on Dashly. Each persona maps directly to one of the original HW1 archetypes.
+
+#### Persona 1: Sarah Chen, Marketing Manager (expands "Growth Marketer" from HW1)
 
 **Role:** Marketing Manager at a DTC skincare brand with ~120 employees and $8M annual ad spend spread across Meta Ads, Google Ads, TikTok Ads, and occasionally LinkedIn for B2B wholesale outreach.
 
@@ -879,7 +881,7 @@ The assistant is intentionally minimal but easily extendable. New actions (like 
 - Creates a custom metric called "Blended ROAS" that combines revenue attribution from Meta and Google
 - Uses budget tracking to set monthly spending caps per platform with Slack notifications at 80% allocation
 
-#### Persona 2: Marcus Rivera, Small Business Owner
+#### Persona 2: Marcus Rivera, Small Business Owner (expands "Small Business Owner" from HW1)
 
 **Role:** Owner of a residential cleaning company in Austin, TX with 15 employees. Runs Facebook and Google Ads himself with a monthly budget of about $3,000. No marketing team.
 
@@ -904,7 +906,7 @@ The assistant is intentionally minimal but easily extendable. New actions (like 
 - Looks at weekly automated reports for total leads and cost per lead across Facebook and Google
 - Runs a website audit on his landing page to check if load speed or mobile issues hurt conversion
 
-#### Persona 3: Priya Kapoor, Data Analyst at a Digital Marketing Agency
+#### Persona 3: Priya Kapoor, Data Analyst at a Digital Marketing Agency (expands "Freelance Digital Marketer" from HW1)
 
 **Role:** Senior Data Analyst at a 45-person digital marketing agency managing campaigns for 18 active clients across Meta, Google, TikTok, LinkedIn, and Google Search Console.
 
@@ -951,7 +953,7 @@ The assistant is intentionally minimal but easily extendable. New actions (like 
 9. Save the report configuration
 10. Verify the report appears in the scheduled reports list
 
-**Expected Outcome:** A weekly automated report is created and visible in the scheduled reports list. The configuration shows the correct platforms, KPIs, schedule, and recipient. No errors during the setup flow.
+**Expected Outcome:** A weekly automated report is created and visible in the scheduled reports list. The configuration shows the correct platforms, KPIs, schedule, and recipient. No errors during the setup flow. This scenario directly tests the **Dashboard Engagement Rate** and **Time to First Insight** KPIs defined in HW1, since report creation counts as a meaningful dashboard interaction.
 
 #### Test Scenario 2: Marcus Rivera — Budget Alert Check
 
@@ -968,7 +970,7 @@ The assistant is intentionally minimal but easily extendable. New actions (like 
 6. Navigate to AI insights and read any recommendations
 7. Click on a recommendation to understand what action to take
 
-**Expected Outcome:** The user can see budget pacing at a glance, set up an alert without technical knowledge, and read AI-generated insights in plain language. The flow should be intuitive enough that someone without marketing analytics experience can complete it.
+**Expected Outcome:** The user can see budget pacing at a glance, set up an alert without technical knowledge, and read AI-generated insights in plain language. The flow should be intuitive enough that someone without marketing analytics experience can complete it. This scenario tests the **Activation Rate** and **AI Analysis Usage Rate** KPIs from HW1, since it covers a low-technical user's path from login to actionable insight.
 
 #### Test Scenario 3: Priya Kapoor — Multi-Client Workspace Setup
 
@@ -985,7 +987,7 @@ The assistant is intentionally minimal but easily extendable. New actions (like 
 6. Set up anomaly detection for the new workspace
 7. Switch between workspaces to verify data isolation (Client A data doesn't leak into Client B)
 
-**Expected Outcome:** A new workspace is created with its own connected accounts, custom metrics, and anomaly detection. Switching between workspaces shows isolated data for each client. The flow supports the agency use case of managing multiple clients from a single account.
+**Expected Outcome:** A new workspace is created with its own connected accounts, custom metrics, and anomaly detection. Switching between workspaces shows isolated data for each client. The flow supports the agency use case of managing multiple clients from a single account. This scenario is relevant to the **Weekly Active Users** and **Dashboard Engagement Rate** KPIs from HW1, since agency users interacting with multiple workspaces drive both metrics.
 
 ---
 
@@ -1011,3 +1013,5 @@ Based on the persona-driven testing:
 3. Add a "Quick Setup" onboarding flow for new users that asks about their role and customizes the dashboard accordingly
 4. Consider adding plain-language summaries alongside technical metrics (e.g., "You spent $1,200 out of your $3,000 budget this month" instead of just showing numbers)
 5. Test the workspace switching flow more thoroughly, the agent encountered a brief flash of stale data when switching between workspaces that could confuse agency users managing multiple clients
+
+These findings reinforce the hypothesis from our HW1 experiment design that guided onboarding reduces Time to First Insight and improves Activation Rate. The Marcus Rivera scenario in particular showed that without onboarding, a low-technical user would struggle to reach any meaningful insight on their own. The recommended changes (tooltips, role-based onboarding, plain-language summaries) are directly aligned with the treatment group design from our HW1 A/B test proposal.
