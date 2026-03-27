@@ -37,7 +37,7 @@ jobs:
           ... (diff truncated, showing first 10000 characters out of ${#DIFF})"
           fi
 
-          # Escape the diff for JSON embedding
+          # Escape the diff for JSON embedding (jq -Rs reads raw input as a JSON string)
           DIFF_JSON=$(echo "$DIFF_TRUNCATED" | jq -Rs .)
 
           # Build the request payload
