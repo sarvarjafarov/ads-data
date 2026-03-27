@@ -714,3 +714,300 @@ Results are saved to the `chaos-results/` directory:
 
 5. **Chaos resource finalizers blocking cleanup**
    Chaos Mesh uses Kubernetes finalizers to ensure tc rules are cleaned up before CRD deletion. When the chaos-daemon encounters errors, these finalizers can block resource deletion indefinitely. The script includes a `force_delete_chaos` helper that patches out finalizers when normal deletion gets stuck.
+
+---
+
+# Milestone 5: Software Development with LLMs
+
+**Yale CPSC 4391 / CPSC 5391 / MGT 697**
+
+**Deadline:** Wednesday April 1, 2026 (soft deadline).
+
+This milestone documents how our team used LLMs and code assistants in the software development workflow. It covers automated PR summaries via GitHub Actions, PR review with Claude Code, feature implementation with an AI assistant, and a Playwright-based browser agent.
+
+---
+
+## 1. GitHub Actions Workflow for PR Summaries
+
+**File:** `.github/workflows/pr-summary.yml`
+
+We created a GitHub Actions workflow that triggers on every pull request (opened or updated). The workflow does the following:
+
+1. Fetches the PR diff via the GitHub API
+2. Sends the diff (truncated to 10,000 characters for large PRs) to the Anthropic API using `claude-sonnet-4-20250514`
+3. Posts the AI-generated summary as a comment on the PR with a header "AI PR Summary"
+
+The workflow uses `curl` to call the Anthropic API directly, keeping the setup simple with no extra Node scripts or dependencies. It requires one GitHub secret: `ANTHROPIC_API_KEY`.
+
+**How it works in practice:**
+- A developer opens or updates a PR
+- Within a minute, a bot comment appears summarizing what changed, which files were modified, and any potential concerns
+- This gives reviewers a quick overview before diving into the diff
+
+---
+
+## 2. LLM-Assisted PR Review
+
+We used **Claude Code** (CLI) to review a teammate's pull request.
+
+**Process:**
+- Pointed Claude Code at the PR diff and asked it to review the changes
+- Claude Code was invoked via the CLI in the project directory
+
+**Findings:**
+- Claude Code correctly identified the main intent of the changes and summarized them clearly
+- It flagged a missing error handler on one of the API routes that we had overlooked
+- It suggested adding input validation for user-facing endpoints, which was a valid concern
+- It missed some context about why certain implementation choices were made (business logic that lives in Slack conversations, not in the code)
+- The reviewing task was made significantly easier. Instead of reading every line of a 400-line diff, we could start from the AI summary and focus on the parts that needed closer inspection
+- One limitation: Claude Code didn't have access to the running application, so it couldn't verify that the UI changes actually looked correct
+
+**Overall assessment:** The AI review works well as a first pass. It catches structural issues and surface-level bugs. It does not replace a human reviewer who understands the business context, but it saves time and catches things that might slip through when a reviewer is fatigued.
+
+---
+
+## 3. New Feature Implemented with Claude Code
+
+**Assistant used:** Claude Code (CLI, interactive mode)
+
+**Feature:** Web interface for the Vector Database (HW2)
+
+We used Claude Code to build a Flask-based web UI for the vector database, turning a CLI-only tool into something usable in a browser. The feature touched multiple files:
+
+- `vectordb/web.py` — Flask server with API endpoints (`/api/add`, `/api/query`, `/api/stats`)
+- `vectordb/templates/index.html` — HTML template for the single-page UI
+- `vectordb/static/style.css` — Styling (dark theme)
+- `vectordb/static/app.js` — Frontend JavaScript for making API calls and rendering results
+- `requirements.txt` — Updated to include Flask
+- `load_sample_data.py` — Script to populate the database with test documents
+
+**Instructions given:**
+We told Claude Code to "add a web interface so you can run it in a browser" with the ability to add documents and query for similar ones. We also asked for a sample data loader for testing.
+
+**Assessment of the output:**
+
+*What was usable as-is:*
+- The Flask server structure and API endpoints worked correctly on first run
+- The HTML/CSS/JS frontend rendered properly and handled add/query operations
+- The sample data loader populated the database and ran test queries successfully
+- Error handling for empty inputs and edge cases was included
+
+*What required manual correction:*
+- The initial port (5000) conflicted with macOS AirPlay Receiver, had to change to 5001
+- The first attempt included the `venv/` directory in the git commit (4000+ files), which had to be cleaned up and a `.gitignore` added
+
+*What the assistant missed or got wrong:*
+- Did not proactively add a `.gitignore` for Python projects (venv, __pycache__, etc.)
+- The TF-IDF approach means queries only match on exact words, which surprised us during testing. The assistant could have warned more clearly about this limitation upfront
+- No loading states or spinners in the UI (minor but would improve UX)
+
+---
+
+## 4. Playwright + LLM Browser Assistant
+
+**Directory:** `browser-assistant/`
+
+**Files:**
+- `browser-assistant/assistant.js` — Main agent script
+- `browser-assistant/package.json` — Dependencies (Playwright + Anthropic SDK)
+- `browser-assistant/README.md` — Setup and usage instructions
+
+**How it works:**
+
+The assistant follows a simple loop:
+1. Launch a Chromium browser and navigate to the target URL
+2. Take a screenshot and extract visible text from the page
+3. Send both (image + text) to Claude along with the user's goal and action history
+4. Claude responds with a JSON action (click, type, navigate, scroll, screenshot, or done)
+5. Execute the action in the browser
+6. Repeat until Claude says "done" or we hit a 20-step safety limit
+
+**Supported actions:**
+
+| Action | What it does |
+|--------|-------------|
+| `click` | Clicks an element by CSS selector |
+| `type` | Types text into an input field |
+| `navigate` | Goes to a URL |
+| `scroll` | Scrolls up or down by a pixel amount |
+| `screenshot` | Observes the page without acting |
+| `done` | Reports that the goal is complete or unreachable |
+
+**Usage example:**
+```bash
+cd browser-assistant
+npm install
+npm run install-browsers
+export ANTHROPIC_API_KEY=sk-ant-...
+node assistant.js "navigate to the dashboard and check the ad performance metrics"
+```
+
+The assistant is intentionally minimal but easily extendable. New actions (like form submission, file upload, or drag-and-drop) can be added by extending the `executeAction` switch statement and updating the system prompt.
+
+**Configuration files:** `browser-assistant/package.json`, `browser-assistant/assistant.js`
+
+---
+
+## MGT 697 Deliverables
+
+### 1. User Personas
+
+#### Persona 1: Sarah Chen, Marketing Manager at a Mid-Size E-Commerce Company
+
+**Role:** Marketing Manager at a DTC skincare brand with ~120 employees and $8M annual ad spend spread across Meta Ads, Google Ads, TikTok Ads, and occasionally LinkedIn for B2B wholesale outreach.
+
+**Goals and Motivations**
+- Get a single view of performance across all ad platforms without switching between five browser tabs every morning
+- Justify budget allocation decisions to the VP of Marketing with clear, digestible reports
+- Catch underperforming campaigns early before they eat through weekly budgets
+- Prove that the team's shift toward TikTok is actually driving incremental revenue, not just cheap clicks
+- Hit quarterly ROAS targets that the leadership team sets during planning
+
+**Pain Points**
+- Each ad platform reports attribution differently, making it nearly impossible to compare Meta and Google on equal footing
+- She spends 3+ hours every Monday pulling data into spreadsheets to build a weekly performance deck
+- TikTok's ad manager is clunky and lacks the reporting depth she's used to from Meta
+- Budget pacing is a constant anxiety, she's been burned before by campaigns that blew through daily limits over a weekend
+- Her team is small (two media buyers and one creative strategist), so there's no dedicated analytics person
+
+**Technical Proficiency:** Comfortable with ad platform UIs, Google Sheets, and basic Looker Studio dashboards. She can write simple formulas and understands marketing metrics deeply, but she's not writing SQL or building custom integrations.
+
+**Representative Actions on Dashly**
+- Opens the unified dashboard every morning to scan yesterday's spend, ROAS, and CPA across all platforms
+- Sets up anomaly detection alerts for any campaign where CPA spikes more than 25% above the 7-day average
+- Builds a weekly automated report that gets emailed to the VP every Monday at 8am
+- Creates a custom metric called "Blended ROAS" that combines revenue attribution from Meta and Google
+- Uses budget tracking to set monthly spending caps per platform with Slack notifications at 80% allocation
+
+#### Persona 2: Marcus Rivera, Small Business Owner
+
+**Role:** Owner of a residential cleaning company in Austin, TX with 15 employees. Runs Facebook and Google Ads himself with a monthly budget of about $3,000. No marketing team.
+
+**Goals and Motivations**
+- Get more booked jobs from his ads without wasting money on clicks that don't convert
+- Understand in plain terms whether his ads are actually working or if he's throwing money away
+- Spend less time fiddling with ads so he can focus on running the business
+- Eventually figure out if TikTok or other platforms are worth trying for local services
+
+**Pain Points**
+- He doesn't really understand the difference between CPM, CPC, and CPA
+- Last month Google Ads spent $400 in two days on broad match keywords that brought zero leads, and he didn't notice until the bill came
+- He tried hiring a freelance marketer once but felt like he was paying $1,500/month for someone to check on things he could check himself, if only the tools were simpler
+- He has no idea if his $3K/month is a good spend or if he should be spending more or less
+
+**Technical Proficiency:** Low to moderate. Comfortable using business software like QuickBooks. Can navigate Facebook and Google ad platforms at a basic level. Learns best from clear UI prompts and short explanations, not documentation.
+
+**Representative Actions on Dashly**
+- Checks the AI-powered insights summary once or twice a week for plain-language recommendations
+- Uses the budget tracking dashboard to see a simple bar chart of monthly spend vs. $3K cap
+- Receives anomaly detection alerts via email when cost-per-lead doubles overnight
+- Looks at weekly automated reports for total leads and cost per lead across Facebook and Google
+- Runs a website audit on his landing page to check if load speed or mobile issues hurt conversion
+
+#### Persona 3: Priya Kapoor, Data Analyst at a Digital Marketing Agency
+
+**Role:** Senior Data Analyst at a 45-person digital marketing agency managing campaigns for 18 active clients across Meta, Google, TikTok, LinkedIn, and Google Search Console.
+
+**Goals and Motivations**
+- Build scalable reporting workflows that don't require manually pulling and cleaning data for each client every week
+- Create client-facing dashboards polished enough for executive stakeholders but flexible enough for media buyers to dig into
+- Identify cross-channel patterns and optimization opportunities that platform-specific account managers might miss
+- Reduce the time from "something weird is happening with Client X's campaigns" to "here's exactly what changed and when"
+
+**Pain Points**
+- Currently maintains a messy collection of Google Sheets, Supermetrics pulls, and Looker Studio dashboards that break constantly when APIs change
+- Every client wants slightly different KPIs and reporting formats, so she ends up building custom reports from scratch repeatedly
+- Reconciling data between platforms is a nightmare, Meta and Google often disagree on conversion numbers by 20-30%
+- The media buying team sometimes makes significant budget changes without telling her, which messes up trend analysis
+
+**Technical Proficiency:** High. Proficient in SQL, Python, and data visualization tools. Can build custom integrations and do statistical analysis. Prefers tools that let her export raw data when needed.
+
+**Representative Actions on Dashly**
+- Sets up separate workspaces for each client with connected ad accounts, builds templatized dashboards she can clone per client
+- Creates custom metrics like "Cost per Qualified Demo" calculated from Google Ads spend divided by CRM-qualified leads
+- Configures anomaly detection across all 18 client accounts for a single morning digest ranked by severity
+- Uses Google Search Console integration alongside paid search data to find organic keyword opportunities
+- Exports raw data for deeper analysis in Python when she needs cohort modeling or custom attribution work
+
+---
+
+### 2. Persona-to-Test Mapping
+
+#### Test Scenario 1: Sarah Chen — Weekly Report Setup
+
+**Persona:** Sarah Chen (Marketing Manager)
+
+**Starting State:** Logged into Dashly with a workspace that has Meta Ads and Google Ads accounts connected. Several active campaigns with recent performance data.
+
+**Sequence of Actions:**
+1. Navigate to the unified dashboard
+2. Check that cross-platform metrics (spend, ROAS, CPA) are displayed for yesterday
+3. Go to the Reports section
+4. Create a new automated weekly report
+5. Select Meta Ads and Google Ads as data sources
+6. Choose KPIs: spend, impressions, clicks, ROAS, CPA
+7. Set schedule to "Weekly, Monday at 8:00 AM"
+8. Enter the recipient email address
+9. Save the report configuration
+10. Verify the report appears in the scheduled reports list
+
+**Expected Outcome:** A weekly automated report is created and visible in the scheduled reports list. The configuration shows the correct platforms, KPIs, schedule, and recipient. No errors during the setup flow.
+
+#### Test Scenario 2: Marcus Rivera — Budget Alert Check
+
+**Persona:** Marcus Rivera (Small Business Owner)
+
+**Starting State:** Logged into Dashly with a single workspace. Facebook Ads connected with a $3,000 monthly budget. At least one active campaign.
+
+**Sequence of Actions:**
+1. Navigate to the dashboard
+2. Look for the budget tracking section or widget
+3. Check the current month's spend vs. the budget cap
+4. Navigate to alerts or notifications settings
+5. Set up (or verify) an anomaly alert for cost-per-lead exceeding a threshold
+6. Navigate to AI insights and read any recommendations
+7. Click on a recommendation to understand what action to take
+
+**Expected Outcome:** The user can see budget pacing at a glance, set up an alert without technical knowledge, and read AI-generated insights in plain language. The flow should be intuitive enough that someone without marketing analytics experience can complete it.
+
+#### Test Scenario 3: Priya Kapoor — Multi-Client Workspace Setup
+
+**Persona:** Priya Kapoor (Agency Data Analyst)
+
+**Starting State:** Logged into Dashly with admin access. At least two workspaces already exist for different clients.
+
+**Sequence of Actions:**
+1. Navigate to the workspace management area
+2. Create a new workspace for a new client
+3. Connect at least one ad platform (e.g., Google Ads) to the new workspace
+4. Navigate to the dashboard for the new workspace
+5. Create a custom metric (e.g., "Cost per Qualified Lead")
+6. Set up anomaly detection for the new workspace
+7. Switch between workspaces to verify data isolation (Client A data doesn't leak into Client B)
+
+**Expected Outcome:** A new workspace is created with its own connected accounts, custom metrics, and anomaly detection. Switching between workspaces shows isolated data for each client. The flow supports the agency use case of managing multiple clients from a single account.
+
+---
+
+### 3. Findings and Reflection
+
+#### Did personas surface usability issues that manual testing missed?
+
+Yes. Testing from Marcus Rivera's perspective (low technical proficiency) revealed that several parts of the dashboard assume familiarity with advertising terminology. The budget tracking widget shows "CPM" and "CPC" without explanations, which would be confusing for a small business owner. The anomaly detection configuration page uses terms like "standard deviation threshold" which is not accessible to non-technical users. These issues were not caught during manual testing because the development team is technically proficient and reads these terms without friction.
+
+The Sarah Chen scenario revealed that setting up automated reports requires too many clicks and the flow is not linear. The user has to navigate between three different pages (reports, scheduling, email settings) to set up what should be a single workflow. This fragmentation was not obvious during feature-by-feature manual testing.
+
+#### Did the LLM agent diverge from realistic persona behavior?
+
+The LLM agent tended to be more systematic and patient than a real user would be. For the Marcus Rivera scenario, a real small business owner would likely give up after 2-3 confusing screens, but the agent kept trying different navigation paths. The agent also read on-screen text more carefully than a typical user, who tends to scan quickly and click on the first thing that looks relevant.
+
+For the Priya Kapoor scenario, the agent did not attempt to export data or use keyboard shortcuts, which a power user like Priya would likely do. The agent stuck to point-and-click interactions, which is a limitation of the current Playwright action set.
+
+#### Recommended changes
+
+Based on the persona-driven testing:
+1. Add tooltips or a glossary for marketing terms (CPM, CPC, CPA, ROAS) to make the dashboard accessible to users like Marcus
+2. Simplify the automated report setup into a single wizard-style flow instead of spreading it across multiple pages
+3. Add a "Quick Setup" onboarding flow for new users that asks about their role and customizes the dashboard accordingly
+4. Consider adding plain-language summaries alongside technical metrics (e.g., "You spent $1,200 out of your $3,000 budget this month" instead of just showing numbers)
+5. Test the workspace switching flow more thoroughly, the agent encountered a brief flash of stale data when switching between workspaces that could confuse agency users managing multiple clients
