@@ -201,7 +201,9 @@ Admins can track A/B results via an authenticated API:
 | `docs/AB_TESTING_SUBSCRIPTION_FLOW.md` | Business flow: conversion = subscription upgrade, funnel, instrumentation, how to read results. |
 | `scripts/simulate-ab-users.js` | Simulates 500+ users with higher interaction probability for Variant B. |
 
-## 14. Milestone 2 — Concurrency Load Testing
+---
+
+# Milestone 2: Concurrency Load Testing
 
 - **Goal:** Stress-test the experiment endpoints to surface spikes in error rates, inconsistent data, or latency under concurrent writes.
 - **Tooling:** `scripts/load-test.js` spins up multiple workers that hit `/api/experiments/dashboard`, `POST /api/experiments/events`, and `/api/experiments/pricing-view`. The script logs validation metrics (requests, successes, failures, latencies) and can be tuned via `LOAD_WORKERS`, `LOAD_ITERATIONS`, and `LOAD_DELAY`. Run it with `npm run load-test [baseUrl]`.
@@ -213,7 +215,7 @@ Admins can track A/B results via an authenticated API:
 
 ---
 
-## 15. Milestone 3 — Containers
+# Milestone 3: Containers
 
 **Deadline:** Aim to finish by Wednesday February 18, 2026 (soft deadline).
 
@@ -221,7 +223,7 @@ This section describes the containerisation of Dashly into a Service-Oriented Ar
 
 ---
 
-### 15.1 Service Decomposition
+### 1. Service Decomposition
 
 The monolithic Express backend was split into **two services**:
 
@@ -240,7 +242,7 @@ The monolithic Express backend was split into **two services**:
 
 ---
 
-### 15.2 How the Gateway Works
+### 2. How the Gateway Works
 
 The Main API no longer imports `@anthropic-ai/sdk` directly. Instead, a **gateway client** (`src/services/genaiGatewayClient.js`) replaces all four AI service imports with HTTP calls:
 
@@ -266,7 +268,7 @@ The gateway client exposes **identical function signatures** to the original ser
 
 ---
 
-### 15.3 GenAI Gateway Service Structure
+### 3. GenAI Gateway Service Structure
 
 ```
 services/genai-gateway/
@@ -315,7 +317,7 @@ services/genai-gateway/
 
 ---
 
-### 15.4 Containerisation (Docker)
+### 4. Containerisation (Docker)
 
 Each service has its own Dockerfile:
 
@@ -353,7 +355,7 @@ open http://localhost:3000
 
 ---
 
-### 15.5 Kubernetes Deployment (Minikube)
+### 5. Kubernetes Deployment (Minikube)
 
 All Kubernetes manifests are in the `k8s/` directory:
 
@@ -390,7 +392,7 @@ minikube service api -n dashly --url
 
 ---
 
-### 15.6 Canary Releases
+### 6. Canary Releases
 
 Canary deployments are implemented using Kubernetes' native label-based routing:
 
@@ -429,7 +431,7 @@ The promote step re-tags the canary image as `:latest`, restarts the stable depl
 
 ---
 
-### 15.7 File Reference (Milestone 3)
+### 7. File Reference
 
 | File | Purpose |
 |------|---------|
@@ -453,7 +455,7 @@ The promote step re-tags the canary image as `:latest`, restarts the stable depl
 
 ---
 
-### 15.8 Challenges Encountered
+### 8. Challenges Encountered
 
 1. **Database dependency in AI services**
    The original `aiDashboard.js` called `CustomDataSource.findById()` directly, creating a database dependency that doesn't belong in a stateless AI gateway. This was resolved by having the gateway client in the main API pre-fetch custom source data and pass it in the HTTP request body.
@@ -467,7 +469,7 @@ The promote step re-tags the canary image as `:latest`, restarts the stable depl
 ---
 ---
 
-## 16. Milestone 4 — Chaos Engineering
+# Milestone 4: Chaos Engineering
 
 **Deadline:** Wednesday, February 25, 2026
 
@@ -475,7 +477,7 @@ This milestone describes the chaos engineering experiments conducted on the Dash
 
 ---
 
-### 16.1 Chaos Engineering Framework: Chaos Mesh
+### 1. Chaos Engineering Framework: Chaos Mesh
 
 **Framework:** [Chaos Mesh](https://chaos-mesh.org/) v2.8.1
 **Installation:** Helm chart deployed to a dedicated `chaos-mesh` namespace on Minikube
@@ -506,7 +508,7 @@ This script:
 
 ---
 
-### 16.2 Experiment 1: Pod/Service Kill Test
+### 2. Experiment 1: Pod/Service Kill Test
 
 **Goal:** Verify that the system recovers automatically when a pod/service unexpectedly crashes.
 
@@ -580,7 +582,7 @@ The following Kubernetes deployment settings were validated by this experiment:
 
 ---
 
-### 16.3 Experiment 2: Network Latency Test
+### 3. Experiment 2: Network Latency Test
 
 **Goal:** Test whether the system can handle slow network communication between the API service and the GenAI Inference Gateway.
 
@@ -644,7 +646,7 @@ Latency is measured from inside an API pod using Node.js `http.get()` to `http:/
 
 ---
 
-### 16.4 Running the Experiments
+### 4. Running the Experiments
 
 ```bash
 # Full automated run (install + both experiments + report)
@@ -677,7 +679,7 @@ Results are saved to the `chaos-results/` directory:
 
 ---
 
-### 16.5 File Reference (Milestone 4)
+### 5. File Reference
 
 **Chaos experiment configuration files:**
 
@@ -698,7 +700,7 @@ Results are saved to the `chaos-results/` directory:
 
 ---
 
-### 16.6 Challenges Encountered
+### 6. Challenges Encountered
 
 1. **Docker API version mismatch**
    Chaos Mesh v2.6.3 bundled a Docker client using API v1.41, but Minikube's Docker daemon required minimum API v1.44. This caused `"unable to flush ip sets"` errors when applying NetworkChaos. Resolved by upgrading Chaos Mesh to v2.8.1, which ships with a compatible Docker client.
