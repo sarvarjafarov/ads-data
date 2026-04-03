@@ -1017,3 +1017,120 @@ Based on the persona-driven testing:
 5. Test the workspace switching flow more thoroughly, the agent encountered a brief flash of stale data when switching between workspaces that could confuse agency users managing multiple clients
 
 These findings reinforce the hypothesis from our HW1 experiment design that guided onboarding reduces Time to First Insight and improves Activation Rate. The Marcus Rivera scenario in particular showed that without onboarding, a low-technical user would struggle to reach any meaningful insight on their own. The recommended changes (tooltips, role-based onboarding, plain-language summaries) are directly aligned with the treatment group design from our HW1 A/B test proposal.
+
+---
+
+# Milestone 6: Evaluating GenAI Outputs
+
+**Yale CPSC 4391 / CPSC 5391 / MGT 697**
+
+**Deadline:** Wednesday April 8, 2026 (soft deadline).
+
+This milestone adds infrastructure to evaluate outputs from different GenAI pipelines. Dashly already uses Claude for AI-powered dashboard generation, widget analysis, website audits, and custom data analysis. For this milestone we parameterize the AI insight generation across four distinct approaches and add a comparison + ELO ranking system so users can evaluate which approach produces the best insights.
+
+---
+
+## 1. GenAI Feature and Approaches
+
+**GenAI Feature:** AI-powered advertising performance insights. Given a user prompt about ad data or campaign performance, the system generates analysis and recommendations using one of four approaches. Each approach uses a different model, prompt strategy, or both.
+
+### The Four Approaches
+
+| Approach | Model | Strategy | Max Tokens |
+|----------|-------|----------|------------|
+| `concise` | Claude Haiku 4.5 | Brief bullet-point analyst. Max 5 bullets, one actionable insight each. No filler. | 1024 |
+| `detailed` | Claude Sonnet 4.5 | Comprehensive "brutally honest" analyst with 15+ years experience. Root cause analysis, risk alerts, ranked recommendations with dollar impact. | 4096 |
+| `executive` | Claude Sonnet 4.5 | CMO presenting to the board. Strategic implications, resource allocation, competitive positioning, 2-3 decisions for leadership. | 2048 |
+| `technical` | Claude Sonnet 4.5 | Quantitative analyst. Statistical summaries, confidence intervals, correlation analysis, anomaly detection, data quality flags. | 2048 |
+
+The approaches differ across two axes:
+- **Model selection** (Haiku vs Sonnet) changes speed/cost/quality tradeoffs
+- **Prompt strategy** (concise vs detailed vs executive vs technical) changes the style, depth, and audience of the output
+
+---
+
+## 2. Backend API
+
+All endpoints are under `/api/genai-eval/` and require JWT authentication.
+
+### GET /api/genai-eval/approaches
+Returns the list of available approaches with descriptions.
+
+### POST /api/genai-eval/generate
+Generates a single response using one approach.
+
+**Request body:**
+```json
+{
+  "prompt": "Analyze our Meta Ads campaign: $5,000 spend, 250 conversions, CPA of $20, ROAS of 3.2",
+  "approach": "executive"
+}
+```
+If `approach` is omitted, the backend selects one at random.
+
+### POST /api/genai-eval/compare
+Returns two responses from two randomly selected approaches, side by side.
+
+**Request body:**
+```json
+{
+  "prompt": "Analyze our Meta Ads campaign: $5,000 spend, 250 conversions, CPA of $20, ROAS of 3.2"
+}
+```
+
+**Response:** Returns `comparisonId`, `optionA`, and `optionB` each with the approach name, model, response text, token count, and duration.
+
+### POST /api/genai-eval/preference
+Records the user's preference between two approaches from a comparison.
+
+**Request body:**
+```json
+{
+  "comparisonId": "uuid-from-compare-response",
+  "winner": "a"
+}
+```
+Where `winner` is `"a"` or `"b"`. This updates ELO scores for both approaches. Double-voting on the same comparison is prevented.
+
+### GET /api/genai-eval/leaderboard
+Returns the current ELO rankings for all approaches, sorted by rating.
+
+---
+
+## 3. ELO Scoring
+
+Approaches are ranked using the standard ELO rating system (same formula used in chess). Every time a user prefers one approach over another, both scores are updated.
+
+**Formula (K-factor = 32):**
+- Expected score: `E_A = 1 / (1 + 10^((R_B - R_A) / 400))`
+- Winner new rating: `R_A' = R_A + 32 * (1 - E_A)`
+- Loser new rating: `R_B' = R_B + 32 * (0 - E_B)`
+
+All approaches start at a rating of 1500. Over time, as users submit preferences, the ratings diverge to reflect which approaches produce more useful insights.
+
+**Database tables:**
+- `elo_scores` tracks each approach's rating, wins, losses, and total comparisons
+- `elo_comparisons` logs every comparison (prompt, both responses, which was preferred)
+
+---
+
+## 4. File Reference
+
+| File | Purpose |
+|------|---------|
+| `src/database/migrations/017_genai_eval.sql` | Creates `elo_scores` and `elo_comparisons` tables, seeds 4 approaches |
+| `src/models/EloScore.js` | Data access layer for ELO scores and comparisons |
+| `src/services/genaiEval.js` | Defines 4 approaches with prompts/models, calls Claude API |
+| `src/controllers/genaiEvalController.js` | Request handlers for all 5 endpoints |
+| `src/routes/genaiEvalRoutes.js` | Route definitions with authentication middleware |
+| `src/routes/index.js` | Updated to register `/genai-eval` routes |
+
+---
+
+## 5. Challenges
+
+1. **Parallel API calls in comparison mode.** The compare endpoint fires two Claude requests simultaneously to minimize latency. If one fails (rate limit, timeout), the entire comparison fails. A future improvement would be to use `Promise.allSettled` and return partial results.
+
+2. **Response length variance.** The concise approach (Haiku, 1024 tokens) produces much shorter responses than the detailed approach (Sonnet, 4096 tokens). This length difference could bias user preference toward longer responses. In a production system, controlling for response length would make the comparison fairer.
+
+3. **Cold start ratings.** With all approaches starting at 1500, the first few comparisons have outsized impact on rankings. The system needs at least 20-30 preferences before the ratings stabilize. The K-factor of 32 was chosen to allow ratings to converge relatively quickly for a classroom setting.

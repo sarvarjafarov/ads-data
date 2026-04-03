@@ -24,6 +24,7 @@ const customDataRoutes = require('./customDataRoutes');
 const webhookRoutes = require('./webhookRoutes');
 const websiteAuditRoutes = require('./websiteAuditRoutes');
 const experimentRoutes = require('./experimentRoutes');
+const genaiEvalRoutes = require('./genaiEvalRoutes');
 
 const router = express.Router();
 
@@ -53,5 +54,6 @@ router.use('/unified', unifiedReportingRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/website-audit', websiteAuditRoutes);
 router.use('/experiments', experimentRoutes);
+router.use('/genai-eval', genaiEvalRoutes);
 
 module.exports = router;
