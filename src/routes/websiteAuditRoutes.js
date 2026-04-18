@@ -6,11 +6,18 @@ const {
   getAuditStats
 } = require('../controllers/websiteAuditController');
 const authenticate = require('../middleware/auth');
+const promptGuard = require('../middleware/promptGuard');
 
 const router = express.Router();
 
 // All website audit routes require authentication
 router.use(authenticate);
+
+// Prompt injection guard for URL input (Milestone 7)
+const guardUrl = promptGuard({
+  fields: [{ path: 'body.url' }],
+  profile: 'url-only',
+});
 
 /**
  * Audit a website for tracking pixels and events (Async)
@@ -31,7 +38,7 @@ router.use(authenticate);
  *
  * Rate limit: 5 audits per hour per workspace
  */
-router.post('/workspaces/:workspaceId/audit', auditWebsite);
+router.post('/workspaces/:workspaceId/audit', guardUrl, auditWebsite);
 
 /**
  * Get audit job status

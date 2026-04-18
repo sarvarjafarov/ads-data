@@ -1,5 +1,16 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const config = require('../config/config');
+const { wrapUntrusted } = require('./promptInjectionGuard');
+
+// Sanitize a short user-supplied string (e.g. widget title) for safe interpolation.
+// Caps length at 200 chars and strips role markers and chat template tokens.
+function sanitizeShortField(text) {
+  if (text == null) return '';
+  const str = String(text).slice(0, 200);
+  return str
+    .replace(/(^|\n)\s*(system|assistant|human)\s*:/gi, '$1[stripped]:')
+    .replace(/<\|?(system|user|assistant)\|?>/gi, '[stripped]');
+}
 
 /**
  * AI Widget Analysis Service
@@ -216,13 +227,15 @@ REMEMBER: The user pays for Claude Sonnet 4.5 analysis - deliver 10x more value 
 
     const metric = dataSource?.metric || 'unknown';
     const dateRange = dataSource?.dateRange || 'unknown';
-    const widgetTitle = (title || '').toLowerCase();
+    // Sanitize user-supplied title before interpolation (Milestone 7)
+    const safeTitle = sanitizeShortField(title);
+    const widgetTitle = safeTitle.toLowerCase();
 
     let prompt = `Analyze the performance of this advertising widget:
 
 WIDGET INFORMATION:
 - Widget Type: ${widgetType}
-- Title: ${title}
+- Title: ${safeTitle}
 - Metric: ${metric}
 - Date Range: ${dateRange}
 - Context: ${this.getWidgetContextDescription(widgetType, widgetTitle)}`;
@@ -892,7 +905,7 @@ CROSS-WIDGET INTELLIGENCE ANALYSIS:\n\n`;
         const { widget, metricsData } = item;
         const metric = widget.dataSource?.metric || 'unknown';
 
-        prompt += `WIDGET ${idx + 1}: ${widget.title}
+        prompt += `WIDGET ${idx + 1}: ${sanitizeShortField(widget.title)}
 - Metric: ${metric}
 - Current Value: ${this.formatMetricValue(metric, metricsData.value, metricsData.currency)}
 - Change: ${metricsData.changePercent ? metricsData.changePercent.toFixed(1) + '%' : 'N/A'}
@@ -966,7 +979,7 @@ Return your analysis as valid JSON following the specified structure.`;
       // Build enhanced analysis prompt
       let prompt = `Perform deep historical trend analysis for this widget:
 
-WIDGET: ${widget.title}
+WIDGET: ${sanitizeShortField(widget.title)}
 METRIC: ${metric}
 CURRENT VALUE: ${this.formatMetricValue(metric, metricsData.value, metricsData.currency)}
 

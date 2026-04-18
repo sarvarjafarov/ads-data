@@ -23,8 +23,15 @@ const {
   getAIJobStatus,
 } = require('../controllers/dashboardController');
 const authenticate = require('../middleware/auth');
+const promptGuard = require('../middleware/promptGuard');
 
 const router = express.Router();
+
+// Prompt injection guards (Milestone 7)
+const guardAIPrompt = promptGuard({
+  fields: [{ path: 'body.prompt' }],
+  profile: 'strict',
+});
 
 // Public route for shared dashboards (no auth required)
 router.get('/shared/:shareToken', getSharedDashboard);
@@ -60,8 +67,8 @@ router.post('/templates/create', createFromTemplate);
 
 // AI Dashboard Generation
 router.get('/ai/options', getAIOptions);
-router.post('/ai/generate', generateAIDashboard);
+router.post('/ai/generate', guardAIPrompt, generateAIDashboard);
 router.get('/ai/:dashboardId/recommendations', getAIRecommendations);
-router.post('/ai/:dashboardId/improvements', getAIImprovements);
+router.post('/ai/:dashboardId/improvements', guardAIPrompt, getAIImprovements);
 
 module.exports = router;
