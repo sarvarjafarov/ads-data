@@ -5,7 +5,7 @@ const APPROACHES = {
   concise: {
     name: 'concise',
     description: 'Quick bullet-point insights using Claude Haiku for fast, actionable takeaways',
-    model: 'claude-haiku-4-5-20250929',
+    model: 'claude-haiku-4-5-20251001',
     maxTokens: 1024,
     systemPrompt: `You are a concise advertising analyst. Given a prompt about ad performance, respond with:
 - Maximum 5 bullet points

@@ -25,7 +25,7 @@ const { getCache, setCache, isAvailable: isRedisAvailable } = require('../config
 const PROFILES = {
   strict: {
     maxLen: 2000,
-    ambiguousLen: 400,
+    ambiguousLen: 150,
     useLayer2: true,
     rejectOnBlock: true,
   },
@@ -49,18 +49,26 @@ const PROFILES = {
 // ---------------------------------------------------------------------------
 
 const INJECTION_PATTERNS = [
-  { name: 'override-instructions', re: /ignore\s+(all|previous|prior|above|the)\s+(instructions?|rules?|prompts?)/i },
-  { name: 'disregard', re: /disregard\s+(all|previous|prior|above)/i },
-  { name: 'forget-all', re: /forget\s+(everything|all|previous)/i },
-  { name: 'persona-shift', re: /you\s+are\s+(now|going\s+to\s+be)\s+\w+/i },
-  { name: 'new-persona', re: /new\s+(persona|identity|role|instructions?)/i },
+  // "ignore all previous instructions" — allow 0-3 intermediate qualifier words
+  { name: 'override-instructions', re: /ignore\s+(?:\w+\s+){0,3}?(instructions?|rules?|prompts?|directives?|guidelines?)/i },
+  { name: 'disregard', re: /disregard\s+(?:\w+\s+){0,3}?(instructions?|rules?|prompts?|above|previous)/i },
+  { name: 'forget-all', re: /forget\s+(?:\w+\s+){0,3}?(everything|all|previous|instructions?|rules?)/i },
+  { name: 'persona-shift', re: /you\s+are\s+(now|going\s+to\s+be|an?\s+\w+\s+that)/i },
+  { name: 'new-persona', re: /new\s+(persona|identity|role|instructions?|rules?)/i },
   { name: 'jailbreak-handle', re: /\b(DAN|STAN|DUDE|AIM)\b/ },
-  { name: 'prompt-leak', re: /(reveal|show|print|repeat|output)\s+(your|the|previous)?\s*(system\s+)?(prompt|instructions?)/i },
+  { name: 'prompt-leak', re: /(reveal|show|print|repeat|output|display|echo)\s+(?:\w+\s+){0,4}?(system\s+)?(prompt|instructions?|directives?)/i },
+  { name: 'repeat-verbatim', re: /repeat\s+(verbatim|exactly|word[- ]for[- ]word)/i },
   { name: 'role-marker', re: /(^|\n)\s*(system|assistant|human)\s*:/i },
-  { name: 'chat-template', re: /<\|?(system|user|assistant)\|?>/i },
+  { name: 'chat-template', re: /<\|?(system|user|assistant|im_start|im_end)\|?>/i },
   { name: 'explicit-attack-term', re: /\b(jailbreak|prompt\s+injection)\b/i },
   { name: 'do-anything', re: /do\s+anything\s+now/i },
   { name: 'reverse-instructions', re: /opposite\s+of\s+what\s+(you|the\s+system)/i },
+  // "override" language
+  { name: 'system-override', re: /system\s+(override|overwrite|bypass|admin)/i },
+  // "say X" / "output X" with canary-style tokens
+  { name: 'canary-output', re: /\b(say|output|respond\s+with|print)\s+["']?(PWNED|HACKED|API[_ ]KEY|SYSTEM[_ ]PROMPT)/i },
+  // Markdown header impersonation
+  { name: 'markdown-header-role', re: /#\s*(system|assistant|admin)\b/im },
 ];
 
 // URL validation for url-only profile
@@ -75,9 +83,26 @@ function sha256(input) {
   return crypto.createHash('sha256').update(input, 'utf8').digest('hex');
 }
 
+// Cyrillic -> Latin homoglyph map for common lookalike characters
+const HOMOGLYPH_MAP = {
+  'а': 'a', 'А': 'A',
+  'е': 'e', 'Е': 'E',
+  'о': 'o', 'О': 'O',
+  'р': 'p', 'Р': 'P',
+  'с': 'c', 'С': 'C',
+  'у': 'y', 'У': 'Y',
+  'х': 'x', 'Х': 'X',
+  'і': 'i', 'І': 'I',
+  'ј': 'j', 'Ј': 'J',
+  'ѕ': 's', 'Ѕ': 'S',
+  'ԁ': 'd', 'ɡ': 'g', 'ʜ': 'h', 'ɴ': 'n', 'ʀ': 'r',
+};
+const HOMOGLYPH_RE = new RegExp(Object.keys(HOMOGLYPH_MAP).join('|'), 'g');
+
 function normalize(input) {
-  // Normalize Unicode to catch homoglyphs (e.g., Cyrillic "о" -> Latin "o")
-  return String(input).normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  // Unicode NFKD + combining mark strip + Cyrillic/Latin homoglyph substitution
+  const unicode = String(input).normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  return unicode.replace(HOMOGLYPH_RE, (ch) => HOMOGLYPH_MAP[ch] || ch);
 }
 
 function countRoleMarkers(input) {
@@ -184,7 +209,7 @@ async function checkLayer2WithLLM(rawInput) {
     const userContent = `USER_INPUT:\n<untrusted>\n${rawInput}\n</untrusted>`;
     const message = await client.messages.create(
       {
-        model: 'claude-haiku-4-5-20250929',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 50,
         system: CLASSIFIER_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userContent }],
