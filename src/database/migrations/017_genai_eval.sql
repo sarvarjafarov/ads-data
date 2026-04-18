@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS elo_scores (
 CREATE TABLE IF NOT EXISTS elo_comparisons (
   id BIGSERIAL PRIMARY KEY,
   comparison_id UUID NOT NULL DEFAULT gen_random_uuid(),
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   prompt TEXT NOT NULL,
   approach_a VARCHAR(50) NOT NULL,
   approach_b VARCHAR(50) NOT NULL,

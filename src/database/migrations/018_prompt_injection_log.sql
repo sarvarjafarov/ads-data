@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS prompt_guard_log (
   id BIGSERIAL PRIMARY KEY,
   detection_id UUID NOT NULL DEFAULT gen_random_uuid(),
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   endpoint TEXT NOT NULL,
   field_path TEXT NOT NULL,
   input_hash CHAR(64) NOT NULL,
