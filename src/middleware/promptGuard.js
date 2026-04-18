@@ -24,6 +24,11 @@ function promptGuard({ fields, profile = 'strict' } = {}) {
   }
 
   return async function promptGuardMiddleware(req, res, next) {
+    // Debug/demo toggle: set BYPASS_PROMPT_GUARD=1 to disable the guard for baseline red-team runs
+    if (process.env.BYPASS_PROMPT_GUARD === '1') {
+      req.promptGuard = { results: [], verdict: 'bypassed' };
+      return next();
+    }
     const endpoint = `${req.method} ${req.baseUrl || ''}${req.route?.path || req.path || ''}`;
     const ip = req.ip || req.connection?.remoteAddress || null;
     const userAgent = req.headers?.['user-agent'] || null;
