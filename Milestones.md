@@ -1575,3 +1575,38 @@ This enables retrospective review: "which users are repeatedly triggering the gu
 
 8. **The red-team result showing `missedBlocks: 1, falsePositives: 0` is the correct outcome.** Payload #5 (Spanish) is the single "missed block" — Layer 2 Haiku returned `SAFE` for the Spanish injection despite its malicious intent. Claude's own safety training caught the attack after it was allowed through. This is a documented gap rather than a false negative bug: the regex pack is English-only, and the Haiku classifier is stronger but still imperfect on non-English inputs. The fix is additive (extend regex pack with multilingual patterns) rather than a defect.
 
+---
+
+# HW3: MCP Server and Client
+
+**Yale CPSC 4391 / CPSC 5391 / MGT 697**
+
+**Deadline:** Sunday April 26, 2026.
+
+HW3 asks for a Model Context Protocol (MCP) server that exposes the team's backend API to AI applications, plus a client that discovers and invokes capabilities. Full implementation and usage documentation live in [`mcp/`](mcp/) and [`mcp/Instructions-HW3.md`](mcp/Instructions-HW3.md).
+
+## What we expose
+
+| Kind | Name | Purpose |
+|---|---|---|
+| Resource | `dashly://genai/leaderboard` | Current ELO leaderboard for the four Milestone 6 GenAI approaches. Live data. |
+| Tool | `generate_ad_insight(prompt, approach?)` | Calls `POST /api/genai-eval/generate` for a single-approach ad-performance insight. |
+| Tool | `compare_ad_insights(prompt)` | Calls `POST /api/genai-eval/compare` for a side-by-side comparison of two approaches. Returns `comparisonId`. |
+| Prompt | `campaign_analysis_template(...)` | Structured parameterized prompt for consistent campaign analysis questions. Optional per assignment. |
+
+## Architecture
+
+Python MCP server on top of the existing Node.js API. The server uses FastMCP decorators, communicates with clients over stdio, and forwards every capability to the Dashly REST API via an authenticated httpx wrapper. The MCP server never touches the database directly.
+
+## File reference
+
+| File | Purpose |
+|---|---|
+| `mcp/server.py` | FastMCP server (1 resource, 2 tools, 1 prompt). |
+| `mcp/client.py` | Discovery client that lists every capability and demos one tool call. |
+| `mcp/dashly_client.py` | httpx wrapper with JWT login and caching. |
+| `mcp/requirements.txt` | Python dependencies. |
+| `mcp/.env.example` | Template env file. |
+| `mcp/Instructions-HW3.md` | Full setup and usage documentation. |
+| `Instructions-HW3.md` (repo root) | Pointer to `mcp/Instructions-HW3.md` per assignment instructions. |
+
