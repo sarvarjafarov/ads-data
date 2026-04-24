@@ -181,5 +181,5 @@ Build the zip from scratch with:
 ```bash
 cd mcp
 zip -r ../../../Desktop/dashly-mcp-hw3.zip . \
-  -x "venv/*" "__pycache__/*" ".env" "*.pyc" ".pytest_cache/*"
+  -x "venv/*" "__pycache__/*" ".env" "*.pyc" ".pytest_cache/*" ".gitignore"
 ```

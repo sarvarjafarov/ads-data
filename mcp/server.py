@@ -18,7 +18,7 @@ from typing import Any, Optional
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
-from dashly_client import DashlyClient
+from dashly_client import DashlyAPIError, DashlyClient
 
 # Load env from .env in the same directory as this file so running from anywhere works.
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
@@ -45,11 +45,15 @@ def leaderboard() -> str:
     """Current ELO leaderboard of the four GenAI approaches.
 
     Returns JSON with rank, approach name, rating, wins, losses, and total
-    comparisons per approach. Content changes over time as users submit
-    preferences via POST /api/genai-eval/preference.
+    comparisons per approach. Live data: re-read this resource to get the
+    latest rankings after new preferences are submitted via
+    POST /api/genai-eval/preference.
     """
-    body = _client().get("/api/genai-eval/leaderboard")
-    return json.dumps(body.get("data", body), indent=2)
+    try:
+        body = _client().get("/api/genai-eval/leaderboard")
+        return json.dumps(body.get("data", body), indent=2)
+    except DashlyAPIError as err:
+        return json.dumps({"error": str(err)}, indent=2)
 
 
 # ---------------------------------------------------------------------------
@@ -72,8 +76,11 @@ def generate_ad_insight(prompt: str, approach: Optional[str] = None) -> dict[str
     body: dict[str, Any] = {"prompt": prompt}
     if approach:
         body["approach"] = approach
-    resp = _client().post("/api/genai-eval/generate", body)
-    return resp.get("data", resp)
+    try:
+        resp = _client().post("/api/genai-eval/generate", body)
+        return resp.get("data", resp)
+    except DashlyAPIError as err:
+        return {"error": str(err)}
 
 
 @mcp.tool()
@@ -88,8 +95,11 @@ def compare_ad_insights(prompt: str) -> dict[str, Any]:
         model, response text, tokensUsed, durationMs. The comparisonId can be
         used by a client to later record a preference.
     """
-    resp = _client().post("/api/genai-eval/compare", {"prompt": prompt})
-    return resp.get("data", resp)
+    try:
+        resp = _client().post("/api/genai-eval/compare", {"prompt": prompt})
+        return resp.get("data", resp)
+    except DashlyAPIError as err:
+        return {"error": str(err)}
 
 
 # ---------------------------------------------------------------------------

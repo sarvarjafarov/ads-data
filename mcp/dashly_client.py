@@ -32,7 +32,8 @@ class DashlyClient:
         self.password = password or os.getenv("DASHLY_PASSWORD")
         if not self.email or not self.password:
             raise RuntimeError(
-                "DASHLY_EMAIL and DASHLY_PASSWORD must be set (see mcp/.env.example)"
+                "DASHLY_EMAIL and DASHLY_PASSWORD must be set via environment or .env file. "
+                "See .env.example for the expected variable names."
             )
         self._client = httpx.Client(timeout=timeout)
         self._token: Optional[str] = None
@@ -40,10 +41,25 @@ class DashlyClient:
     def login(self) -> str:
         """Authenticate with Dashly and cache the JWT. Returns the token."""
         url = f"{self.base_url}/api/auth/login"
-        resp = self._client.post(url, json={"email": self.email, "password": self.password})
+        try:
+            resp = self._client.post(
+                url, json={"email": self.email, "password": self.password}
+            )
+        except httpx.RequestError as err:
+            raise DashlyAPIError(
+                f"Cannot reach Dashly at {self.base_url}: {err}. "
+                "Is the API running? Start it with `npm start` in the repo root."
+            ) from err
+        if resp.status_code == 401:
+            raise DashlyAPIError(
+                f"Login rejected for {self.email}. Check DASHLY_EMAIL and DASHLY_PASSWORD."
+            )
         if resp.status_code != 200:
             raise DashlyAPIError(f"Login failed ({resp.status_code}): {resp.text[:300]}")
-        body = resp.json()
+        try:
+            body = resp.json()
+        except ValueError as err:
+            raise DashlyAPIError(f"Login returned non-JSON response: {resp.text[:300]}") from err
         token = body.get("token")
         if not token:
             raise DashlyAPIError(f"Login response missing 'token' field: {body}")
@@ -60,19 +76,30 @@ class DashlyClient:
 
     def _request(self, method: str, path: str, json_body: Optional[dict] = None) -> dict[str, Any]:
         url = f"{self.base_url}{path}"
-        resp = self._client.request(method, url, headers=self._headers(), json=json_body)
-        # If token expired, try once more after re-login
+        try:
+            resp = self._client.request(
+                method, url, headers=self._headers(), json=json_body
+            )
+        except httpx.RequestError as err:
+            raise DashlyAPIError(f"Network error on {method} {path}: {err}") from err
+        # If token expired, try once more after re-login. If re-login fails
+        # (bad credentials), surface that as the auth error rather than a retry failure.
         if resp.status_code == 401:
-            self.login()
-            resp = self._client.request(method, url, headers=self._headers(), json=json_body)
+            self.login()  # raises DashlyAPIError on bad creds
+            try:
+                resp = self._client.request(
+                    method, url, headers=self._headers(), json=json_body
+                )
+            except httpx.RequestError as err:
+                raise DashlyAPIError(f"Network error on retry {method} {path}: {err}") from err
         try:
             body = resp.json()
         except ValueError:
-            raise DashlyAPIError(f"Non-JSON response from {path} ({resp.status_code}): {resp.text[:300]}")
-        if resp.status_code >= 400:
             raise DashlyAPIError(
-                f"{method} {path} failed ({resp.status_code}): {body}"
+                f"Non-JSON response from {path} ({resp.status_code}): {resp.text[:300]}"
             )
+        if resp.status_code >= 400:
+            raise DashlyAPIError(f"{method} {path} failed ({resp.status_code}): {body}")
         return body
 
     def get(self, path: str) -> dict[str, Any]:
